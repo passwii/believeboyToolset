@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>付款报告</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+            background-color: #f4f4f4;
+        }
+        
+        .guide-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #0056b3;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 32px;
+            text-align: center;
+        }
+
+        .step {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .step h2 {
+            color: #0056b3;
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        .step p {
+            margin: 10px 0;
+        }
+
+        .step img {
+            max-width: 100%;
+            height: auto;
+            margin: 15px 0;
+            border: 5px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .note h3 {
+            color: #0056b3;
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .note ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="guide-container">
+        <h1>付款报告下载指南</h1>
+
+        <div class="step">
+            <h2>进入报告页面</h2>
+            <p>1. 点击菜单，选择"付款"</p>
+            <p>2. 点击"报告库"</p>
+            <img src="{{ url_for('static', filename='images/help/payment_report_menu.png') }}" alt="报告菜单">
+        </div>
+
+        <div class="step" id="payment-report">
+            <h2>付款报告：</h2>
+            <p>1. 在"报告类型"下拉菜单中选择<strong>交易</strong></p>
+            <p>2. 设定日期范围（注意中美时差）</p>
+            <p>3. 请求报告，注意选择<strong>CSV</strong>格式</p>
+            <img src="{{ url_for('static', filename='images/help/payment_report_generate.png') }}" alt="生成报告">
+        </div>
+
+        <div class="step" id="payment-delay">
+            <h2>延迟交易报告</h2>
+            <p>1. 在报告列表中选择“延迟交易”类型</p>
+            <p>2. 请求报告并下载 CSV 文件</p>
+            <p>3. 确认下载的报告类型为“延迟交易”</p>
+            <img src="{{ url_for('static', filename='images/help/payment_delay.png') }}" alt="下载报告">
+        </div>
+
+        <div class="note">
+            <h3>注意事项：</h3>
+            <ul>
+                <li>每周二生成上周的付款报告；</li>
+                <li>请确保下载的是CSV格式的报告；</li>
+                <li>报告日期范围请根据时间节点正确选择，注意中美时差；</li>
+                <li>如果报告较大，生成可能需要几分钟时间；</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

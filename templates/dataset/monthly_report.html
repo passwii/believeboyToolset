@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon 月报</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: black;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 15px;
+            color: black;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        input[list],
+        select,
+        datalist {
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #007bb5;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 15px;
+            margin-top: 20px;
+            background-color: #007bb5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #005f8b;
+        }
+
+        .help-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            line-height: 16px;
+            text-align: center;
+            background-color: #007bb5;
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            margin-left: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .help-icon:hover {
+            background-color: #ffc927;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Amazon Monthly Report 
+            <br>月报（财报）</h1>
+        <form action="{{ url_for('dataset.monthly_report') }}" method="POST" enctype="multipart/form-data">
+            <label for="project_name">项目名称:</label>
+            <input list="projects" name="project_name" id="project_name" required>
+            
+
+            <label for="report_date">报表日期:</label>
+            <select name="report_date" id="report_date" required>
+                <option value="">请选择日期</option>
+                <option value="2024-11">2024-11</option>
+                <option value="2024-12">2024-12</option>
+                <option value="2025-01">2025-01</option>
+                <option value="2025-02">2025-02</option>
+                <option value="2025-03">2025-03</option>
+                <option value="2025-04">2025-04</option>
+                <option value="2025-05">2025-05</option>
+                <option value="2025-06">2025-06</option>
+                <option value="2025-07">2025-07</option>
+                
+            </select>
+
+            <label for="payment_range_report">付款报告:
+                <a href="{{ url_for('help.payment_report') }}#payment-report" target="_blank" class="help-icon">?</a>
+            </label>
+            <input type="file" name="payment_range_report" accept=".csv" required>
+
+            <button type="submit">生成月报</button>
+        </form>
+    </div>
+</body>
+
+</html>
