@@ -332,7 +332,7 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     df_overview = df_overview.drop(columns=overview_drop_cols)
 
     # 指定项目概览模板文件的路径，为了加载模板以便填充数据或进行其他操作
-    template_file_path = 'model_file/product_analysis_template.xlsx'
+    template_file_path = 'apps/model_file/product_analysis_template.xlsx'
     # 加载Excel工作簿，以便可以编辑或操作数据
     wb = load_workbook(template_file_path)
     # 获取当前活动的工作表，准备对其进行操作

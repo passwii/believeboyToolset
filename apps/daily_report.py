@@ -105,7 +105,7 @@ def process_daily_report(project_name, report_date, sales_report, ad_report, fba
     for column in ['单次点击花费', '广告花费']:
         df_overview[column] = df_overview[column].round(2)
     # 模板文件路径
-    template_file = os.path.join('model_file', 'daily_template.xlsx')
+    template_file = os.path.join('apps', 'model_file', 'daily_template.xlsx')
     # 日报文件路径
     project_daily_file_path = os.path.join(project_folder_path, f'{project_name}_{report_date}_daily_{current_time}.xlsx')
     # 加载模板文件

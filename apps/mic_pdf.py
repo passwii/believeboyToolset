@@ -14,7 +14,7 @@ def process_mic_pdf():
     os.makedirs(pdf_folder, exist_ok=True)
 
     uploaded_files = request.files.getlist("label_pdf")
-    file2_path = "model_file/21PcsMIC.pdf"
+    file2_path = "apps/model_file/21PcsMIC.pdf"
     processed_files = []
 
 
