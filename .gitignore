@@ -1,0 +1,18 @@
+# IDEs and editors
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# macOS
+.DS_Store
+
+# Local project files
+project/
+pdf/
