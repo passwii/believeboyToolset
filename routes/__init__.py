@@ -1,13 +1,15 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, session, redirect, url_for
 
 from .toolset import toolset_bp
 from .dataset import dataset_bp
 from .help import help_bp
+from auth import login_required
 
 main = Blueprint('main', __name__)
 
 @main.route('/')
 @main.route('/index.html')
+@login_required
 def home():
     return render_template('index.html')
 

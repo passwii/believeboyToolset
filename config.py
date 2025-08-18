@@ -1,3 +1,5 @@
+import os
+
 # 应用配置
 APP_CONFIG = {
     'host': '0.0.0.0',
@@ -11,3 +13,6 @@ PATH_CONFIG = {
     'pdf_upload': 'pdf/upload',
     'project_data': 'project'
 }
+
+# 安全配置
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
