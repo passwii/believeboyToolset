@@ -21,6 +21,12 @@
 
 ## 已实现的功能
 
+### 认证系统
+- 添加了基于 Flask Session 的用户认证系统
+- 实现了登录/注销功能
+- 所有页面现在都需要用户登录后才能访问
+- 默认用户：admin/admin123, user/user123
+
 ### 工具集模块 (`/toolset`)
 1. **MIC PDF 处理** (`/toolset/mic-pdf`)
    - 为产品 PDF 添加"Made In China"标签
@@ -75,11 +81,13 @@ UI 中规划了几个工具，但没有后端实现：
 1. 安装依赖：`pip install -r requirements.txt`
 2. 运行应用程序：`python app.py`
 3. 访问地址：http://localhost:8800
+4. 使用默认账户登录：admin/admin123 或 user/user123
 
 ### 配置
 - 主配置在 `config.py` 中
 - 应用程序运行在主机 '0.0.0.0'，端口 8800，启用调试模式
 - PDF 处理和项目数据目录的路径配置
+- 添加了 SECRET_KEY 配置用于会话安全
 
 ### 关键目录
 - `pdf/` - 用于 PDF 上传和输出文件
@@ -91,6 +99,7 @@ UI 中规划了几个工具，但没有后端实现：
 believeboyToolset/
 ├── app.py              # 应用程序入口点
 ├── config.py           # 配置设置
+├── auth.py             # 认证模块
 ├── requirements.txt    # 项目依赖
 ├── routes/             # URL 路由（蓝图）
 │   ├── __init__.py     # 主蓝图和应用初始化
@@ -105,6 +114,7 @@ believeboyToolset/
 │   └── model_file/     # 模板和模型文件
 ├── templates/          # HTML 模板
 │   ├── index.html      # 主页
+│   ├── login.html      # 登录页面
 │   ├── dataset/        # 数据集页面模板
 │   ├── help/           # 帮助页面模板
 │   └── toolset/        # 工具集页面模板
@@ -117,3 +127,4 @@ believeboyToolset/
 - 删除了未使用的周报路由（不存在模板）
 - 从 config.py 中删除了未使用的 TEMPLATE_CONFIG
 - 将空间使用量从 12MB 减少到最小占用
+- 添加了用户认证系统，增强了应用安全性
