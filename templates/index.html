@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='tools.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='modern-tools.css') }}">
     <script src="{{ url_for('static', filename='script.js') }}" defer></script>
     
     <style>
@@ -47,7 +45,8 @@
         .logout-btn:hover {
             background: #c0392b;
         }
-    </style>
+       
+   </style>
 
 </head>
 
@@ -68,27 +67,24 @@
             </ul>
         </aside>
         <section class="content-area">
-            <p class="copyright">Copyright © BLF</p>
             <div class="subcategory-grid" id="tools">
-                <a href="#" target="_blank" class="subcategory-card">
-                    <div class="card-header">
-                        <i class="fas fa-exchange-alt"></i>
-                        <h3>汇率展示</h3>
-                    </div>
+                <a href="#" target="_blank" class="subcategory-card" data-category="tools">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h3>汇率展示</h3>
                     <p>实时汇率转换和展示工具</p>
                 </a>
-                <a href="#" target="_blank" class="subcategory-card">
+                <a href="#" target="_blank" class="subcategory-card" data-category="tools">
                     <i class="fas fa-spider"></i>
                     <h3>亚马逊前台采集</h3>
                     <p>采集商品信息、属性和 AI 评论分析</p>
                 </a>
-                <a href="#" target="_blank" class="subcategory-card">
+                <a href="#" target="_blank" class="subcategory-card" data-category="tools">
                     <i class="fas fa-image"></i>
                     <h3>图片尺寸调整</h3>
                     <p>图片尺寸调整工具，目标 2000px <br>目标大小 300kb</p>
                 </a>
 
-                <a href="https://ai.believeboy.com" target="_blank" class="subcategory-card">
+                <a href="https://ai.believeboy.com" target="_blank" class="subcategory-card" data-category="tools">
                     <i class="fas fa-rocket"></i>
                     <h3>AI 面板</h3>
                     <p>AI 工具，整合目前主流大模型 <br> 支持 10 种主流大模型</p>
@@ -144,7 +140,10 @@
                     <p>快速计算和预测项目或产品的利润</p>
                 </div>
             </div>
-        </section>
+       </section>
+       <footer class="page-footer">
+           <p class="copyright">Copyright © BLF</p>
+       </footer>
     </main>
     <script src="{{ url_for('static', filename='tools.js') }}"></script>
 </body>

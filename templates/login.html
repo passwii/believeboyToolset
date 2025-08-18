@@ -6,16 +6,22 @@
     <title>登录 - 彼励扶工具集</title>
     <link rel="icon" href="{{ url_for('static', filename='images/logo-i.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='tools.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='modern-tools.css') }}">
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* 隐藏滚动条 */
+            background: linear-gradient(135deg, #e6f3ff 0%, #ffffff 100%);
+        }
+        
         .login-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh; /* 使用 height 而不是 min-height */
             padding: 20px;
         }
         
@@ -29,6 +35,11 @@
             text-align: center;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .login-card:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
         }
         
         .login-card h2 {

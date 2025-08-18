@@ -8,8 +8,8 @@ auth_bp = Blueprint('auth', __name__)
 # 简单的用户存储（在实际应用中应该使用数据库）
 # 用户名: 密码哈希 (这里使用简单的用户名密码对作为示例)
 USERS = {
-    "admin": hashlib.sha256("admin123".encode()).hexdigest(),  # admin/admin123
-    "user": hashlib.sha256("user123".encode()).hexdigest()     # user/user123
+    "damonrock": hashlib.sha256("jrway2012".encode()).hexdigest(),  # admin管理员
+    "xusheng": hashlib.sha256("zhangxusheng2025".encode()).hexdigest()     # 张旭胜
 }
 
 def hash_password(password):
@@ -34,6 +34,7 @@ def login():
         password = request.form['password']
         
         if verify_password(username, password):
+            session.permanent = True  # 设置会话为永久（受 app.permanent_session_lifetime 影响）
             session['username'] = username
             # 登录成功后重定向到主页
             next_page = request.args.get('next')

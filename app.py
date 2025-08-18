@@ -1,12 +1,16 @@
 from flask import Flask
 from routes import init_app
-from config import APP_CONFIG, SECRET_KEY
+from config import APP_CONFIG, SECRET_KEY, SESSION_CONFIG
 from auth import auth_bp
+from datetime import timedelta
 
 app = Flask(__name__, static_folder='./statics', template_folder='./templates')
 
 # 配置密钥用于会话
 app.secret_key = SECRET_KEY
+
+# 配置会话超时时间
+app.permanent_session_lifetime = timedelta(seconds=SESSION_CONFIG['permanent_session_lifetime'])
 
 # 注册认证蓝图
 app.register_blueprint(auth_bp)
