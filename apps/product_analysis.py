@@ -328,6 +328,36 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     df_overview['平均售价'] = np.where(df_overview['实际销售量'] == 0, 0, (df_overview['实际销售额'] / df_overview['实际销售量']).round(2))
     df_overview['退款率'] = np.where(df_overview['实际销售额'] == 0, 0, df_overview['实际退款额'] / df_overview['实际销售额'])
     
+    # FBM费用计算 - 仅对包含"宝勒"的项目生效
+    if "宝勒" in project_name:
+        try:
+            # 读取FBM费用CSV文件
+            fbm_file_path = 'apps/model_file/宝勒_FBM.csv'
+            df_fbm = pd.read_csv(fbm_file_path, encoding='utf-8')
+            
+            # 构建SKU到FBM费用的映射
+            fbm_mapping = dict(zip(df_fbm['SKU'], df_fbm['FBM']))
+            
+            # 计算每个SKU的FBM费用并加到总销售额中
+            for index, row in df_overview.iterrows():
+                sku = row['SKU']
+                actual_sales_quantity = row['实际销售量']
+                
+                # 获取SKU对应的FBM费用
+                fbm_fee = fbm_mapping.get(sku, 0)  # 如果SKU不存在，返回0
+                
+                # 计算FBM费用（实际销售量 * 单个SKU的FBM费用）
+                total_fbm_fee = actual_sales_quantity * fbm_fee
+                
+                # 将FBM费用加到总销售额中
+                df_overview.at[index, '总销售额'] = row['总销售额'] + total_fbm_fee
+        except FileNotFoundError:
+            # 如果CSV文件不存在，打印警告但不中断程序
+            print(f"警告: FBM费用文件 {fbm_file_path} 未找到，跳过FBM费用计算")
+        except Exception as e:
+            # 处理其他可能的异常
+            print(f"警告: 处理FBM费用时发生错误: {e}")
+    
     overview_drop_cols = ['头程单价', 'FOB单价']
     df_overview = df_overview.drop(columns=overview_drop_cols)
 
