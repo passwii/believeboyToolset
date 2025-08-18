@@ -1,0 +1,198 @@
+/* 现代化数据集页面样式 */
+
+:root {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --card-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --data-analysis-color: #660066;
+  --templates-color: #4b0082;
+  --tools-color: #667eea;
+  --success-color: #4CAF50;
+  --warning-color: #FF9800;
+  --error-color: #F44336;
+  --transition-duration: 0.3s;
+}
+
+body {
+  background: linear-gradient(135deg, #e6f3ff 0%, #ffffff 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 10px 15px rgba(0, 0, 0, 0.05);
+  max-width: 500px;
+  width: 90%;
+  transition: all var(--transition-duration) ease;
+}
+
+.container:hover {
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.15),
+    0 15px 20px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-size: 2em;
+  font-weight: 600;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-top: 20px;
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 1.1em;
+}
+
+input[type="text"],
+input[type="file"],
+input[type="date"],
+input[list],
+select,
+datalist {
+  padding: 12px 15px;
+  margin-top: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(5px);
+  transition: all var(--transition-duration) ease;
+  font-size: 1em;
+}
+
+input[type="text"]:focus,
+input[type="file"]:focus,
+input[type="date"]:focus,
+input[list]:focus,
+select:focus,
+datalist:focus {
+  outline: none;
+  border-color: var(--data-analysis-color);
+  box-shadow: 0 0 0 3px rgba(102, 0, 102, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+button {
+  padding: 15px;
+  margin-top: 30px;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: 600;
+  transition: all var(--transition-duration) ease;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.1),
+    0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+button:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.2),
+    0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+button:active {
+  transform: translateY(-1px);
+}
+
+.help-icon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  background: var(--primary-gradient);
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  margin-left: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-duration) ease;
+}
+
+.help-icon:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .container {
+    padding: 30px 20px;
+    width: 95%;
+  }
+  
+  h1 {
+    font-size: 1.7em;
+  }
+  
+  label {
+    font-size: 1em;
+  }
+  
+  input[type="text"],
+  input[type="file"],
+  input[type="date"],
+  input[list],
+  select,
+  datalist {
+    padding: 10px 12px;
+  }
+  
+  button {
+    padding: 12px;
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 25px 15px;
+  }
+  
+  h1 {
+    font-size: 1.5em;
+  }
+  
+  label {
+    margin-top: 15px;
+  }
+}
+
+/* 日期范围容器样式 */
+.date-range-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.date-range-container span {
+  color: #2c3e50;
+  font-weight: 500;
+}

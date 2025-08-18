@@ -8,9 +8,9 @@
     <link rel="icon" href="{{ url_for('static', filename='images/logo-i.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='utils.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='tools.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='modern-tools.css') }}">
     <script src="{{ url_for('static', filename='script.js') }}" defer></script>
     
 
@@ -19,10 +19,12 @@
 <body>
     <main class="tools-main">
         <aside class="category-sidebar">
-            <ul class="category-list">
-                <li class="category-item active" data-category="tools">工具</li>
-                <li class="category-item" data-category="data-analysis">数据分析</li>
-                <li class="category-item" data-category="templates">模板文件</li>
+            <ul class="category-list modern">
+                <li class="category-item modern" data-category="data-analysis">数据分析</li>
+                <li class="category-item modern" data-category="templates">模板文件</li>
+                <li class="category-item modern" data-category="tools">工具</li>
+
+                
             </ul>
         </aside>
         <section class="content-area">
@@ -40,11 +42,6 @@
                     <h3>亚马逊前台采集</h3>
                     <p>采集商品信息、属性和 AI 评论分析</p>
                 </a>
-                <a href="{{ url_for('toolset.mic_pdf') }}" target="_blank" class="subcategory-card">
-                    <i class="fas fa-file-pdf"></i>
-                    <h3>产品标签 <br>Made In China</h3>
-                    <p>自动添加Made In China到产品标签 <br>目前适配 21 Pcs 单页/多页整页</p>
-                </a>
                 <a href="#" target="_blank" class="subcategory-card">
                     <i class="fas fa-image"></i>
                     <h3>图片尺寸调整</h3>
@@ -59,49 +56,49 @@
 
             </div>
             <div class="subcategory-grid" id="data-analysis">
-                <a href="{{ url_for('dataset.daily_report') }}" target="_blank" class="subcategory-card">
+                <a href="{{ url_for('dataset.daily_report') }}" target="_blank" class="subcategory-card" data-category="data-analysis">
                     <i class="fas fa-calendar-day"></i>
                     <h3>日报 & 周报</h3>
                     <p>短期销售数据概况</p>
                 </a>
-                <a href="{{ url_for('dataset.monthly_report') }}" target="_blank" class="subcategory-card">
+                <a href="{{ url_for('dataset.monthly_report') }}" target="_blank" class="subcategory-card" data-category="data-analysis">
                     <i class="fas fa-calendar-alt"></i>
                     <h3>月报</h3>
                     <p>月度销售财务分析报表生成工具</p>
                 </a>
-                <a href="{{ url_for('dataset.product_analysis') }}" target="_blank" class="subcategory-card">
+                <a href="{{ url_for('dataset.product_analysis') }}" target="_blank" class="subcategory-card" data-category="data-analysis">
                     <i class="fas fa-calculator"></i>
                     <h3>产品核算表</h3>
                     <p>详细记录和分析各 SKU 的销售 流量 利润情况</p>
                 </a>
-                <a href="#" target="_blank" class="subcategory-card">
+                <a href="#" target="_blank" class="subcategory-card" data-category="data-analysis">
                     <i class="fas fa-project-diagram"></i>
                     <h3>项目核算表</h3>
                     <p>详细记录和分析项目销售数据</p>
                 </a>
-                <a href="#" target="_blank" class="subcategory-card">
+                <a href="#" target="_blank" class="subcategory-card" data-category="data-analysis">
                     <i class="fas fa-database"></i>
                     <h3>店铺数据库</h3>
                     <p>管理店铺数据，包括产品、库存、销售等信息</p>
                 </a>
-                <a href="#" target="_blank" class="subcategory-card">
+                <a href="#" target="_blank" class="subcategory-card" data-category="data-analysis">
                     <i class="fas fa-boxes"></i>
                     <h3>库存管理</h3>
                     <p>库存管理工具，包括产品添加、删除和库存调整</p>
                 </a>
             </div>
             <div class="subcategory-grid" id="templates">
-                <div class="subcategory-card">
+                <div class="subcategory-card" data-category="templates">
                     <i class="fas fa-table"></i>
                     <h3>SKU 成本表</h3>
                     <p>详细记录和分析各 SKU 的成本构成</p>
                 </div>
-                <div class="subcategory-card">
+                <div class="subcategory-card" data-category="templates">
                     <i class="fas fa-tasks"></i>
                     <h3>项目进度表</h3>
                     <p>跟踪和管理项目进度的模板工具</p>
                 </div>
-                <div class="subcategory-card">
+                <div class="subcategory-card" data-category="templates">
                     <i class="fas fa-chart-line"></i>
                     <h3>利润测算表</h3>
                     <p>快速计算和预测项目或产品的利润</p>

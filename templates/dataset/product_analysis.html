@@ -5,94 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amazon 产品分析</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e0f7fa;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .container {
-            background: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            width: 100%;
-        }
-
-        h1 {
-            text-align: center;
-            color: black;
-            margin-bottom: 20px;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            margin-top: 15px;
-            color: black;
-            font-weight: bold;
-        }
-
-        input[type="text"],
-        input[type="file"],
-        input[type="date"],
-        input[list],
-        datalist {
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #007bb5;
-            border-radius: 5px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        button {
-            padding: 15px;
-            margin-top: 20px;
-            background-color: #007bb5;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #005f8b;
-        }
-
-        .help-icon {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            line-height: 16px;
-            text-align: center;
-            background-color: #007bb5;
-            color: white;
-            border-radius: 50%;
-            font-size: 12px;
-            margin-left: 5px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .help-icon:hover {
-            background-color: #ffc927;
-            color: white;
-            text-decoration: none;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='modern-dataset.css') }}">
 </head>
 
 <body>
@@ -107,7 +20,7 @@
             </datalist>
 
             <label for="report_date_range">报表日期范围:</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="date-range-container">
                 <input type="date" name="report_start_date" id="report_start_date" required>
                 <span>至</span>
                 <input type="date" name="report_end_date" id="report_end_date" required>

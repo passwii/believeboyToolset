@@ -12,13 +12,6 @@ def home():
 def exchange_rate():
     return render_template('toolset/exchange_rate.html')
 
-@main.route('/mic-pdf')
-def mic_pdf():
-    return render_template('toolset/mic_pdf.html')
-
-@main.route('/fba-revise-pdf')
-def fba_revise_pdf():
-    return render_template('toolset/fba_revise_pdf.html')
 
 @main.route('/resize-image')
 def resize_image():
@@ -28,10 +21,6 @@ def resize_image():
 @main.route('/daily-report')
 def daily_report():
     return render_template('dataset/daily_report.html')
-
-@main.route('/weekly-report')
-def weekly_report():
-    return render_template('dataset/weekly_report.html')
 
 @main.route('/monthly-report')
 def monthly_report():

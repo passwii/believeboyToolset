@@ -9,10 +9,6 @@ dataset_bp = Blueprint('dataset', __name__)
 def daily_report():
     return render_template('dataset/daily_report.html')
 
-@dataset_bp.route('/weekly-report')
-def weekly_report():
-    return render_template('dataset/weekly_report.html')
-
 @dataset_bp.route('/monthly-report')
 def monthly_report():
     return render_template('dataset/monthly_report.html')

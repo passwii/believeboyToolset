@@ -42,7 +42,8 @@ body {
     z-index: 999;
 }
 
-.category-list {
+/* 为.category-list添加较低的优先级，确保新样式可以覆盖 */
+.category-list:not(.modern) {
     list-style-type: none;
     padding: 10px 5%;
     margin: 0;
@@ -54,13 +55,14 @@ body {
     background-color: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(5px);
     border-radius: 35px;
-    box-shadow: 
+    box-shadow:
         0 4px 6px rgba(0, 0, 0, 0.1),
         0 1px 3px rgba(0, 0, 0, 0.08),
         0 0 0 1px rgba(255, 255, 255, 0.2) inset;
 }
 
-.category-item {
+/* 为.category-item添加较低的优先级，确保新样式可以覆盖 */
+.category-item:not(.modern) {
     padding: 6px 12px; /* 增加内边距以适应更大的字体 */
     margin: 0 4px; /* 稍微增加外边距 */
     cursor: pointer;
@@ -72,16 +74,17 @@ body {
     color: #333;
 }
 
-.category-item:hover {
+.category-item:not(.modern):hover {
     background-color: #e0e0e0;
 }
 
-.category-item.active {
+.category-item:not(.modern).active {
     background-color: var(--primary-color);
     color: white;
 }
 
-.subcategory-grid {
+/* 为.subcategory-grid添加较低的优先级，确保新样式可以覆盖 */
+.subcategory-grid:not(.modern) {
     display: grid;
     grid-template-columns: repeat(3, 1fr); /* 每行3个卡片 */
     gap: 30px;
@@ -89,11 +92,12 @@ body {
     display: none;
 }
 
-.subcategory-grid.active {
+.subcategory-grid:not(.modern).active {
     display: grid;
 }
 
-.subcategory-card {
+/* 为.subcategory-card添加较低的优先级，确保新样式可以覆盖 */
+.subcategory-card:not(.modern) {
     background-color: var(--card-bg-color);
     border: 1px solid #e0e0e0;
     border-radius: 12px;
@@ -110,25 +114,25 @@ body {
     color: inherit;
 }
 
-.subcategory-card:hover {
+.subcategory-card:not(.modern):hover {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
     transform: translateY(-5px);
     background-color: #ffffff; /* 添加这一行 */
 }
 
-.subcategory-card i {
+.subcategory-card:not(.modern) i {
     font-size: 3.2em;
     margin-bottom: 20px;
     color: var(--primary-color);
 }
 
-.subcategory-card h3 {
+.subcategory-card:not(.modern) h3 {
     margin: 0 0 15px 0;
     font-size: 1.5em;
     color: black;
 }
 
-.subcategory-card p {
+.subcategory-card:not(.modern) p {
     font-size: 1em;
     color: var(--text-color);
     margin: 0;
