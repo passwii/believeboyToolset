@@ -460,7 +460,7 @@ def product_analysis():
         # 检查是否所有必需的文件都已找到
         if not (project_name and report_start_date and report_end_date and business_report and payment_report and ad_product_report):
             flash('请填写所有字段并上传所有必需的文件（业务报告.csv, 付款报告.csv, 广告报表.xlsx）')
-            return redirect(url_for('dataset.product_analysis'))
+            return redirect(url_for('dataset.product_analysis_page'))
         
         file_content, filename = process_product_analysis(project_name, report_start_date, report_end_date, business_report, payment_report, ad_product_report)
         
