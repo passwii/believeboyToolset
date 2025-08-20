@@ -23,7 +23,7 @@ def save_file(file, folder, filename):
     file.save(filepath)
     return filepath
 
-def process_product_analysis(project_name, report_start_date, report_end_date, business_report, payment_report, ad_product_report, basic_report):
+def process_product_analysis(project_name, report_start_date, report_end_date, business_report, payment_report, ad_product_report):
     current_time = datetime.datetime.now().strftime('%H-%M-%S')
     source_folder = os.getcwd()
     os.chdir(source_folder)
@@ -44,7 +44,6 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     business_report_path = f'{project_name}_Business_Report_{report_date}.csv'
     payment_report_path = f'{project_name}_Payment_Report_{report_date}.csv'
     ad_product_report_path = f'{project_name}_AD_Product_{report_date}.xlsx'
-    basic_report_path = f'{project_name}_Basic_Information.csv'
 
     with open(business_report_path, 'wb') as f:
         f.write(business_report.read())
@@ -55,21 +54,18 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     with open(ad_product_report_path, 'wb') as f:
         f.write(ad_product_report.read())
 
-    with open(basic_report_path, 'wb') as f:
-        f.write(basic_report.read())
-
     business_report = pd.read_csv(business_report_path, encoding='utf-8')
     payment_report = pd.read_csv(payment_report_path, encoding='utf-8', thousands=',', skiprows=7)
     ad_product_report = pd.read_excel(ad_product_report_path, engine='openpyxl')
-    basic_report = pd.read_csv(basic_report_path, encoding='utf-8')
+    # 直接使用内置的基础信息表文件
+    basic_report = pd.read_csv('apps/model_file/BLF_Basic_Info.csv', encoding='utf-8')
 
 
     files_to_copy = [
         (business_report_path, f'{tmp_folder_path}/{project_name}_Business_Report_{report_date}_{current_time}.csv'),
         (payment_report_path, f'{tmp_folder_path}/{project_name}_Payment_Report_{report_date}_{current_time}.csv'),
         
-        (ad_product_report_path, f'{tmp_folder_path}/{project_name}_AD_Product_{report_date}_{current_time}.xlsx'),
-        (basic_report_path, f'{tmp_folder_path}/{project_name}_Basic_Information_{report_date}_{current_time}.csv')
+        (ad_product_report_path, f'{tmp_folder_path}/{project_name}_AD_Product_{report_date}_{current_time}.xlsx')
     ]
 
     for src, dst in files_to_copy:
@@ -361,6 +357,38 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     overview_drop_cols = ['头程单价', 'FOB单价']
     df_overview = df_overview.drop(columns=overview_drop_cols)
 
+    # 添加汇总行
+    # 计算需要求和的列
+    sum_columns = ['总销量', '总销售额', '页面浏览量', '总访客', '广告展示量', '广告点击量', '广告订单量', '广告花费', '广告销售额', '自然流量', '自然单']
+    
+    # 创建汇总行数据
+    summary_row = {}
+    for col in df_overview.columns:
+        if col in sum_columns:
+            summary_row[col] = df_overview[col].sum()
+        else:
+            summary_row[col] = 0  # 其他列初始化为0
+    
+    # 计算特殊指标
+    summary_row['自然流量'] = summary_row['页面浏览量'] - summary_row['广告点击量']
+    summary_row['自然单'] = summary_row['总销量'] - summary_row['广告订单量']
+    
+    # 计算比率指标
+    summary_row['总转化'] = summary_row['总销量'] / summary_row['页面浏览量'] if summary_row['页面浏览量'] != 0 else 0
+    summary_row['广告点击率'] = summary_row['广告点击量'] / summary_row['广告展示量'] if summary_row['广告展示量'] != 0 else 0
+    summary_row['广告单占比'] = summary_row['广告订单量'] / summary_row['总销量'] if summary_row['总销量'] != 0 else 0
+    summary_row['广告转化率'] = summary_row['广告订单量'] / summary_row['广告点击量'] if summary_row['广告点击量'] != 0 else 0
+    summary_row['CPC'] = summary_row['广告花费'] / summary_row['广告点击量'] if summary_row['广告点击量'] != 0 else 0
+    summary_row['ACOS'] = summary_row['广告花费'] / summary_row['广告销售额'] if summary_row['广告销售额'] != 0 else 0
+    summary_row['SP占比'] = summary_row['广告花费'] / summary_row['总销售额'] if summary_row['总销售额'] != 0 else 0
+    summary_row['自然流量占比'] = summary_row['自然流量'] / summary_row['页面浏览量'] if summary_row['页面浏览量'] != 0 else 0
+    summary_row['自然单转化'] = summary_row['自然单'] / summary_row['自然流量'] if summary_row['自然流量'] != 0 else 0
+    
+    # 将汇总行添加到df_overview
+    summary_df = pd.DataFrame([summary_row])
+    summary_df['SKU'] = '汇总'
+    df_overview = pd.concat([df_overview, summary_df], ignore_index=True)
+
     # 指定项目概览模板文件的路径，为了加载模板以便填充数据或进行其他操作
     template_file_path = 'apps/model_file/product_analysis_template.xlsx'
     # 加载Excel工作簿，以便可以编辑或操作数据
@@ -402,17 +430,16 @@ def product_analysis():
         business_report = request.files.get('business_report')
         payment_report = request.files.get('payment_report')
         ad_product_report = request.files.get('ad_product_report')
-        basic_report = request.files.get('basic_report')
         
-        if not (project_name and report_start_date and report_end_date and business_report and payment_report and ad_product_report and basic_report):
+        if not (project_name and report_start_date and report_end_date and business_report and payment_report and ad_product_report):
             flash('请填写所有字段并上传所有文件')
             return redirect(url_for('dataset.product_analysis'))
         
-        if not (allowed_file(business_report.filename) and allowed_file(payment_report.filename) and allowed_file(ad_product_report.filename) and allowed_file(basic_report.filename)):
+        if not (allowed_file(business_report.filename) and allowed_file(payment_report.filename) and allowed_file(ad_product_report.filename)):
             flash('文件格式不正确')
             return redirect(url_for('dataset.product_analysis'))
         
-        file_content, filename = process_product_analysis(project_name, report_start_date, report_end_date, business_report, payment_report, ad_product_report, basic_report)  
+        file_content, filename = process_product_analysis(project_name, report_start_date, report_end_date, business_report, payment_report, ad_product_report)
         
         return send_file(
             io.BytesIO(file_content),
