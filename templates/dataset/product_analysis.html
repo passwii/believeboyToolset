@@ -52,7 +52,7 @@
         <h1>Amazon Product Analysis
             <br>产品分析
         </h1>
-        <form id="analysis-form" action="{{ url_for('dataset.product_analysis') }}" method="POST" enctype="multipart/form-data">
+        <form id="analysis-form" action="{{ url_for('product_analysis.product_analysis') }}" method="POST" enctype="multipart/form-data">
             <label for="project_name">项目名称:</label>
             <input list="projects" name="project_name" id="project_name" required>
             <datalist id="projects">

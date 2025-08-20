@@ -16,7 +16,10 @@ def daily_report():
 def monthly_report():
     return render_template('dataset/monthly_report.html')
 
-
+@dataset_bp.route('/product-analysis')
+@login_required
+def product_analysis_page():
+    return render_template('dataset/product_analysis.html')
 
 @dataset_bp.route('/project-analysis')
 @login_required
