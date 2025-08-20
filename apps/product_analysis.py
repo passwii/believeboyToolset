@@ -427,16 +427,39 @@ def product_analysis():
         project_name = request.form.get('project_name')
         report_start_date = request.form.get('report_start_date')
         report_end_date = request.form.get('report_end_date')
-        business_report = request.files.get('business_report')
-        payment_report = request.files.get('payment_report')
-        ad_product_report = request.files.get('ad_product_report')
         
+        # 获取所有上传的文件
+        uploaded_files = request.files.getlist('files')
+        
+        # 初始化文件变量
+        business_report = None
+        payment_report = None
+        ad_product_report = None
+        
+        # 自动识别文件类型
+        for file in uploaded_files:
+            if file and allowed_file(file.filename):
+                filename = file.filename.lower()
+                if 'business' in filename and filename.endswith('.csv'):
+                    business_report = file
+                elif 'payment' in filename and filename.endswith('.csv'):
+                    payment_report = file
+                elif '广告' in filename and filename.endswith('.xlsx'):
+                    ad_product_report = file
+                elif filename.endswith('.csv'):
+                    # 如果还没有找到payment或business report，尝试根据内容识别
+                    if payment_report is None:
+                        payment_report = file
+                    elif business_report is None:
+                        business_report = file
+                elif filename.endswith('.xlsx'):
+                    # 如果还没有找到广告报表，将此文件作为广告报表
+                    if ad_product_report is None:
+                        ad_product_report = file
+        
+        # 检查是否所有必需的文件都已找到
         if not (project_name and report_start_date and report_end_date and business_report and payment_report and ad_product_report):
-            flash('请填写所有字段并上传所有文件')
-            return redirect(url_for('dataset.product_analysis'))
-        
-        if not (allowed_file(business_report.filename) and allowed_file(payment_report.filename) and allowed_file(ad_product_report.filename)):
-            flash('文件格式不正确')
+            flash('请填写所有字段并上传所有必需的文件（业务报告.csv, 付款报告.csv, 广告报表.xlsx）')
             return redirect(url_for('dataset.product_analysis'))
         
         file_content, filename = process_product_analysis(project_name, report_start_date, report_end_date, business_report, payment_report, ad_product_report)

@@ -6,6 +6,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amazon 产品分析</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='modern-dataset.css') }}">
+    <style>
+        .drop-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            background-color: #f9f9f9;
+        }
+        
+        .drop-area:hover, .drop-area.dragover {
+            border-color: var(--data-analysis-color);
+            background-color: #f0e6f5;
+        }
+        
+        .drop-area p {
+            margin: 10px 0;
+            color: #666;
+        }
+        
+        .file-list {
+            text-align: left;
+            margin-top: 20px;
+        }
+        
+        .file-item {
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        
+        .file-types {
+            font-size: 0.9em;
+            color: #888;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 
 <body>
@@ -13,7 +52,7 @@
         <h1>Amazon Product Analysis
             <br>产品分析
         </h1>
-        <form action="{{ url_for('dataset.product_analysis') }}" method="POST" enctype="multipart/form-data">
+        <form id="analysis-form" action="{{ url_for('dataset.product_analysis') }}" method="POST" enctype="multipart/form-data">
             <label for="project_name">项目名称:</label>
             <input list="projects" name="project_name" id="project_name" required>
             <datalist id="projects">
@@ -26,20 +65,110 @@
                 <input type="date" name="report_end_date" id="report_end_date" required>
             </div>
 
-            <label for="business_report">业务报告:</label>
-            <input type="file" name="business_report" accept=".csv" required>
+            <!-- 简化的拖拽文件上传区域 -->
+            <div class="drop-area" id="drop-area">
+                <h3>拖拽文件到此处</h3>
+                <p>或点击选择文件</p>
+                <p class="file-types">支持文件类型：.csv, .xlsx</p>
+                <input type="file" id="file-input" name="files" multiple accept=".csv,.xlsx" style="display: none;">
+            </div>
 
-            <label for="payment_report">付款报告:
-                <a href="{{ url_for('help.payment_report') }}#payment-report" target="_blank" class="help-icon">?</a>
-            </label>
-            <input type="file" name="payment_report" accept=".csv" required>
-
-            <label for="ad_product_report">广告报表:</label>
-            <input type="file" name="ad_product_report" accept=".xlsx" required>
+            <!-- 文件列表显示 -->
+            <div class="file-list" id="file-list"></div>
 
             <button type="submit">生成产品分析</button>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('file-input');
+            const fileList = document.getElementById('file-list');
+            const form = document.getElementById('analysis-form');
+            
+            // 点击拖拽区域时触发文件选择
+            dropArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // 阻止默认的拖拽行为
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // 拖拽进入和悬停时的样式
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropArea.classList.add('dragover');
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('dragover');
+            }
+            
+            // 处理文件拖拽放下
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+            
+            // 处理文件选择
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+            
+            // 处理文件列表
+            function handleFiles(files) {
+                // 清空之前的文件列表
+                fileList.innerHTML = '';
+                
+                // 显示文件列表
+                if (files.length > 0) {
+                    const title = document.createElement('h4');
+                    title.textContent = '已选择文件:';
+                    fileList.appendChild(title);
+                    
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item';
+                        fileItem.textContent = `${file.name} (${formatFileSize(file.size)})`;
+                        fileList.appendChild(fileItem);
+                    }
+                }
+            }
+            
+            // 格式化文件大小
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            // 表单提交时检查文件
+            form.addEventListener('submit', function(e) {
+                // 文件会通过fileInput自动包含在表单中
+            });
+        });
+    </script>
 </body>
 
 </html>
