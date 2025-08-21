@@ -16,14 +16,7 @@ product_analysis_bp = Blueprint('product_analysis', __name__)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv', 'xlsx'}
 
-def save_file(file, folder, filename):
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-    filepath = os.path.join(folder, filename)
-    file.save(filepath)
-    return filepath
-
-def process_product_analysis(project_name, report_start_date, report_end_date, business_report, payment_report, ad_product_report):
+def process_product_analysis(project_name, report_start_date, report_end_date, business_report_path, payment_report_path, ad_product_report_path):
     current_time = datetime.datetime.now().strftime('%H-%M-%S')
     source_folder = os.getcwd()
     os.chdir(source_folder)
@@ -41,36 +34,21 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
 
     product_analysis_file_path = os.path.join(project_folder_path, f'{project_name}_product_analysis_{report_date}.xlsx')
 
-    business_report_path = f'{project_name}_Business_Report_{report_date}.csv'
-    payment_report_path = f'{project_name}_Payment_Report_{report_date}.csv'
-    ad_product_report_path = f'{project_name}_AD_Product_{report_date}.xlsx'
-
-    with open(business_report_path, 'wb') as f:
-        f.write(business_report.read())
-
-    with open(payment_report_path, 'wb') as f:
-        f.write(payment_report.read())
-
-    with open(ad_product_report_path, 'wb') as f:
-        f.write(ad_product_report.read())
-
+    # 直接读取已保存的文件
     business_report = pd.read_csv(business_report_path, encoding='utf-8')
     payment_report = pd.read_csv(payment_report_path, encoding='utf-8', thousands=',', skiprows=7)
     ad_product_report = pd.read_excel(ad_product_report_path, engine='openpyxl')
     # 直接使用内置的基础信息表文件
     basic_report = pd.read_csv('apps/model_file/BLF_Basic_Info.csv', encoding='utf-8')
 
-
     files_to_copy = [
         (business_report_path, f'{tmp_folder_path}/{project_name}_Business_Report_{report_date}_{current_time}.csv'),
         (payment_report_path, f'{tmp_folder_path}/{project_name}_Payment_Report_{report_date}_{current_time}.csv'),
-        
         (ad_product_report_path, f'{tmp_folder_path}/{project_name}_AD_Product_{report_date}_{current_time}.xlsx')
     ]
 
     for src, dst in files_to_copy:
         shutil.copy(src, dst)
-        os.remove(src)
 
     # 复制SKU-ASIN基础信息DataFrame，用于后续项目相关的SKU-ASIN处理
     df_project_sku_asin = basic_report.copy()
@@ -109,13 +87,12 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     df_payment = payment_report.copy()
     df_payment.fillna(0, inplace=True)
 
-
     # 筛选出类型为'Order'和'Refund'的记录
     df_order_and_refund = df_payment.loc[df_payment['type'].isin(['Order', 'Refund'])]
     # 分别筛选出类型为'Order'和'Refund'的记录
     df_orders = df_payment.loc[df_payment['type'].isin(['Order'])]
     df_refund = df_payment.loc[df_payment['type'].isin(['Refund'])]
-
+    
     # 计算每个sku的销售和退款的平台费用与FBA配送费
     sale_refund_amz_fee = df_order_and_refund.groupby('sku', as_index=False).agg({
         'selling fees': lambda x: round(x.mul(-1).sum(), 2),
@@ -421,54 +398,114 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
 
     return file_content, f'{project_name}_product_analysis_{report_date}.xlsx'
 
+@product_analysis_bp.route('/upload-file', methods=['POST'])
+def upload_file():
+    """处理单个文件上传的API端点"""
+    try:
+        if 'file' not in request.files:
+            return {'success': False, 'error': '没有文件被上传'}, 400
+        
+        file = request.files['file']
+        project_name = request.form.get('project_name')
+        file_type = request.form.get('file_type')
+        
+        if not project_name:
+            return {'success': False, 'error': '项目名称不能为空'}, 400
+        
+        if not file_type or file_type not in ['business_report', 'payment_report', 'ad_product_report']:
+            return {'success': False, 'error': '文件类型无效'}, 400
+        
+        if file and allowed_file(file.filename):
+            # 创建项目上传文件夹
+            upload_folder = os.path.join(os.getcwd(), 'project', project_name, 'uploaded_files')
+            os.makedirs(upload_folder, exist_ok=True)
+            
+            # 生成文件名
+            timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            original_filename = file.filename
+            file_ext = os.path.splitext(original_filename)[1].lower()
+            
+            # 根据文件类型命名
+            if file_type == 'business_report':
+                new_filename = f"{project_name}_Business_Report_{timestamp}{file_ext}"
+            elif file_type == 'payment_report':
+                new_filename = f"{project_name}_Payment_Report_{timestamp}{file_ext}"
+            elif file_type == 'ad_product_report':
+                new_filename = f"{project_name}_AD_Product_{timestamp}{file_ext}"
+            
+            file_path = os.path.join(upload_folder, new_filename)
+            file.save(file_path)
+            
+            print(f"文件已上传: {original_filename} -> {file_path}")
+            
+            return {
+                'success': True,
+                'file_path': file_path,
+                'filename': new_filename,
+                'original_filename': original_filename
+            }
+        else:
+            return {'success': False, 'error': '文件类型不支持'}, 400
+            
+    except Exception as e:
+        print(f"文件上传错误: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {'success': False, 'error': str(e)}, 500
+
 @product_analysis_bp.route('/product-analysis', methods=['GET', 'POST'])
 def product_analysis():
     if request.method == 'POST':
-        project_name = request.form.get('project_name')
-        report_start_date = request.form.get('report_start_date')
-        report_end_date = request.form.get('report_end_date')
-        
-        # 获取所有上传的文件
-        uploaded_files = request.files.getlist('files')
-        
-        # 初始化文件变量
-        business_report = None
-        payment_report = None
-        ad_product_report = None
-        
-        # 自动识别文件类型
-        for file in uploaded_files:
-            if file and allowed_file(file.filename):
-                filename = file.filename.lower()
-                if 'business' in filename and filename.endswith('.csv'):
-                    business_report = file
-                elif 'payment' in filename and filename.endswith('.csv'):
-                    payment_report = file
-                elif '广告' in filename and filename.endswith('.xlsx'):
-                    ad_product_report = file
-                elif filename.endswith('.csv'):
-                    # 如果还没有找到payment或business report，尝试根据内容识别
-                    if payment_report is None:
-                        payment_report = file
-                    elif business_report is None:
-                        business_report = file
-                elif filename.endswith('.xlsx'):
-                    # 如果还没有找到广告报表，将此文件作为广告报表
-                    if ad_product_report is None:
-                        ad_product_report = file
-        
-        # 检查是否所有必需的文件都已找到
-        if not (project_name and report_start_date and report_end_date and business_report and payment_report and ad_product_report):
-            flash('请填写所有字段并上传所有必需的文件（业务报告.csv, 付款报告.csv, 广告报表.xlsx）')
+        try:
+            project_name = request.form.get('project_name')
+            report_start_date = request.form.get('report_start_date')
+            report_end_date = request.form.get('report_end_date')
+            
+            print(f"收到请求: project={project_name}, start={report_start_date}, end={report_end_date}")
+            
+            if not project_name:
+                flash('请选择项目名称')
+                return redirect(url_for('dataset.product_analysis_page'))
+            
+            # 获取已上传的文件路径
+            business_report_path = request.form.get('business_report_path')
+            payment_report_path = request.form.get('payment_report_path')
+            ad_product_report_path = request.form.get('ad_product_report_path')
+            
+            # 验证所有必需的文件都已上传
+            if not all([business_report_path, payment_report_path, ad_product_report_path]):
+                flash('请确保所有文件都已上传完成')
+                return redirect(url_for('dataset.product_analysis_page'))
+            
+            # 验证文件是否存在
+            if not all([os.path.exists(path) for path in [business_report_path, payment_report_path, ad_product_report_path]]):
+                flash('文件不存在，请重新上传')
+                return redirect(url_for('dataset.product_analysis_page'))
+            
+            print(f"使用已上传的文件: Business={business_report_path}, Payment={payment_report_path}, AD={ad_product_report_path}")
+            
+            # 使用已上传的文件路径进行后续处理
+            file_content, filename = process_product_analysis(
+                project_name,
+                report_start_date,
+                report_end_date,
+                business_report_path,
+                payment_report_path,
+                ad_product_report_path
+            )
+            
+            return send_file(
+                io.BytesIO(file_content),
+                as_attachment=True,
+                download_name=filename,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            
+        except Exception as e:
+            print(f"处理过程中发生错误: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            flash(f'处理过程中发生错误: {str(e)}')
             return redirect(url_for('dataset.product_analysis_page'))
-        
-        file_content, filename = process_product_analysis(project_name, report_start_date, report_end_date, business_report, payment_report, ad_product_report)
-        
-        return send_file(
-            io.BytesIO(file_content),
-            as_attachment=True,
-            download_name=filename,
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
 
     return render_template('dataset/product_analysis.html')

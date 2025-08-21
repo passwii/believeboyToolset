@@ -14,7 +14,12 @@
             <br>月报（财报）</h1>
         <form action="{{ url_for('dataset.monthly_report') }}" method="POST" enctype="multipart/form-data">
             <label for="project_name">项目名称:</label>
-            <input list="projects" name="project_name" id="project_name" required>
+            <select name="project_name" id="project_name" required>
+                <option value="">请选择项目</option>
+                {% for project in projects %}
+                <option value="{{ project }}">{{ project }}</option>
+                {% endfor %}
+            </select>
             
 
             <label for="report_date">报表日期:</label>
