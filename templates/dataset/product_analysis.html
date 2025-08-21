@@ -256,7 +256,7 @@
                 }
                 
                 // 寻找付款报告 (第二个csv文件)
-                const paymentReport = validFiles.find(f => f.name.toLowerCase().includes('payment') || f.name.toLowerCase().includes('付款'));
+                const paymentReport = validFiles.find(f => f.name.toLowerCase().includes('transaction') || f.name.toLowerCase().includes('付款'));
                 if (!paymentReport) {
                     const remainingCsv = validFiles.filter(f => f !== sortedFiles[0]).find(f => f.type === 'text/csv' || f.name.endsWith('.csv'));
                     if (remainingCsv) sortedFiles.push(remainingCsv);

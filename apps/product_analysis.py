@@ -363,7 +363,10 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     
     # 将汇总行添加到df_overview
     summary_df = pd.DataFrame([summary_row])
+    
     summary_df['SKU'] = '汇总'
+    summary_df['日期'] = report_date
+    summary_df['ASIN'] = '汇总'
     df_overview = pd.concat([df_overview, summary_df], ignore_index=True)
 
     # 指定项目概览模板文件的路径，为了加载模板以便填充数据或进行其他操作
@@ -389,6 +392,10 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
             # 如果标题行的单元格格式为百分比，则对该单元格也应用相同的百分比格式
             if ws.cell(row=1, column=c_idx).number_format == '0.00%':
                 cell.number_format = '0.00%'
+            
+            # 将汇总行（最后一行）的文字加粗
+            if r_idx == len(df_overview) + 1:  # +1 因为包含标题行
+                cell.font = Font(bold=True)
 
     # 保存项目概览工作簿到指定路径
     wb.save(product_analysis_file_path)
