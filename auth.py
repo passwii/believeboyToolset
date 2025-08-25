@@ -9,7 +9,8 @@ auth_bp = Blueprint('auth', __name__)
 # 用户名: 密码哈希 (这里使用简单的用户名密码对作为示例)
 USERS = {
     "damonrock": hashlib.sha256("jrway2012".encode()).hexdigest(),  # admin管理员
-    "xusheng": hashlib.sha256("zhangxusheng2025".encode()).hexdigest()     # 张旭胜
+    "xusheng": hashlib.sha256("zhangxusheng2025".encode()).hexdigest(),     # 张旭胜
+    "hanchen": hashlib.sha256("xu2025".encode()).hexdigest() #徐汉宸
 }
 
 def hash_password(password):

@@ -121,6 +121,21 @@
         .hidden-inputs {
             display: none;
         }
+        
+        .upload-hint {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        .file-item.empty {
+            background-color: #f8f9fa;
+            border: 1px dashed #ccc;
+            border-left: 4px solid #6c757d;
+            color: #6c757d;
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -151,11 +166,25 @@
                 <h3>拖拽文件到此处</h3>
                 <p>或点击选择文件</p>
                 <p class="file-types">支持文件类型：.csv, .xlsx</p>
+                <p class="upload-hint">可以分次上传，每次上传1个或多个文件</p>
                 <input type="file" id="file-input" name="files" multiple accept=".csv,.xlsx" style="display: none;">
             </div>
 
             <!-- 文件列表显示 -->
-            <div class="file-list" id="file-list"></div>
+            <div class="file-list" id="file-list">
+                <div class="file-item empty" id="file-business_report">
+                    <span>业务报告：等待上传（.csv格式）</span>
+                    <span class="upload-progress">未上传</span>
+                </div>
+                <div class="file-item empty" id="file-payment_report">
+                    <span>付款报告：等待上传（.csv格式）</span>
+                    <span class="upload-progress">未上传</span>
+                </div>
+                <div class="file-item empty" id="file-ad_product_report">
+                    <span>广告报表：等待上传（.xlsx格式）</span>
+                    <span class="upload-progress">未上传</span>
+                </div>
+            </div>
 
             <!-- 隐藏的文件路径输入框 -->
             <div class="hidden-inputs">
@@ -233,58 +262,66 @@
             function handleFiles(files) {
                 if (files.length === 0) return;
                 
-                // 检查文件类型和顺序
+                // 检查文件类型
                 const validFiles = Array.from(files).filter(file => {
                     const ext = file.name.split('.').pop().toLowerCase();
                     return ['csv', 'xlsx'].includes(ext);
                 });
                 
-                if (validFiles.length !== files.length) {
+                if (validFiles.length === 0) {
                     alert('请只上传 .csv 或 .xlsx 格式的文件');
                     return;
                 }
                 
-                // 按预期顺序排序文件
-                const sortedFiles = [];
-                
-                // 寻找业务报告 (第一个csv文件)
-                const businessReport = validFiles.find(f => f.name.toLowerCase().includes('business') || f.name.toLowerCase().includes('业务'));
-                if (!businessReport) {
-                    sortedFiles.push(validFiles.find(f => f.type === 'text/csv' || f.name.endsWith('.csv')));
-                } else {
-                    sortedFiles.push(businessReport);
-                }
-                
-                // 寻找付款报告 (第二个csv文件)
-                const paymentReport = validFiles.find(f => f.name.toLowerCase().includes('transaction') || f.name.toLowerCase().includes('付款'));
-                if (!paymentReport) {
-                    const remainingCsv = validFiles.filter(f => f !== sortedFiles[0]).find(f => f.type === 'text/csv' || f.name.endsWith('.csv'));
-                    if (remainingCsv) sortedFiles.push(remainingCsv);
-                } else {
-                    sortedFiles.push(paymentReport);
-                }
-                
-                // 寻找广告报表 (xlsx文件)
-                const adReport = validFiles.find(f => f.name.toLowerCase().includes('ad') || f.name.toLowerCase().includes('广告') || f.name.endsWith('.xlsx'));
-                if (adReport) {
-                    sortedFiles.push(adReport);
-                } else {
-                    const remainingXlsx = validFiles.find(f => f.name.endsWith('.xlsx'));
-                    if (remainingXlsx) sortedFiles.push(remainingXlsx);
-                }
-                
-                // 确保有3个文件
-                if (sortedFiles.filter(f => f).length !== 3) {
-                    alert('请确保上传3个文件：业务报告.csv、付款报告.csv、广告报表.xlsx');
-                    return;
-                }
-                
-                // 上传文件
-                uploadFiles(sortedFiles);
+                // 为每个文件确定类型并上传
+                validFiles.forEach(file => {
+                    const fileType = determineFileType(file);
+                    if (fileType) {
+                        uploadFile(file, fileType);
+                    }
+                });
             }
             
-            // 上传文件到服务器
-            async function uploadFiles(files) {
+            // 根据文件名和内容确定文件类型
+            function determineFileType(file) {
+                const filename = file.name.toLowerCase();
+                const ext = filename.split('.').pop().toLowerCase();
+                
+                // 根据文件名关键词判断
+                if (filename.includes('business') || filename.includes('业务')) {
+                    return 'business_report';
+                }
+                if (filename.includes('transaction') || filename.includes('付款') || filename.includes('payment')) {
+                    return 'payment_report';
+                }
+                if (filename.includes('ad') || filename.includes('广告') || filename.includes('advertising')) {
+                    return 'ad_product_report';
+                }
+                
+                // 根据文件扩展名和上传状态判断
+                if (ext === 'csv' && !uploadedFiles.business_report) {
+                    return 'business_report';
+                }
+                if (ext === 'csv' && !uploadedFiles.payment_report) {
+                    return 'payment_report';
+                }
+                if (ext === 'xlsx' && !uploadedFiles.ad_product_report) {
+                    return 'ad_product_report';
+                }
+                
+                // 如果都已上传，让用户选择替换哪个
+                if (ext === 'csv' && uploadedFiles.business_report && !uploadedFiles.payment_report) {
+                    return 'payment_report';
+                }
+                if (ext === 'csv' && uploadedFiles.business_report && uploadedFiles.payment_report) {
+                    return confirm(`文件 ${file.name} 可能是业务报告或付款报告，是否替换业务报告？`) ? 'business_report' : 'payment_report';
+                }
+                
+                return null;
+            }
+            
+            // 上传单个文件
+            async function uploadFile(file, fileType) {
                 const projectName = document.getElementById('project_name').value;
                 if (!projectName) {
                     alert('请先选择项目名称');
@@ -293,45 +330,13 @@
                 
                 dropArea.classList.add('uploading');
                 
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    const fileType = getFileType(i, file.name);
-                    
-                    await uploadFile(file, fileType, i);
-                }
-                
-                dropArea.classList.remove('uploading');
-                checkAllFilesUploaded();
-            }
-            
-            function getFileType(index, filename) {
-                const ext = filename.split('.').pop().toLowerCase();
-                
-                // 根据文件名和顺序判断文件类型
-                if (index === 0 && ext === 'csv') return 'business_report';
-                if (index === 1 && ext === 'csv') return 'payment_report';
-                if (index === 2 && ext === 'xlsx') return 'ad_product_report';
-                
-                // 根据文件名关键词判断
-                const name = filename.toLowerCase();
-                if (name.includes('business') || name.includes('业务')) return 'business_report';
-                if (name.includes('payment') || name.includes('付款')) return 'payment_report';
-                if (name.includes('ad') || name.includes('广告')) return 'ad_product_report';
-                
-                // 默认按顺序
-                if (index === 0) return 'business_report';
-                if (index === 1) return 'payment_report';
-                return 'ad_product_report';
-            }
-            
-            async function uploadFile(file, fileType, index) {
                 const formData = new FormData();
                 formData.append('file', file);
-                formData.append('project_name', document.getElementById('project_name').value);
+                formData.append('project_name', projectName);
                 formData.append('file_type', fileType);
                 
-                const fileItem = createFileItem(file, fileType, index);
-                fileList.appendChild(fileItem);
+                // 更新UI状态
+                updateFileItemUI(file, fileType, 'uploading');
                 
                 try {
                     const response = await fetch('{{ url_for("dataset.product_analysis.upload_file") }}', {
@@ -342,44 +347,62 @@
                     const result = await response.json();
                     
                     if (result.success) {
-                        fileItem.classList.add('uploaded');
-                        fileItem.querySelector('.upload-progress').textContent = '✓ 已上传';
-                        
                         // 存储上传的文件路径
                         uploadedFiles[fileType] = result.file_path;
                         document.getElementById(`${fileType}_path`).value = result.file_path;
+                        
+                        // 更新UI为已上传状态
+                        updateFileItemUI(file, fileType, 'uploaded');
                     } else {
                         throw new Error(result.error || '上传失败');
                     }
                 } catch (error) {
-                    fileItem.classList.add('error');
-                    fileItem.querySelector('.upload-progress').textContent = `✗ 上传失败: ${error.message}`;
+                    updateFileItemUI(file, fileType, 'error', error.message);
                     console.error('上传失败:', error);
+                } finally {
+                    dropArea.classList.remove('uploading');
+                    checkAllFilesUploaded();
                 }
             }
             
-            function createFileItem(file, fileType, index) {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item uploading';
-                fileItem.id = `file-${fileType}`;
+            // 更新文件项UI
+            function updateFileItemUI(file, fileType, status, errorMessage = '') {
+                const fileItem = document.getElementById(`file-${fileType}`);
+                const fileName = file ? file.name : getFileTypeName(fileType);
+                const fileSize = file ? ` (${formatFileSize(file.size)})` : '';
                 
-                const fileName = document.createElement('span');
-                fileName.textContent = `${getFileTypeName(fileType)}: ${file.name} (${formatFileSize(file.size)})`;
+                fileItem.className = `file-item ${status}`;
                 
-                const progress = document.createElement('span');
-                progress.className = 'upload-progress';
-                progress.textContent = '上传中...';
+                const nameSpan = fileItem.querySelector('span:first-child');
+                const progressSpan = fileItem.querySelector('.upload-progress');
                 
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-file';
-                removeBtn.textContent = '×';
-                removeBtn.onclick = () => removeFile(fileType);
+                if (status === 'uploading') {
+                    nameSpan.textContent = `${getFileTypeName(fileType)}: ${fileName}${fileSize}`;
+                    progressSpan.textContent = '上传中...';
+                } else if (status === 'uploaded') {
+                    nameSpan.textContent = `${getFileTypeName(fileType)}: ${fileName}${fileSize}`;
+                    progressSpan.textContent = '✓ 已上传';
+                } else if (status === 'error') {
+                    nameSpan.textContent = `${getFileTypeName(fileType)}: ${fileName}${fileSize}`;
+                    progressSpan.textContent = `✗ 上传失败: ${errorMessage}`;
+                } else if (status === 'empty') {
+                    nameSpan.textContent = `${getFileTypeName(fileType)}：等待上传（${fileType.includes('ad') ? '.xlsx' : '.csv'}格式）`;
+                    progressSpan.textContent = '未上传';
+                }
                 
-                fileItem.appendChild(fileName);
-                fileItem.appendChild(progress);
-                fileItem.appendChild(removeBtn);
-                
-                return fileItem;
+                // 添加或更新删除按钮
+                let removeBtn = fileItem.querySelector('.remove-file');
+                if (status === 'uploaded') {
+                    if (!removeBtn) {
+                        removeBtn = document.createElement('button');
+                        removeBtn.className = 'remove-file';
+                        removeBtn.textContent = '×';
+                        removeBtn.onclick = () => removeFile(fileType);
+                        fileItem.appendChild(removeBtn);
+                    }
+                } else if (removeBtn) {
+                    removeBtn.remove();
+                }
             }
             
             function getFileTypeName(fileType) {
@@ -395,10 +418,8 @@
                 uploadedFiles[fileType] = null;
                 document.getElementById(`${fileType}_path`).value = '';
                 
-                const fileItem = document.getElementById(`file-${fileType}`);
-                if (fileItem) {
-                    fileItem.remove();
-                }
+                // 重置UI为空状态
+                updateFileItemUI(null, fileType, 'empty');
                 
                 checkAllFilesUploaded();
             }
@@ -440,10 +461,9 @@
                 Object.keys(uploadedFiles).forEach(key => {
                     uploadedFiles[key] = null;
                     document.getElementById(`${key}_path`).value = '';
+                    updateFileItemUI(null, key, 'empty');
                 });
                 
-                // 清空文件列表
-                fileList.innerHTML = '';
                 submitBtn.disabled = true;
             });
             

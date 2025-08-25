@@ -336,7 +336,8 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
 
     # 添加汇总行
     # 计算需要求和的列
-    sum_columns = ['总销量', '总销售额', '页面浏览量', '总访客', '广告展示量', '广告点击量', '广告订单量', '广告花费', '广告销售额', '自然流量', '自然单']
+    sum_columns = ['总销量', '总销售额', '页面浏览量', '总访客', '广告展示量', '广告点击量', '广告订单量', '广告花费', '广告销售额', '自然流量', '自然单', '产品FOB',
+                   '实际销售额', '实际退款额', '实际退款量', '销售头程', 'FBA配送费', '平台佣金', '总成本', '利润']
     
     # 创建汇总行数据
     summary_row = {}
@@ -360,6 +361,16 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     summary_row['SP占比'] = summary_row['广告花费'] / summary_row['总销售额'] if summary_row['总销售额'] != 0 else 0
     summary_row['自然流量占比'] = summary_row['自然流量'] / summary_row['页面浏览量'] if summary_row['页面浏览量'] != 0 else 0
     summary_row['自然单转化'] = summary_row['自然单'] / summary_row['自然流量'] if summary_row['自然流量'] != 0 else 0
+    
+    # Payment数据汇总计算指标
+    summary_row['成本占比'] = summary_row['产品FOB'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
+    summary_row['头程占比'] = summary_row['销售头程'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
+    summary_row['配送费占比'] = summary_row['FBA配送费'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
+    summary_row['佣金占比'] = summary_row['平台佣金'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
+    summary_row['总成本占比'] = summary_row['总成本'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
+    summary_row['利润率'] = summary_row['利润'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
+    summary_row['退款率'] = summary_row['实际退款额'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
+    summary_row['平均售价'] = summary_row['实际销售额'] / summary_row['实际销售量'] if summary_row['实际销售量'] != 0 else 0
     
     # 将汇总行添加到df_overview
     summary_df = pd.DataFrame([summary_row])
