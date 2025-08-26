@@ -44,10 +44,10 @@ def product_analysis_page():
     
     return render_template('dataset/product_analysis.html', projects=projects)
 
-@dataset_bp.route('/project-analysis')
+@dataset_bp.route('/timeline')
 @login_required
-def project_analysis():
-    return render_template('dataset/project_analysis.html')
+def timeline():
+    return render_template('dataset/timeline.html')
 
 # 注册子蓝图
 dataset_bp.register_blueprint(daily_report_bp)

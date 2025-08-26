@@ -89,12 +89,6 @@
                     <h3>AI 面板</h3>
                     <p>AI 工具，整合目前主流大模型 <br> 支持 10 种主流大模型</p>
                 </a>
-                <a href="/toolset/update-log" class="subcategory-card" data-category="tools">
-                    <i class="fas fa-history"></i>
-                    <h3>更新日志</h3>
-                    <p>查看所有功能更新和历史记录</p>
-                </a>
-
             </div>
             <div class="subcategory-grid" id="data-analysis">
                 <a href="{{ url_for('dataset.daily_report') }}" target="_blank" class="subcategory-card" data-category="data-analysis">
@@ -112,11 +106,7 @@
                     <h3>产品核算表</h3>
                     <p>详细记录和分析各 SKU 的销售 流量 利润情况</p>
                 </a>
-                <a href="#" target="_blank" class="subcategory-card" data-category="data-analysis">
-                    <i class="fas fa-project-diagram"></i>
-                    <h3>项目核算表</h3>
-                    <p>详细记录和分析项目销售数据</p>
-                </a>
+                
                 <a href="#" target="_blank" class="subcategory-card" data-category="data-analysis">
                     <i class="fas fa-database"></i>
                     <h3>店铺数据库</h3>
@@ -126,6 +116,11 @@
                     <i class="fas fa-boxes"></i>
                     <h3>库存管理</h3>
                     <p>库存管理工具，包括产品添加、删除和库存调整</p>
+                </a>
+                <a href="{{ url_for('dataset.timeline') }}" class="subcategory-card" data-category="data-analysis">
+                    <i class="fas fa-history"></i>
+                    <h3>更新日志</h3>
+                    <p>查看所有功能更新和历史记录</p>
                 </a>
             </div>
             <div class="subcategory-grid" id="templates">

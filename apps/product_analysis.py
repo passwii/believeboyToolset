@@ -40,6 +40,9 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     ad_product_report = pd.read_excel(ad_product_report_path, engine='openpyxl')
     # 直接使用内置的基础信息表文件
     basic_report = pd.read_csv('apps/model_file/BLF_Basic_Info.csv', encoding='utf-8')
+    
+    # 根据当前项目名称过滤基础信息数据
+    basic_report = basic_report[basic_report['project_name'] == project_name]
 
     files_to_copy = [
         (business_report_path, f'{tmp_folder_path}/{project_name}_Business_Report_{report_date}_{current_time}.csv'),
@@ -58,20 +61,6 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     df_ad_sku_asin.rename(columns={'广告SKU': 'SKU', '广告ASIN': 'ASIN'}, inplace=True)
     df_ad_sku_asin = df_ad_sku_asin.drop_duplicates()
 
-    # 遍历广告数据中的每一行，以匹配和更新项目数据
-    for index, row in df_ad_sku_asin.iterrows():
-        sku = row['SKU']
-        asin = row['ASIN']
-
-        if sku in df_project_sku_asin['SKU'].values:
-            df_project_sku_asin.loc[df_project_sku_asin['SKU'] == sku, 'ASIN'] = asin
-        else:
-            new_row = pd.DataFrame({'SKU': [sku], 'ASIN': [asin]})
-            df_project_sku_asin = pd.concat([df_project_sku_asin, new_row], ignore_index=True)
-    
-    # 删除重复的SKU和ASIN组合，保留第一次出现的记录
-    df_project_sku_asin = df_project_sku_asin.drop_duplicates(subset=['SKU', 'ASIN'], keep='first')
-
     ad_column = ['广告SKU', '展示量', '点击量', '花费', '7天总销售额', '7天总销售量(#)']
     df_ad_simple = (ad_product_report[ad_column].copy()).groupby('广告SKU').sum().reset_index()
     df_ad_simple.rename(columns={'广告SKU': 'SKU',
@@ -81,7 +70,7 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
                                  '7天总销售量(#)': '广告订单量',
                                  '7天总销售额': '广告销售额'}, inplace=True)
     # 将广告数据与项目数据进行合并, 让 SKU-ASIN 表加入到广告数据表中
-    df_merge_ad_sku_asin = pd.merge(df_ad_simple, df_project_sku_asin, on='SKU', how='left')
+    df_merge_ad_sku_asin = pd.merge(df_project_sku_asin, df_ad_simple, on='SKU', how='left')
 
     # 读取Payment数据表，此时数据表中的sku都是小写格式
     df_payment = payment_report.copy()
@@ -270,9 +259,10 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     # 广告
     df_overview['广告花费'] = df_overview['广告花费'].round(2)
     df_overview['广告销售额'] = df_overview['广告销售额'].round(2)
-    df_overview['广告展示量'] = df_overview['广告展示量'].astype(int)
-    df_overview['广告点击量'] = df_overview['广告点击量'].astype(int)
-    df_overview['广告订单量'] = df_overview['广告订单量'].astype(int)
+    # 处理广告数据中的NaN值，然后转换为整数
+    df_overview['广告展示量'] = df_overview['广告展示量'].fillna(0).astype(int)
+    df_overview['广告点击量'] = df_overview['广告点击量'].fillna(0).astype(int)
+    df_overview['广告订单量'] = df_overview['广告订单量'].fillna(0).astype(int)
     df_overview['广告点击率'] = np.where(df_overview['广告展示量'] == 0, 0, df_overview['广告点击量'] / df_overview['广告展示量'])
     df_overview['广告单占比'] = np.where(df_overview['总销量'] == 0, 0, df_overview['广告订单量'] / df_overview['总销量'])
     df_overview['广告转化率'] = df_overview['广告订单量'] / df_overview['广告点击量']
