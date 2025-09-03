@@ -84,36 +84,21 @@
         <h1>业务报告下载指南</h1>
 
         <div class="step">
-            <h2>进入报告页面</h2>
-            <p>1. 点击菜单，选择"业务"</p>
-            <p>2. 点击"报告中心"</p>
-            <img src="{{ url_for('static', filename='images/help/business_report_menu.png') }}" alt="报告菜单">
-        </div>
-
-        <div class="step business-report">
-            <h2 id="business-report">业务报告：</h2>
-            <p>1. 在"报告类型"下拉菜单中选择<strong>业务数据</strong></p>
-            <p>2. 选择需要分析的时间段</p>
-            <p>3. 点击生成报告，选择<strong>CSV</strong>格式</p>
-            <img src="{{ url_for('static', filename='images/help/business_report_generate.png') }}" alt="生成报告">
-        </div>
-
-        <div class="step business-analysis">
-            <h2 id="business-analysis">业务分析报告</h2>
-            <p>1. 在报告类型中选择"业务分析"</p>
-            <p>2. 选择需要的维度（例如：产品、地区等）</p>
-            <p>3. 下载生成的 CSV 文件</p>
-            <img src="{{ url_for('static', filename='images/help/business_analysis.png') }}" alt="下载报告">
+            <h2>业务报告下载流程</h2>
+            <p>1. 进入报告-业务报告：点击菜单，选择"业务"，然后点击"报告中心"</p>
+            <p>2. 选择详情页面销售和流量（按子商品）：在报告类型中选择"详情页面销售和流量"，确保选择了"按子商品"选项</p>
+            <p>3. 调整日期范围并Apply：选择需要分析的日期范围，点击"Apply"按钮应用日期范围</p>
+            <p>4. 下载报告：点击"下载报告"按钮，选择<strong>CSV</strong>格式，等待报告生成并下载</p>
+            <img src="{{ url_for('static', filename='images/help/business-1.png') }}" alt="业务报告流程">
         </div>
 
         <div class="note">
             <h3>注意事项：</h3>
             <ul>
-                <li>业务报告每日更新，建议在每天早上9点后下载；</li>
-                <li>请确保下载的是CSV格式的报告；</li>
-                <li>如需查看历史数据，时间范围最多可选择过去12个月；</li>
-                <li>大型报告可能需要3-5分钟生成，请耐心等待；</li>
-                <li>如遇到数据异常，请及时联系技术支持；</li>
+                <li>业务报告更新有1-2天的中美时间差；</li>
+                <li>选择"按子商品"选项可以获取更详细的销售和流量数据；</li>
+                <li>调整日期范围后请务必点击"Apply"按钮以应用更改；</li>
+                <li>请确保下载的是CSV格式的报告。</li>
             </ul>
         </div>
     </div>

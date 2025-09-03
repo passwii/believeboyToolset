@@ -46,6 +46,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
         }
         
         .file-item.uploaded {
@@ -136,6 +137,33 @@
             color: #6c757d;
             font-style: italic;
         }
+        
+        /* 帮助图标样式 */
+        .help-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 12px;
+            text-decoration: none;
+            margin-left: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .help-icon:hover {
+            background-color: #0056b3;
+            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .help-icon:active {
+            transform: scale(0.9);
+        }
     </style>
 </head>
 
@@ -173,15 +201,21 @@
             <!-- 文件列表显示 -->
             <div class="file-list" id="file-list">
                 <div class="file-item empty" id="file-business_report">
-                    <span>业务报告：等待上传（.csv格式）</span>
+                    <span>业务报告：等待上传（.csv格式）
+                        <a href="{{ url_for('help.business_report') }}" target="_blank" class="help-icon">?</a>
+                    </span>
                     <span class="upload-progress">未上传</span>
                 </div>
                 <div class="file-item empty" id="file-payment_report">
-                    <span>付款报告：等待上传（.csv格式）</span>
+                    <span>付款报告：等待上传（.csv格式）
+                        <a href="{{ url_for('help.payment_report') }}" target="_blank" class="help-icon">?</a>
+                    </span>
                     <span class="upload-progress">未上传</span>
                 </div>
                 <div class="file-item empty" id="file-ad_product_report">
-                    <span>广告报表：等待上传（.xlsx格式）</span>
+                    <span>广告报表：等待上传（.xlsx格式）
+                        <a href="{{ url_for('help.ad_product_report') }}" target="_blank" class="help-icon">?</a>
+                    </span>
                     <span class="upload-progress">未上传</span>
                 </div>
             </div>
@@ -376,17 +410,21 @@
                 const nameSpan = fileItem.querySelector('span:first-child');
                 const progressSpan = fileItem.querySelector('.upload-progress');
                 
+                // 保留帮助图标
+                const helpIcon = nameSpan.querySelector('.help-icon');
+                const helpIconHTML = helpIcon ? helpIcon.outerHTML : '';
+                
                 if (status === 'uploading') {
-                    nameSpan.textContent = `${getFileTypeName(fileType)}: ${fileName}${fileSize}`;
+                    nameSpan.innerHTML = `${getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
                     progressSpan.textContent = '上传中...';
                 } else if (status === 'uploaded') {
-                    nameSpan.textContent = `${getFileTypeName(fileType)}: ${fileName}${fileSize}`;
+                    nameSpan.innerHTML = `${getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
                     progressSpan.textContent = '✓ 已上传';
                 } else if (status === 'error') {
-                    nameSpan.textContent = `${getFileTypeName(fileType)}: ${fileName}${fileSize}`;
+                    nameSpan.innerHTML = `${getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
                     progressSpan.textContent = `✗ 上传失败: ${errorMessage}`;
                 } else if (status === 'empty') {
-                    nameSpan.textContent = `${getFileTypeName(fileType)}：等待上传（${fileType.includes('ad') ? '.xlsx' : '.csv'}格式）`;
+                    nameSpan.innerHTML = `${getFileTypeName(fileType)}：等待上传（${fileType.includes('ad') ? '.xlsx' : '.csv'}格式）${helpIconHTML}`;
                     progressSpan.textContent = '未上传';
                 }
                 

@@ -10,7 +10,9 @@ auth_bp = Blueprint('auth', __name__)
 USERS = {
     "damonrock": hashlib.sha256("jrway2012".encode()).hexdigest(),  # admin管理员
     "xusheng": hashlib.sha256("zhangxusheng2025".encode()).hexdigest(),     # 张旭胜
-    "hanchen": hashlib.sha256("xu2025".encode()).hexdigest() #徐汉宸
+    "hanchen": hashlib.sha256("xu2025".encode()).hexdigest(), #徐汉宸
+    "youshuai": hashlib.sha256("shuai2025@".encode()).hexdigest() #尤帅
+
 }
 
 def hash_password(password):

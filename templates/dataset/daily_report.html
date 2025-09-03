@@ -60,7 +60,9 @@
             <label for="sales_report">所有订单:</label>
             <input type="file" name="sales_report" accept=".txt" required>
 
-            <label for="ad_report">广告报表:</label>
+            <label for="ad_report">广告报表:
+                <a href="{{ url_for('help.ad_product_report') }}" target="_blank" class="help-icon">?</a>
+            </label>
             <input type="file" name="ad_report" accept=".xlsx" required>
 
             <label for="fba_report">FBA库存:</label>

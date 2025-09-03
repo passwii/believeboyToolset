@@ -86,38 +86,32 @@
         <h1>广告报告下载指南</h1>
 
         <div class="step">
-            <h2>进入报告页面</h2>
+            <h2>进入广告面板</h2>
             <p>1. 点击菜单，选择"广告"</p>
             <p>2. 点击"报告中心"</p>
-            <img src="{{ url_for('static', filename='images/help/ad_report_menu.png') }}" alt="报告菜单">
+            <img src="{{ url_for('static', filename='images/help/ad-1.png') }}" alt="广告面板">
         </div>
 
         <div class="step" id="ad-product-report">
-            <h2>已推广商品报告：</h2>
-            <p>1. 在"报告类型"下拉菜单中选择<strong>商品推广</strong></p>
-            <p>2. 选择需要分析的时间范围（最长支持90天）</p>
-            <p>3. 选择需要的维度（如：商品、广告组等）</p>
-            <p>4. 点击生成报告，选择<strong>CSV</strong>格式</p>
-            <img src="{{ url_for('static', filename='images/help/ad_product_generate.png') }}" alt="生成报告">
+            <h2>创立报告</h2>
+            <img src="{{ url_for('static', filename='images/help/ad-2.png') }}" alt="创立报告">
         </div>
 
-        <div class="step" id="ad-performance">
-            <h2>广告效果报告</h2>
-            <p>1. 在报告类型中选择"广告效果"</p>
-            <p>2. 选择需要的指标（如：展示量、点击率、转化等）</p>
-            <p>3. 下载生成的 CSV 文件</p>
-            <img src="{{ url_for('static', filename='images/help/ad_performance.png') }}" alt="下载报告">
+        <div class="step" id="ad-report-type">
+            <h2>报告类型</h2>
+            <p>1. 选择报告类型</p>
+            <p>2. 选择日期范围</p>
+            <p>3. 添加名称后缀（可选）</p>
+            <p>4. 点击"运行报告"</p>
+            <img src="{{ url_for('static', filename='images/help/ad-3.png') }}" alt="报告类型">
         </div>
 
         <div class="note">
             <h3>注意事项：</h3>
             <ul>
-                <li>广告数据每日凌晨更新，建议在每天早上8点后下载；</li>
-                <li>请确保下载的是CSV格式的报告；</li>
                 <li>单次下载数据量建议不超过90天；</li>
-                <li>如需查看更多历史数据，请分多次下载；</li>
-                <li>报告生成时间与所选数据量相关，请耐心等待；</li>
-                <li>如遇数据异常，请检查广告账户状态或联系技术支持。</li>
+                <li>报告运行后请耐心等待几分钟，然后刷新页面查看生成的报告；</li>
+                <li>建议为报告添加有意义的名称后缀，以便后续查找和管理。</li>
             </ul>
         </div>
     </div>
