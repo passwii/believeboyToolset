@@ -17,3 +17,10 @@ def business_report():
 @help_bp.route('/ad_product_report')
 def ad_product_report():
     return render_template('help/ad_product_report_help.html')
+@help_bp.route('/orders_report')
+def orders_report_help():
+    return render_template('help/orders_report_help.html')
+
+@help_bp.route('/fba_inventory')
+def fba_inventory_help():
+    return render_template('help/fba_inventory_help.html')

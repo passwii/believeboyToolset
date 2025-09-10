@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FBA库存报告下载指南</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+            background-color: #f4f4f4;
+        }
+        
+        .guide-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #0056b3;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 32px;
+            text-align: center;
+        }
+
+        .step {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .step h2 {
+            color: #0056b3;
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        .step p {
+            margin: 10px 0;
+        }
+
+        .step img {
+            max-width: 100%;
+            height: auto;
+            margin: 15px 0;
+            border: 5px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .note h3 {
+            color: #0056b3;
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .note ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="guide-container">
+        <h1>FBA库存报告下载指南</h1>
+
+        <div class="step">
+            <h2>FBA库存报告下载流程</h2>
+            <p>1. 进入亚马逊菜单-报告-配送：点击亚马逊菜单，选择"报告"，然后点击"配送"</p>
+            <p>2. 选择库存-更多-亚马逊物流库存：在报告页面选择"库存"，点击"更多"，然后选择"亚马逊物流库存"</p>
+            <p>3. 设置请求下载CSV格式：点击"请求下载"按钮，选择CSV格式</p>
+            <img src="{{ url_for('static', filename='images/help/fba-1.png') }}" alt="FBA库存报告流程">
+        </div>
+
+        <div class="note">
+            <h3>注意事项：</h3>
+            <ul>
+                <li>选择"亚马逊物流库存"选项可以获取完整的FBA库存数据；</li>
+                <li>确保选择CSV格式以便后续导入和分析；</li>
+                <li>报告包含SKU、库存数量、状态等详细信息。</li>
+                <li>FBA库存建议生成的时间是北京时间的下午3-4点。</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
