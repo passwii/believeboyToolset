@@ -9,6 +9,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, NamedStyle
 from openpyxl.styles import Border, Side, Alignment
 from openpyxl.utils import get_column_letter
+from core.log_service import LogService
 
 monthly_report_bp = Blueprint('monthly_report', __name__)
 
@@ -261,14 +262,35 @@ def monthly_report():
             flash('文件格式不正确')
             return redirect(url_for('dataset.monthly_report'))
 
-        file_content, filename = process_monthly_report(project_name, report_date, payment_range_report)
-
-        return send_file(
-            io.BytesIO(file_content),
-            as_attachment=True,
-            download_name=filename,
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
+        try:
+            file_content, filename = process_monthly_report(project_name, report_date, payment_range_report)
+            
+            # 记录生成月报成功日志
+            LogService.log(
+                action="生成月报",
+                resource="月报功能",
+                details=f"项目: {project_name}, 日期: {report_date}, 文件: {filename}",
+                log_type="user",
+                level="info"
+            )
+            
+            return send_file(
+                io.BytesIO(file_content),
+                as_attachment=True,
+                download_name=filename,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+        except Exception as e:
+            # 记录生成月报失败日志
+            LogService.log(
+                action="生成月报失败",
+                resource="月报功能",
+                details=f"项目: {project_name}, 日期: {report_date}, 错误: {str(e)}",
+                log_type="user",
+                level="error"
+            )
+            flash(f'生成月报时发生错误: {str(e)}', 'error')
+            return redirect(url_for('dataset.monthly_report'))
 
     return render_template('dataset/monthly_report.html')
 

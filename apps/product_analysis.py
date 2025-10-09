@@ -10,6 +10,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, NamedStyle
 from openpyxl.styles import Border, Side, Alignment
 from openpyxl.utils import get_column_letter
+from core.log_service import LogService
 
 product_analysis_bp = Blueprint('product_analysis', __name__)
 
@@ -444,6 +445,15 @@ def upload_file():
             file_path = os.path.join(upload_folder, new_filename)
             file.save(file_path)
             
+            # 记录文件上传成功日志
+            LogService.log(
+                action="上传产品分析文件",
+                resource="产品分析功能",
+                details=f"项目: {project_name}, 文件类型: {file_type}, 文件名: {original_filename}",
+                log_type="user",
+                level="info"
+            )
+            
             print(f"文件已上传: {original_filename} -> {file_path}")
             
             return {
@@ -453,9 +463,25 @@ def upload_file():
                 'original_filename': original_filename
             }
         else:
+            # 记录文件上传失败日志
+            LogService.log(
+                action="上传产品分析文件失败",
+                resource="产品分析功能",
+                details=f"项目: {project_name}, 文件类型: {file_type}, 错误: 文件类型不支持",
+                log_type="user",
+                level="warning"
+            )
             return {'success': False, 'error': '文件类型不支持'}, 400
             
     except Exception as e:
+        # 记录文件上传异常日志
+        LogService.log(
+            action="上传产品分析文件异常",
+            resource="产品分析功能",
+            details=f"项目: {project_name}, 错误: {str(e)}",
+            log_type="user",
+            level="error"
+        )
         print(f"文件上传错误: {str(e)}")
         import traceback
         traceback.print_exc()
@@ -502,6 +528,15 @@ def product_analysis():
                 ad_product_report_path
             )
             
+            # 记录生成产品分析报告成功日志
+            LogService.log(
+                action="生成产品分析报告",
+                resource="产品分析功能",
+                details=f"项目: {project_name}, 日期范围: {report_start_date} 至 {report_end_date}, 文件: {filename}",
+                log_type="user",
+                level="info"
+            )
+            
             return send_file(
                 io.BytesIO(file_content),
                 as_attachment=True,
@@ -510,6 +545,14 @@ def product_analysis():
             )
             
         except Exception as e:
+            # 记录生成产品分析报告失败日志
+            LogService.log(
+                action="生成产品分析报告失败",
+                resource="产品分析功能",
+                details=f"项目: {project_name}, 日期范围: {report_start_date} 至 {report_end_date}, 错误: {str(e)}",
+                log_type="user",
+                level="error"
+            )
             print(f"处理过程中发生错误: {str(e)}")
             import traceback
             traceback.print_exc()

@@ -1,10 +1,16 @@
+import sys
+import os
+
+# 将项目根目录添加到 sys.path 中
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from flask import Flask
 from routes import init_app
-from config import APP_CONFIG, SECRET_KEY, SESSION_CONFIG
-from auth import auth_bp
+from core.config import APP_CONFIG, SECRET_KEY, SESSION_CONFIG
+from core.auth import auth_bp
 from datetime import timedelta
 
-app = Flask(__name__, static_folder='./statics', template_folder='./templates')
+app = Flask(__name__, static_folder='static', template_folder='templates')
 
 # 配置密钥用于会话
 app.secret_key = SECRET_KEY

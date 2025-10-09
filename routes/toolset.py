@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from auth import login_required
+from core.auth import login_required
 
 toolset_bp = Blueprint('toolset', __name__)
 

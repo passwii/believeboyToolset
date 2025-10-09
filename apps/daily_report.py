@@ -7,6 +7,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import Alignment
 from openpyxl.utils.dataframe import dataframe_to_rows
 import shutil
+from core.log_service import LogService
 
 daily_report_bp = Blueprint('daily_report', __name__)
 
@@ -142,13 +143,34 @@ def daily_report():
             flash('文件格式不正确')
             return redirect(url_for('dataset.daily_report'))
 
-        file_content, filename = process_daily_report(project_name, report_date, sales_report, ad_report, fba_report)
-
-        return send_file(
-            io.BytesIO(file_content),
-            as_attachment=True,
-            download_name=filename,
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
+        try:
+            file_content, filename = process_daily_report(project_name, report_date, sales_report, ad_report, fba_report)
+            
+            # 记录生成日报成功日志
+            LogService.log(
+                action="生成日报",
+                resource="日报功能",
+                details=f"项目: {project_name}, 日期: {report_date}, 文件: {filename}",
+                log_type="user",
+                level="info"
+            )
+            
+            return send_file(
+                io.BytesIO(file_content),
+                as_attachment=True,
+                download_name=filename,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+        except Exception as e:
+            # 记录生成日报失败日志
+            LogService.log(
+                action="生成日报失败",
+                resource="日报功能",
+                details=f"项目: {project_name}, 日期: {report_date}, 错误: {str(e)}",
+                log_type="user",
+                level="error"
+            )
+            flash(f'生成日报时发生错误: {str(e)}', 'error')
+            return redirect(url_for('dataset.daily_report'))
     
     return render_template('dataset/daily_report.html')
