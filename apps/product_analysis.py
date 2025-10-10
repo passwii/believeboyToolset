@@ -160,7 +160,7 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
                                     '已订购商品销售额': '总销售额',
                                     }, inplace=True)
     # 将总销售额列，逗号和 US$符号去除,并且数值化
-    business_report['总销售额'] = business_report['总销售额'].replace({'\$': '', ',': '', 'US': ''}, regex=True).astype(float)
+    business_report['总销售额'] = business_report['总销售额'].replace({r'\$': '', ',': '', 'US': ''}, regex=True).astype(float)
 
     # 合并广告与业务数据，基于ASIN关联，以便整合不同数据源的信息
     df_merge_business_ad_asin = pd.merge(df_merge_ad_sku_asin, business_report, on='ASIN', how='left')
