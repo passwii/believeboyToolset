@@ -1,0 +1,669 @@
+<div class="container">
+    <h1>Amazon Product Analysis
+        <br>产品分析
+    </h1>
+    <form id="analysis-form" action="{{ url_for('dataset.product_analysis.product_analysis') }}" method="POST" enctype="multipart/form-data">
+        <label for="project_name">项目名称:</label>
+        <select name="project_name" id="project_name" required>
+            <option value="">请选择项目</option>
+            {% for project in projects %}
+            <option value="{{ project }}">{{ project }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="report_date_range">报表日期范围:</label>
+        <div class="date-range-container">
+            <input type="date" name="report_start_date" id="report_start_date" required>
+            <span>至</span>
+            <input type="date" name="report_end_date" id="report_end_date" required>
+            <button type="button" id="last-week-btn">上周</button>
+        </div>
+
+        <!-- 简化的拖拽文件上传区域 -->
+        <div class="drop-area" id="drop-area">
+            <h3>拖拽文件到此处</h3>
+            <p>或点击选择文件</p>
+            <p class="file-types">支持文件类型：.csv, .xlsx</p>
+            <p class="upload-hint">可以分次上传，每次上传1个或多个文件</p>
+            <input type="file" id="file-input" name="files" multiple accept=".csv,.xlsx" style="display: none;">
+        </div>
+
+        <!-- 文件列表显示 -->
+        <div class="file-list" id="file-list">
+            <div class="file-item empty" id="file-business_report">
+                <span>业务报告：等待上传（.csv格式）
+                    <a href="{{ url_for('help.business_report') }}" target="_blank" class="help-icon">?</a>
+                </span>
+                <span class="upload-progress">未上传</span>
+            </div>
+            <div class="file-item empty" id="file-payment_report">
+                <span>付款报告：等待上传（.csv格式）
+                    <a href="{{ url_for('help.payment_report') }}" target="_blank" class="help-icon">?</a>
+                </span>
+                <span class="upload-progress">未上传</span>
+            </div>
+            <div class="file-item empty" id="file-ad_product_report">
+                <span>广告报表：等待上传（.xlsx格式）
+                    <a href="{{ url_for('help.ad_product_report') }}" target="_blank" class="help-icon">?</a>
+                </span>
+                <span class="upload-progress">未上传</span>
+            </div>
+        </div>
+
+        <!-- 隐藏的文件路径输入框 -->
+        <div class="hidden-inputs">
+            <input type="hidden" name="business_report_path" id="business_report_path">
+            <input type="hidden" name="payment_report_path" id="payment_report_path">
+            <input type="hidden" name="ad_product_report_path" id="ad_product_report_path">
+        </div>
+
+        <button type="submit" id="submit-btn" disabled>生成产品分析</button>
+    </form>
+</div>
+
+<style>
+    .drop-area {
+        border: 2px dashed rgba(0, 212, 255, 0.3);
+        border-radius: 10px;
+        padding: 30px;
+        text-align: center;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.05);
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .drop-area:hover, .drop-area.dragover {
+        border-color: var(--neon-blue);
+        background: rgba(0, 212, 255, 0.1);
+    }
+    
+    .drop-area.uploading {
+        background: rgba(0, 255, 136, 0.1);
+        border-color: var(--success-color);
+    }
+    
+    .drop-area h3 {
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+    
+    .drop-area p {
+        margin: 10px 0;
+        color: var(--text-secondary);
+    }
+    
+    .file-types {
+        font-size: 0.9em;
+        color: var(--text-muted);
+        margin-top: 5px;
+    }
+    
+    .upload-hint {
+        font-size: 0.85em;
+        color: var(--text-muted);
+        margin-top: 10px;
+        font-style: italic;
+    }
+    
+    .file-list {
+        margin-top: 20px;
+    }
+    
+    .file-item {
+        padding: 12px;
+        margin: 8px 0;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid rgba(0, 212, 255, 0.1);
+        position: relative;
+    }
+    
+    .file-item.empty {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px dashed rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+        font-style: italic;
+    }
+    
+    .file-item.uploaded {
+        background: rgba(0, 255, 136, 0.1);
+        border-left: 4px solid var(--success-color);
+    }
+    
+    .file-item.uploading {
+        background: rgba(255, 170, 0, 0.1);
+        border-left: 4px solid var(--warning-color);
+    }
+    
+    .file-item.error {
+        background: rgba(255, 0, 110, 0.1);
+        border-left: 4px solid var(--error-color);
+    }
+    
+    .file-item span:first-child {
+        color: var(--text-primary);
+    }
+    
+    .upload-progress {
+        font-size: 0.8em;
+        color: var(--text-secondary);
+    }
+    
+    .remove-file {
+        background: var(--error-color);
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 2px 6px;
+        cursor: pointer;
+        font-size: 0.8em;
+        margin-left: 10px;
+    }
+    
+    .remove-file:hover {
+        background: #cc0055;
+    }
+    
+    .hidden-inputs {
+        display: none;
+    }
+    
+    .date-range-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 8px;
+    }
+    
+    .date-range-container input[type="date"] {
+        flex: 1;
+    }
+    
+    .date-range-container span {
+        color: var(--text-primary);
+    }
+    
+    #last-week-btn {
+        padding: 12px 15px;
+        background: var(--success-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: all 0.3s ease;
+        margin-top: 0;
+        width: auto;
+    }
+    
+    #last-week-btn:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+        const form = document.getElementById('analysis-form');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        // 存储已上传的文件信息
+        const uploadedFiles = {
+            business_report: null,
+            payment_report: null,
+            ad_product_report: null
+        };
+        
+        // 点击拖拽区域时触发文件选择
+        dropArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // 阻止默认的拖拽行为
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // 拖拽进入和悬停时的样式
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropArea.classList.add('dragover');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('dragover');
+        }
+        
+        // 处理文件拖拽放下
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+        
+        // 处理文件选择
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        // 处理文件列表
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            // 检查文件类型
+            const validFiles = Array.from(files).filter(file => {
+                const ext = file.name.split('.').pop().toLowerCase();
+                return ['csv', 'xlsx'].includes(ext);
+            });
+            
+            if (validFiles.length === 0) {
+                showNotification('请只上传 .csv 或 .xlsx 格式的文件', 'warning');
+                return;
+            }
+            
+            // 为每个文件确定类型并上传
+            validFiles.forEach(file => {
+                const fileType = determineFileType(file);
+                if (fileType) {
+                    uploadFile(file, fileType);
+                }
+            });
+        }
+        
+        // 根据文件名和内容确定文件类型
+        function determineFileType(file) {
+            const filename = file.name.toLowerCase();
+            const ext = filename.split('.').pop().toLowerCase();
+            
+            // 根据文件名关键词判断
+            if (filename.includes('business') || filename.includes('业务')) {
+                return 'business_report';
+            }
+            if (filename.includes('transaction') || filename.includes('付款') || filename.includes('payment')) {
+                return 'payment_report';
+            }
+            if (filename.includes('ad') || filename.includes('广告') || filename.includes('advertising')) {
+                return 'ad_product_report';
+            }
+            
+            // 根据文件扩展名和上传状态判断
+            if (ext === 'csv' && !uploadedFiles.business_report) {
+                return 'business_report';
+            }
+            if (ext === 'csv' && !uploadedFiles.payment_report) {
+                return 'payment_report';
+            }
+            if (ext === 'xlsx' && !uploadedFiles.ad_product_report) {
+                return 'ad_product_report';
+            }
+            
+            // 如果都已上传，让用户选择替换哪个
+            if (ext === 'csv' && uploadedFiles.business_report && !uploadedFiles.payment_report) {
+                return 'payment_report';
+            }
+            if (ext === 'csv' && uploadedFiles.business_report && uploadedFiles.payment_report) {
+                return confirm(`文件 ${file.name} 可能是业务报告或付款报告，是否替换业务报告？`) ? 'business_report' : 'payment_report';
+            }
+            
+            return null;
+        }
+        
+        // 上传单个文件
+        async function uploadFile(file, fileType) {
+            const projectName = document.getElementById('project_name').value;
+            if (!projectName) {
+                showNotification('请先选择项目名称', 'warning');
+                return;
+            }
+            
+            dropArea.classList.add('uploading');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('project_name', projectName);
+            formData.append('file_type', fileType);
+            
+            // 更新UI状态
+            updateFileItemUI(file, fileType, 'uploading');
+            
+            try {
+                const response = await fetch('{{ url_for("dataset.product_analysis.upload_file") }}', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 存储上传的文件路径
+                    uploadedFiles[fileType] = result.file_path;
+                    document.getElementById(`${fileType}_path`).value = result.file_path;
+                    
+                    // 更新UI为已上传状态
+                    updateFileItemUI(file, fileType, 'uploaded');
+                } else {
+                    throw new Error(result.error || '上传失败');
+                }
+            } catch (error) {
+                updateFileItemUI(file, fileType, 'error', error.message);
+                console.error('上传失败:', error);
+                showNotification(`上传失败: ${error.message}`, 'error');
+            } finally {
+                dropArea.classList.remove('uploading');
+                checkAllFilesUploaded();
+            }
+        }
+        
+        // 更新文件项UI
+        function updateFileItemUI(file, fileType, status, errorMessage = '') {
+            const fileItem = document.getElementById(`file-${fileType}`);
+            const fileName = file ? file.name : getFileTypeName(fileType);
+            const fileSize = file ? ` (${formatFileSize(file.size)})` : '';
+            
+            fileItem.className = `file-item ${status}`;
+            
+            const nameSpan = fileItem.querySelector('span:first-child');
+            const progressSpan = fileItem.querySelector('.upload-progress');
+            
+            // 保留帮助图标
+            const helpIcon = nameSpan.querySelector('.help-icon');
+            const helpIconHTML = helpIcon ? helpIcon.outerHTML : '';
+            
+            if (status === 'uploading') {
+                nameSpan.innerHTML = `${getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
+                progressSpan.textContent = '上传中...';
+            } else if (status === 'uploaded') {
+                nameSpan.innerHTML = `${getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
+                progressSpan.textContent = '✓ 已上传';
+            } else if (status === 'error') {
+                nameSpan.innerHTML = `${getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
+                progressSpan.textContent = `✗ 上传失败: ${errorMessage}`;
+            } else if (status === 'empty') {
+                nameSpan.innerHTML = `${getFileTypeName(fileType)}：等待上传（${fileType.includes('ad') ? '.xlsx' : '.csv'}格式）${helpIconHTML}`;
+                progressSpan.textContent = '未上传';
+            }
+            
+            // 添加或更新删除按钮
+            let removeBtn = fileItem.querySelector('.remove-file');
+            if (status === 'uploaded') {
+                if (!removeBtn) {
+                    removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-file';
+                    removeBtn.textContent = '×';
+                    removeBtn.onclick = () => removeFile(fileType);
+                    fileItem.appendChild(removeBtn);
+                }
+            } else if (removeBtn) {
+                removeBtn.remove();
+            }
+        }
+        
+        function getFileTypeName(fileType) {
+            const names = {
+                'business_report': '业务报告',
+                'payment_report': '付款报告',
+                'ad_product_report': '广告报表'
+            };
+            return names[fileType] || fileType;
+        }
+        
+        function removeFile(fileType) {
+            uploadedFiles[fileType] = null;
+            document.getElementById(`${fileType}_path`).value = '';
+            
+            // 重置UI为空状态
+            updateFileItemUI(null, fileType, 'empty');
+            
+            checkAllFilesUploaded();
+        }
+        
+        function checkAllFilesUploaded() {
+            const allUploaded = uploadedFiles.business_report && 
+                              uploadedFiles.payment_report && 
+                              uploadedFiles.ad_product_report;
+            
+            submitBtn.disabled = !allUploaded;
+            
+            if (allUploaded) {
+                submitBtn.textContent = '生成产品分析';
+            } else {
+                submitBtn.textContent = '请等待所有文件上传完成';
+            }
+        }
+        
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // 表单提交时检查文件
+        form.addEventListener('submit', function(e) {
+            if (!uploadedFiles.business_report || !uploadedFiles.payment_report || !uploadedFiles.ad_product_report) {
+                e.preventDefault();
+                showNotification('请确保所有文件都已上传完成', 'warning');
+                return;
+            }
+            
+            e.preventDefault();
+            
+            // 创建FormData对象
+            const formData = new FormData(this);
+            
+            // 显示加载指示器
+            const formContainer = this.parentElement;
+            const originalContent = formContainer.innerHTML;
+            formContainer.innerHTML = `
+                <div class="loading-indicator">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>正在生成产品分析，请稍候...</span>
+                </div>
+            `;
+            
+            // 发送AJAX请求
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                } else {
+                    throw new Error('生成产品分析失败');
+                }
+            })
+            .then(blob => {
+                // 创建下载链接
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'product_analysis.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                // 恢复表单
+                formContainer.innerHTML = originalContent;
+                
+                // 重新初始化事件监听器
+                const newForm = document.getElementById('analysis-form');
+                
+                if (newForm) {
+                    newForm.addEventListener('submit', arguments.callee);
+                }
+                
+                // 显示成功消息
+                showNotification('产品分析生成成功', 'success');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                formContainer.innerHTML = originalContent;
+                
+                // 重新初始化事件监听器
+                const newForm = document.getElementById('analysis-form');
+                
+                if (newForm) {
+                    newForm.addEventListener('submit', arguments.callee);
+                }
+                
+                // 显示错误消息
+                showNotification('生成产品分析失败，请重试', 'error');
+            });
+        });
+        
+        // 项目名称改变时清空已上传的文件
+        document.getElementById('project_name').addEventListener('change', function() {
+            // 清空已上传的文件
+            Object.keys(uploadedFiles).forEach(key => {
+                uploadedFiles[key] = null;
+                document.getElementById(`${key}_path`).value = '';
+                updateFileItemUI(null, key, 'empty');
+            });
+            
+            submitBtn.disabled = true;
+        });
+        
+        // 上周按钮点击事件
+        const lastWeekBtn = document.getElementById('last-week-btn');
+        lastWeekBtn.addEventListener('click', function() {
+            // 获取当前日期
+            const now = new Date();
+            
+            // 计算上周日
+            // getDay()返回0(周日)到6(周六)
+            // 上周日 = 今天 - (今天是周几 + 7天)
+            // 特殊处理：如果今天是周日(getDay()=0)，则上周日是7天前
+            const daysToLastSunday = now.getDay() === 0 ? 7 : now.getDay();
+            const lastSunday = new Date(now);
+            lastSunday.setDate(now.getDate() - daysToLastSunday);
+            
+            // 计算上周一 (上周日 - 6天)
+            const lastMonday = new Date(lastSunday);
+            lastMonday.setDate(lastSunday.getDate() - 6);
+            
+            // 设置日期输入框的值
+            document.getElementById('report_start_date').value = lastMonday.toISOString().split('T')[0];
+            document.getElementById('report_end_date').value = lastSunday.toISOString().split('T')[0];
+        });
+    });
+    
+    // 通知函数
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `cyber-notification ${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas ${getNotificationIcon(type)}"></i>
+                <span>${message}</span>
+            </div>
+            <div class="notification-progress"></div>
+        `;
+        
+        // 添加样式
+        notification.style.cssText = `
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid ${getNotificationColor(type)};
+            border-radius: 10px;
+            padding: 15px 20px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            min-width: 250px;
+            box-shadow: 0 0 20px ${getNotificationColor(type)}40;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // 滑入动画
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 10);
+        
+        // 进度条动画
+        const progressBar = notification.querySelector('.notification-progress');
+        progressBar.style.cssText = `
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: ${getNotificationColor(type)};
+            width: 100%;
+            transform-origin: left;
+            animation: progressAnimation 3s linear forwards;
+        `;
+        
+        // 添加进度条动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes progressAnimation {
+                from { transform: scaleX(1); }
+                to { transform: scaleX(0); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // 3秒后自动移除
+        setTimeout(() => {
+            notification.style.transform = 'translateX(400px)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
+                if (style.parentNode) {
+                    document.head.removeChild(style);
+                }
+            }, 300);
+        }, 3000);
+    }
+    
+    function getNotificationIcon(type) {
+        switch(type) {
+            case 'success': return 'fa-check-circle';
+            case 'warning': return 'fa-exclamation-triangle';
+            case 'error': return 'fa-times-circle';
+            default: return 'fa-info-circle';
+        }
+    }
+    
+    function getNotificationColor(type) {
+        switch(type) {
+            case 'success': return '#00ff88';
+            case 'warning': return '#ffaa00';
+            case 'error': return '#ff006e';
+            default: return '#00d4ff';
+        }
+    }
+</script>

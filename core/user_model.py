@@ -1,5 +1,5 @@
 import hashlib
-from core.database import add_user, get_user, get_all_users, delete_user, get_user_by_id
+from core.database import add_user, get_user, get_all_users, delete_user, get_user_by_id, update_password
 
 class User:
     """用户模型类"""
@@ -76,6 +76,12 @@ class User:
     def delete_user(user_id):
         """删除用户"""
         return delete_user(user_id)
+    
+    @staticmethod
+    def change_password(user_id, new_password):
+        """修改用户密码"""
+        new_password_hash = User.hash_password(new_password)
+        return update_password(user_id, new_password_hash)
 
 # 初始化默认用户（如果数据库为空）
 def init_default_users():

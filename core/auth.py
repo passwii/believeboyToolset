@@ -85,3 +85,68 @@ def admin_required(f):
             return redirect(url_for('main.home'))
         return f(*args, **kwargs)
     return decorated_function
+
+@auth_bp.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    """修改密码路由"""
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        # 获取当前用户
+        username = session.get('username')
+        user = User.get_user_by_username(username)
+        
+        # 验证当前密码
+        if not User.verify_password(username, current_password):
+            # 记录密码修改失败日志
+            LogService.log(
+                action="修改密码失败",
+                resource="用户账户",
+                details=f"用户 {username} 当前密码验证失败",
+                log_type="security",
+                level="warning"
+            )
+            flash('当前密码不正确', 'error')
+            return render_template('change_password.html')
+        
+        # 验证新密码
+        if not new_password or len(new_password) < 6:
+            flash('新密码长度不能少于6位', 'error')
+            return render_template('change_password.html')
+        
+        # 验证确认密码
+        if new_password != confirm_password:
+            flash('两次输入的新密码不一致', 'error')
+            return render_template('change_password.html')
+        
+        # 修改密码
+        result = User.change_password(user.id, new_password)
+        
+        if result:
+            # 记录密码修改成功日志
+            LogService.log(
+                action="修改密码成功",
+                resource="用户账户",
+                details=f"用户 {username} 成功修改密码",
+                log_type="security",
+                level="info"
+            )
+            flash('密码修改成功，请重新登录', 'success')
+            # 修改成功后注销用户，要求重新登录
+            return redirect(url_for('auth.logout'))
+        else:
+            # 记录密码修改失败日志
+            LogService.log(
+                action="修改密码失败",
+                resource="用户账户",
+                details=f"用户 {username} 密码更新失败",
+                log_type="security",
+                level="error"
+            )
+            flash('密码修改失败，请重试', 'error')
+    
+    # GET 请求显示修改密码页面
+    return render_template('change_password.html')

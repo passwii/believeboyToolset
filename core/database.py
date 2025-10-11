@@ -4,6 +4,21 @@ import os
 # 数据库文件路径
 DB_PATH = 'users.db'
 
+def update_password(user_id, new_password_hash):
+    """更新用户密码"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('UPDATE users SET password_hash = ? WHERE id = ?', (new_password_hash, user_id))
+        conn.commit()
+        return cursor.rowcount > 0  # 返回是否成功更新
+    except Exception as e:
+        print(f"更新密码失败: {e}")
+        return False
+    finally:
+        conn.close()
+
 def init_db():
     """初始化数据库，创建用户表和日志表"""
     conn = sqlite3.connect(DB_PATH)
