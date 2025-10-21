@@ -21,7 +21,14 @@ def home():
         log_type="user",
         level="info"
     )
-    return render_template('index.html')
+    
+    # 获取当前用户的中文姓名
+    from core.user_model import User
+    username = session.get('username')
+    user = User.get_user_by_username(username)
+    chinese_name = user.chinese_name if user and user.chinese_name else username
+    
+    return render_template('index.html', chinese_name=chinese_name)
 
 @main.route('/api/statistics')
 @login_required

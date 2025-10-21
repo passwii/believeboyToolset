@@ -30,6 +30,49 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dropdownMenu) {
         dropdownMenu.addEventListener('click', function(e) {
             e.stopPropagation();
+            
+            // 处理更改密码链接点击
+            const changePasswordLink = e.target.closest('.dropdown-item[data-content="change-password"]');
+            if (changePasswordLink) {
+                e.preventDefault();
+                
+                // 隐藏下拉菜单
+                userDropdown.classList.remove('active');
+                
+                // 隐藏默认内容区域
+                if (defaultSection) {
+                    defaultSection.classList.remove('active');
+                }
+                
+                // 显示动态内容区域
+                if (dynamicSection) {
+                    dynamicSection.classList.add('active');
+                    
+                    // 加载更改密码内容
+                    loadContent('change-password');
+                }
+                
+                // 展开管理菜单
+                const adminTitle = document.querySelector('.group-title[data-category="admin"]');
+                if (adminTitle) {
+                    // 确保管理菜单展开
+                    if (!adminTitle.classList.contains('expanded')) {
+                        adminTitle.click();
+                    }
+                    
+                    // 高亮更改密码菜单项
+                    const changePasswordNavItem = document.querySelector('.nav-item a[data-content="change-password"]');
+                    if (changePasswordNavItem) {
+                        // 移除所有活动类
+                        navItems.forEach(item => item.classList.remove('active'));
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        groupTitles.forEach(title => title.classList.remove('active'));
+                        
+                        // 添加活动类到更改密码项
+                        changePasswordNavItem.parentElement.classList.add('active');
+                    }
+                }
+            }
         });
     }
     
@@ -171,8 +214,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 添加点击事件处理程序到所有 href 为 # 的链接，但排除nav-item内的链接
-    const links = document.querySelectorAll('a[href="#"]:not(.nav-item a)');
+    // 添加点击事件处理程序到所有 href 为 # 的链接，但排除nav-item内的链接和dropdown-item
+    const links = document.querySelectorAll('a[href="#"]:not(.nav-item a):not(.dropdown-item)');
     links.forEach(link => {
         link.addEventListener('click', function(event) {
             event.preventDefault();
@@ -311,18 +354,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.altKey) {
             switch(e.key) {
                 case '1':
+                    const operationsNavTitle = document.querySelector('.group-title[data-category="operations-nav"]');
+                    if (operationsNavTitle) operationsNavTitle.click();
+                    break;
+                case '2':
                     const dataAnalysisTitle = document.querySelector('.group-title[data-category="data-analysis"]');
                     if (dataAnalysisTitle) dataAnalysisTitle.click();
                     break;
-                case '2':
+                case '3':
                     const templatesTitle = document.querySelector('.group-title[data-category="templates"]');
                     if (templatesTitle) templatesTitle.click();
                     break;
-                case '3':
+                case '4':
                     const toolsTitle = document.querySelector('.group-title[data-category="tools"]');
                     if (toolsTitle) toolsTitle.click();
                     break;
-                case '4':
+                case '5':
                     const adminTitle = document.querySelector('.group-title[data-category="admin"]');
                     if (adminTitle) adminTitle.click();
                     break;
@@ -380,6 +427,12 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'product-analysis':
                 url = '/dataset/product-analysis';
                 break;
+            case 'operations-nav':
+                url = '/toolset/operations-nav';
+                break;
+            case 'shop-nav':
+                url = '/toolset/shop-nav';
+                break;
             case 'operations-info':
                 url = '/admin/operations-info?embed=true';
                 break;
@@ -387,10 +440,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 url = '/admin/users?embed=true';
                 break;
             case 'log-management':
-                url = '/admin/logs?embed=true';
+                url = '/admin/logs';
                 break;
             case 'update-log':
                 url = '/admin/update-log?embed=true';
+                break;
+            case 'shop-management':
+                url = '/admin/shops?embed=true';
+                break;
+            case 'change-password':
+                url = '/admin/change-password?embed=true';
                 break;
             default:
                 dynamicSection.innerHTML = '<div class="error-message">未知内容类型</div>';
@@ -438,6 +497,14 @@ document.addEventListener('DOMContentLoaded', function() {
         else if (contentType === 'product-analysis') {
             initializeProductAnalysis();
         }
+        // 处理运营导航页面
+        else if (contentType === 'operations-nav') {
+            initializeOperationsNav();
+        }
+        // 处理店铺导航页面
+        else if (contentType === 'shop-nav') {
+            initializeShopNav();
+        }
         // 处理运营信息页面
         else if (contentType === 'operations-info') {
             initializeOperationsInfo();
@@ -453,6 +520,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // 处理更新日志页面
         else if (contentType === 'update-log') {
             initializeUpdateLog();
+        }
+        // 处理店铺管理页面
+        else if (contentType === 'shop-management') {
+            initializeShopManagement();
+        }
+        // 处理更改密码页面
+        else if (contentType === 'change-password') {
+            initializeChangePassword();
         }
     }
     
@@ -1014,6 +1089,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
     
+    // 初始化运营导航页面
+    function initializeOperationsNav() {
+        // 运营导航页面不需要特殊的初始化逻辑
+        // 卡片点击事件已通过HTML的target="_blank"处理
+        console.log('运营导航页面已加载');
+    }
+    
+    // 初始化店铺导航页面
+    function initializeShopNav() {
+        // 店铺导航页面的初始化逻辑已在模板中处理
+        console.log('店铺导航页面已加载');
+    }
+    
+    // 初始化店铺管理页面
+    function initializeShopManagement() {
+        // 店铺管理页面的初始化逻辑已在模板中处理
+        console.log('店铺管理页面已加载');
+    }
+    
     // 初始化运营信息页面
     function initializeOperationsInfo() {
         // 确保DOM完全加载后再初始化仪表板
@@ -1165,6 +1259,42 @@ document.addEventListener('DOMContentLoaded', function() {
         // 更新日志页面不需要特殊的初始化逻辑
         // 时间轴动画已经通过CSS自动处理
         console.log('更新日志页面已加载');
+    }
+    
+    // 初始化更改密码页面
+    function initializeChangePassword() {
+        // 处理更改密码表单
+        const form = document.querySelector('.change-password-embed form');
+        const newPassword = document.getElementById('new_password');
+        const confirmPassword = document.getElementById('confirm_password');
+        
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (newPassword.value !== confirmPassword.value) {
+                    e.preventDefault();
+                    
+                    // 创建错误消息
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'flash-error';
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> 两次输入的新密码不一致';
+                    
+                    // 插入到表单前面
+                    form.parentNode.insertBefore(errorDiv, form);
+                    
+                    // 滚动到错误消息
+                    errorDiv.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // 3秒后移除错误消息
+                    setTimeout(function() {
+                        if (errorDiv.parentNode) {
+                            errorDiv.parentNode.removeChild(errorDiv);
+                        }
+                    }, 3000);
+                }
+            });
+        }
+        
+        console.log('更改密码页面已加载');
     }
     
 });

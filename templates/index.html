@@ -20,19 +20,19 @@
         <div class="user-container">
             <div class="user-dropdown">
                 <div class="user-info" id="user-dropdown-toggle">
-                    <div class="user-avatar">{{ session.username[0]|upper }}</div>
-                    <span class="user-name">{{ session.username }}</span>
+                    <div class="user-avatar">{{ chinese_name[0] if chinese_name else session.username[0]|upper }}</div>
+                    <span class="user-name">{{ chinese_name if chinese_name else session.username }}</span>
                     <i class="fas fa-chevron-down dropdown-arrow"></i>
                 </div>
                 <div class="dropdown-menu" id="user-dropdown-menu">
-                    <a href="{{ url_for('auth.change_password') }}" class="dropdown-item">
+                    <a href="#" data-content="change-password" class="dropdown-item">
                         <i class="fas fa-key"></i>
-                        <span>修改密码</span>
+                        <span>更改密码</span>
                     </a>
                     <div class="dropdown-divider"></div>
                     <a href="{{ url_for('auth.logout') }}" class="dropdown-item logout-item">
                         <i class="fas fa-sign-out-alt"></i>
-                        <span>注销</span>
+                        <span>登出</span>
                     </a>
                 </div>
             </div>
@@ -43,6 +43,26 @@
         <!-- 左侧导航栏 -->
         <nav class="cyber-sidebar">
             <ul class="sidebar-menu">
+                <li class="menu-group">
+                    <div class="group-title" data-category="operations-nav">
+                        <i class="fas fa-compass"></i>
+                        <span>运营导航</span>
+                    </div>
+                    <ul class="submenu">
+                        <li class="nav-item">
+                            <a href="#" data-content="operations-nav" class="nav-link">
+                                <i class="fas fa-globe"></i>
+                                <span>站点导航</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" data-content="shop-nav" class="nav-link">
+                                <i class="fas fa-store"></i>
+                                <span>店铺导航</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 <li class="menu-group">
                     <div class="group-title" data-category="data-analysis">
                         <i class="fas fa-chart-line"></i>
@@ -143,6 +163,18 @@
                             <a href="#" data-content="update-log" class="nav-link">
                                 <i class="fas fa-history"></i>
                                 <span>更新日志</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" data-content="shop-management" class="nav-link">
+                                <i class="fas fa-store-alt"></i>
+                                <span>店铺信息维护</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" data-content="change-password" class="nav-link">
+                                <i class="fas fa-key"></i>
+                                <span>更改密码</span>
                             </a>
                         </li>
                         {% if session.username == 'damonrock' %}

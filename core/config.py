@@ -17,7 +17,7 @@ PATH_CONFIG = {
 # 安全配置
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
 
-# 会话配置（30分钟超时）
+# 会话配置（5小时超时）
 SESSION_CONFIG = {
-    'permanent_session_lifetime': 2400  # 30分钟（单位：秒）
+    'permanent_session_lifetime': 18000  # 5小时（单位：秒）
 }

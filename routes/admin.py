@@ -88,7 +88,6 @@ def view_logs():
     log_type = request.args.get('type', '')
     level = request.args.get('level', '')
     limit = int(request.args.get('limit', 100))
-    embed = request.args.get('embed', 'false').lower() == 'true'
     
     # 获取日志
     logs = get_logs(
@@ -99,14 +98,9 @@ def view_logs():
     
     # 不记录查看日志操作 - 按要求移除日志记录
     
-    if embed:
-        # 返回内嵌模板
-        return render_template('admin/logs_embed.html', logs=logs,
-                             current_type=log_type, current_level=level, limit=limit)
-    else:
-        # 返回完整页面
-        return render_template('admin/logs.html', logs=logs,
-                             current_type=log_type, current_level=level, limit=limit)
+    # 始终返回内嵌模板
+    return render_template('admin/logs_embed.html', logs=logs,
+                         current_type=log_type, current_level=level, limit=limit)
 
 @admin_bp.route('/logs/clear', methods=['POST'])
 @login_required
@@ -233,3 +227,253 @@ def update_log():
     else:
         # 返回完整页面
         return render_template('admin/update_log_embed.html', commits=commits)
+
+@admin_bp.route('/change-password')
+@login_required
+def change_password():
+    """更改密码页面 - 全员可见"""
+    # 记录访问更改密码页面日志
+    LogService.log(
+        action="访问更改密码页面",
+        resource="更改密码",
+        log_type="security",
+        level="info"
+    )
+    
+    # 检查是否是AJAX请求（通过查询参数判断）
+    embed = request.args.get('embed', 'false').lower() == 'true'
+    
+    if embed:
+        # 返回内嵌模板
+        return render_template('admin/change_password_embed.html')
+    else:
+        # 返回完整页面
+        return render_template('change_password.html')
+
+@admin_bp.route('/shops')
+@login_required
+def shop_management():
+    """店铺信息维护页面"""
+    # 记录访问店铺管理页面日志
+    LogService.log(
+        action="访问店铺管理页面",
+        resource="店铺管理",
+        log_type="user",
+        level="info"
+    )
+    
+    # 检查是否是AJAX请求（通过查询参数判断）
+    embed = request.args.get('embed', 'false').lower() == 'true'
+    
+    if embed:
+        # 返回内嵌模板
+        return render_template('admin/shop_management_embed.html')
+    else:
+        # 返回完整页面（如果需要的话）
+        return render_template('admin/shop_management_embed.html')
+
+@admin_bp.route('/shops/add', methods=['POST'])
+@login_required
+def add_shop():
+    """添加新店铺"""
+    shop_name = request.form.get('shop_name')
+    shop_url = request.form.get('shop_url')
+    
+    # 检查是否是AJAX请求
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    if not shop_name or not shop_url:
+        error_msg = '店铺名称和链接不能为空'
+        if is_ajax:
+            return jsonify({'success': False, 'message': error_msg})
+        flash(error_msg, 'error')
+        return redirect(url_for('admin.shop_management'))
+    
+    # 验证URL格式
+    from core.shop_model import Shop
+    if not Shop.validate_shop_url(shop_url):
+        error_msg = '请输入有效的URL（以http://或https://开头）'
+        if is_ajax:
+            return jsonify({'success': False, 'message': error_msg})
+        flash(error_msg, 'error')
+        return redirect(url_for('admin.shop_management'))
+    
+    # 获取当前用户ID
+    from core.user_model import User
+    username = session.get('username')
+    current_user = User.get_user_by_username(username)
+    user_id = current_user['id'] if current_user else None
+    
+    # 创建店铺
+    shop = Shop.create(shop_name, shop_url, user_id)
+    if shop:
+        # 记录添加店铺成功日志
+        LogService.log(
+            action="添加店铺",
+            resource=f"店铺: {shop_name}",
+            details=f"店铺链接: {shop_url}",
+            log_type="user",
+            level="info"
+        )
+        success_msg = f'店铺 {shop_name} 添加成功'
+        if is_ajax:
+            return jsonify({'success': True, 'message': success_msg})
+        flash(success_msg, 'success')
+    else:
+        # 记录添加店铺失败日志
+        LogService.log(
+            action="添加店铺失败",
+            resource=f"店铺: {shop_name}",
+            details=f"店铺链接: {shop_url}",
+            log_type="user",
+            level="error"
+        )
+        error_msg = f'店铺 {shop_name} 添加失败'
+        if is_ajax:
+            return jsonify({'success': False, 'message': error_msg})
+        flash(error_msg, 'error')
+    
+    if is_ajax:
+        return jsonify({'success': True, 'message': '操作完成'})
+    return redirect(url_for('admin.shop_management'))
+
+@admin_bp.route('/shops/list')
+@login_required
+def list_shops():
+    """获取店铺列表API"""
+    from core.shop_model import Shop
+    
+    try:
+        shops = Shop.get_all()
+        shops_data = [shop.to_dict() for shop in shops]
+        return jsonify({'success': True, 'shops': shops_data})
+    except Exception as e:
+        print(f"获取店铺列表失败: {e}")
+        return jsonify({'success': False, 'message': '获取店铺列表失败'})
+
+@admin_bp.route('/shops/update/<int:shop_id>', methods=['POST'])
+@login_required
+def update_shop(shop_id):
+    """更新店铺信息"""
+    shop_name = request.form.get('shop_name')
+    shop_url = request.form.get('shop_url')
+    
+    # 检查是否是AJAX请求
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    if not shop_name or not shop_url:
+        error_msg = '店铺名称和链接不能为空'
+        if is_ajax:
+            return jsonify({'success': False, 'message': error_msg})
+        flash(error_msg, 'error')
+        return redirect(url_for('admin.shop_management'))
+    
+    # 验证URL格式
+    from core.shop_model import Shop
+    if not Shop.validate_shop_url(shop_url):
+        error_msg = '请输入有效的URL（以http://或https://开头）'
+        if is_ajax:
+            return jsonify({'success': False, 'message': error_msg})
+        flash(error_msg, 'error')
+        return redirect(url_for('admin.shop_management'))
+    
+    # 获取店铺并更新
+    shop = Shop.get_by_id(shop_id)
+    if not shop:
+        error_msg = '店铺不存在'
+        if is_ajax:
+            return jsonify({'success': False, 'message': error_msg})
+        flash(error_msg, 'error')
+        return redirect(url_for('admin.shop_management'))
+    
+    old_name = shop.shop_name
+    old_url = shop.shop_url
+    
+    success = shop.update(shop_name, shop_url)
+    if success:
+        # 记录更新店铺成功日志
+        LogService.log(
+            action="更新店铺信息",
+            resource=f"店铺: {old_name}",
+            details=f"原名称: {old_name}, 原链接: {old_url}\n新名称: {shop_name}, 新链接: {shop_url}",
+            log_type="user",
+            level="info"
+        )
+        success_msg = f'店铺信息更新成功'
+        if is_ajax:
+            return jsonify({'success': True, 'message': success_msg})
+        flash(success_msg, 'success')
+    else:
+        # 记录更新店铺失败日志
+        LogService.log(
+            action="更新店铺信息失败",
+            resource=f"店铺: {old_name}",
+            details=f"原名称: {old_name}, 原链接: {old_url}\n新名称: {shop_name}, 新链接: {shop_url}",
+            log_type="user",
+            level="error"
+        )
+        error_msg = f'店铺信息更新失败'
+        if is_ajax:
+            return jsonify({'success': False, 'message': error_msg})
+        flash(error_msg, 'error')
+    
+    if is_ajax:
+        return jsonify({'success': True, 'message': '操作完成'})
+    return redirect(url_for('admin.shop_management'))
+
+@admin_bp.route('/shops/delete/<int:shop_id>', methods=['POST'])
+@login_required
+def delete_shop(shop_id):
+    """删除店铺"""
+    # 获取要删除的店铺信息
+    from core.shop_model import Shop
+    shop = Shop.get_by_id(shop_id)
+    if not shop:
+        error_msg = '店铺不存在'
+        # 检查是否是AJAX请求
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            return jsonify({'success': False, 'message': error_msg})
+        flash(error_msg, 'error')
+        return redirect(url_for('admin.shop_management'))
+    
+    shop_name = shop.shop_name
+    shop_url = shop.shop_url
+    
+    result = shop.delete()
+    if result:
+        # 记录删除店铺成功日志
+        LogService.log(
+            action="删除店铺",
+            resource=f"店铺: {shop_name}",
+            details=f"店铺链接: {shop_url}",
+            log_type="user",
+            level="info"
+        )
+        success_msg = '店铺删除成功'
+        # 检查是否是AJAX请求
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            return jsonify({'success': True, 'message': success_msg})
+        flash(success_msg, 'success')
+    else:
+        # 记录删除店铺失败日志
+        LogService.log(
+            action="删除店铺失败",
+            resource=f"店铺: {shop_name}",
+            details=f"店铺链接: {shop_url}",
+            log_type="user",
+            level="error"
+        )
+        error_msg = '店铺删除失败'
+        # 检查是否是AJAX请求
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if is_ajax:
+            return jsonify({'success': False, 'message': error_msg})
+        flash(error_msg, 'error')
+    
+    # 检查是否是AJAX请求
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax:
+        return jsonify({'success': True, 'message': '操作完成'})
+    return redirect(url_for('admin.shop_management'))

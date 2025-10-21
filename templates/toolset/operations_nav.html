@@ -1,0 +1,313 @@
+<div class="operations-nav-container">
+    <div class="nav-header">
+        <h2><i class="fas fa-compass"></i> 运营导航</h2>
+        <p>快速访问常用运营站点</p>
+    </div>
+    
+    <div class="sites-grid">
+        <!-- 亚马逊站点 -->
+        <div class="site-category">
+            <div class="category-title">
+                <i class="fab fa-amazon"></i>
+                <h3>亚马逊</h3>
+            </div>
+            <div class="site-cards">
+                <div class="site-card">
+                    <a href="https://www.amazon.com" target="_blank" class="card-link">
+                        <div class="card-icon">
+                            <i class="fab fa-amazon"></i>
+                        </div>
+                        <div class="card-content">
+                            <h4>亚马逊美国</h4>
+                            <p>美国站主页</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="site-card">
+                    <a href="https://www.amazon.com/gp/new-releases" target="_blank" class="card-link">
+                        <div class="card-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="card-content">
+                            <h4>美国-新品榜</h4>
+                            <p>查看最新热门产品</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="site-card">
+                    <a href="https://www.amazon.com/gp/bestsellers" target="_blank" class="card-link">
+                        <div class="card-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="card-content">
+                            <h4>美国-热销榜</h4>
+                            <p>查看最畅销产品</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="site-card">
+                    <a href="https://www.amazon.ca" target="_blank" class="card-link">
+                        <div class="card-icon">
+                            <i class="fab fa-amazon"></i>
+                        </div>
+                        <div class="card-content">
+                            <h4>亚马逊加拿大</h4>
+                            <p>加拿大站主页</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="site-card">
+                    <a href="https://www.amazon.co.uk" target="_blank" class="card-link">
+                        <div class="card-icon">
+                            <i class="fab fa-amazon"></i>
+                        </div>
+                        <div class="card-content">
+                            <h4>亚马逊英国</h4>
+                            <p>英国站主页</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="site-card">
+                    <a href="https://www.amazon.co.jp" target="_blank" class="card-link">
+                        <div class="card-icon">
+                            <i class="fab fa-amazon"></i>
+                        </div>
+                        <div class="card-content">
+                            <h4>亚马逊日本</h4>
+                            <p>日本站主页</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 其他电商平台 -->
+        <div class="site-category">
+            <div class="category-title">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>其他平台</h3>
+            </div>
+            <div class="site-cards">
+                <div class="site-card">
+                    <a href="https://www.walmart.com" target="_blank" class="card-link">
+                        <div class="card-icon">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <div class="card-content">
+                            <h4>沃尔玛</h4>
+                            <p>沃尔玛官网</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="site-card">
+                    <a href="https://www.temu.com" target="_blank" class="card-link">
+                        <div class="card-icon">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <div class="card-content">
+                            <h4>TEMU</h4>
+                            <p>TEMU购物平台</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="site-card">
+                    <a href="https://www.shein.com" target="_blank" class="card-link">
+                        <div class="card-icon">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+                        <div class="card-content">
+                            <h4>SHEIN</h4>
+                            <p>SHEIN时尚平台</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.operations-nav-container {
+    padding: 20px;
+    color: var(--text-primary);
+}
+
+.nav-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.nav-header h2 {
+    font-size: 2rem;
+    margin-bottom: 5px;
+    background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.nav-header p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.sites-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.site-category {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 15px;
+    padding: 25px;
+    transition: all var(--transition-normal) ease;
+}
+
+.site-category:hover {
+    border-color: var(--neon-blue);
+    box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+}
+
+.category-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.category-title i {
+    font-size: 2em;
+    background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.category-title h3 {
+    margin: 0;
+    font-size: 1.8em;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.site-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.site-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.site-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(157, 78, 221, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.site-card:hover {
+    border-color: var(--neon-blue);
+    box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
+}
+
+.site-card:hover::before {
+    opacity: 1;
+}
+
+.card-link {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    text-decoration: none;
+    color: var(--text-primary);
+    position: relative;
+    z-index: 1;
+}
+
+.card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 255, 136, 0.2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.card-icon i {
+    font-size: 24px;
+    color: var(--neon-blue);
+}
+
+.card-content h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.card-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .nav-header h2 {
+        font-size: 2rem;
+    }
+    
+    .site-cards {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    
+    .card-link {
+        padding: 15px;
+    }
+    
+    .card-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .card-icon i {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .site-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .card-link {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .card-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+}
+</style>

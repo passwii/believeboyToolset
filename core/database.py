@@ -54,6 +54,19 @@ def init_db():
         )
     ''')
     
+    # 创建店铺表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS shops (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            shop_name TEXT NOT NULL,
+            shop_url TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by INTEGER,
+            FOREIGN KEY (created_by) REFERENCES users (id)
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -230,6 +243,88 @@ def clean_old_logs(days_to_keep=30):
     except Exception as e:
         print(f"清理旧日志失败: {e}")
         return 0
+    finally:
+        conn.close()
+
+# 店铺相关操作函数
+def add_shop(shop_name, shop_url, created_by=None):
+    """添加新店铺"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(
+            'INSERT INTO shops (shop_name, shop_url, created_by) VALUES (?, ?, ?)',
+            (shop_name, shop_url, created_by)
+        )
+        conn.commit()
+        return cursor.lastrowid  # 返回新插入记录的ID
+    except Exception as e:
+        print(f"添加店铺失败: {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_all_shops():
+    """获取所有店铺"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('SELECT * FROM shops ORDER BY created_at DESC')
+        shops = cursor.fetchall()
+        return shops
+    except Exception as e:
+        print(f"获取店铺列表失败: {e}")
+        return []
+    finally:
+        conn.close()
+
+def get_shop_by_id(shop_id):
+    """根据ID获取店铺信息"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('SELECT * FROM shops WHERE id = ?', (shop_id,))
+        shop = cursor.fetchone()
+        return shop
+    except Exception as e:
+        print(f"获取店铺信息失败: {e}")
+        return None
+    finally:
+        conn.close()
+
+def update_shop(shop_id, shop_name, shop_url):
+    """更新店铺信息"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(
+            'UPDATE shops SET shop_name = ?, shop_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            (shop_name, shop_url, shop_id)
+        )
+        conn.commit()
+        return cursor.rowcount > 0  # 返回是否成功更新
+    except Exception as e:
+        print(f"更新店铺信息失败: {e}")
+        return False
+    finally:
+        conn.close()
+
+def delete_shop(shop_id):
+    """删除店铺"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('DELETE FROM shops WHERE id = ?', (shop_id,))
+        conn.commit()
+        return cursor.rowcount > 0  # 返回是否成功删除
+    except Exception as e:
+        print(f"删除店铺失败: {e}")
+        return False
     finally:
         conn.close()
 

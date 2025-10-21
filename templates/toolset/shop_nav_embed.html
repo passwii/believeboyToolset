@@ -1,0 +1,327 @@
+<div class="shop-nav-container">
+    <div class="nav-header">
+        <h2>Hi，{{ chinese_name if chinese_name else session.username }}</h2>
+        <p>快速访问您的店铺</p>
+    </div>
+    
+    <div class="shops-grid" id="shops-nav-grid">
+        <!-- 店铺卡片将通过JavaScript动态加载 -->
+        <div class="loading-shops">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>正在加载店铺信息...</span>
+        </div>
+    </div>
+</div>
+
+<style>
+.shop-nav-container {
+    padding: 20px;
+    color: var(--text-primary);
+}
+
+.nav-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.nav-header h2 {
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+    background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.nav-header p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.shops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.shop-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    transition: all var(--transition-normal) ease;
+    cursor: pointer;
+}
+
+.shop-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(157, 78, 221, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.shop-card:hover {
+    border-color: var(--neon-blue);
+    box-shadow: 0 15px 35px rgba(0, 212, 255, 0.3);
+    transform: translateY(-8px);
+}
+
+.shop-card:hover::before {
+    opacity: 1;
+}
+
+.shop-link {
+    display: flex;
+    align-items: center;
+    padding: 25px;
+    text-decoration: none;
+    color: var(--text-primary);
+    position: relative;
+    z-index: 1;
+}
+
+.shop-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 255, 136, 0.2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    flex-shrink: 0;
+    transition: all var(--transition-normal) ease;
+}
+
+.shop-card:hover .shop-icon {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(0, 255, 136, 0.3));
+}
+
+.shop-icon i {
+    font-size: 30px;
+    color: var(--neon-blue);
+}
+
+.shop-content {
+    flex: 1;
+}
+
+.shop-content h4 {
+    margin: 0 0 8px 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    transition: color var(--transition-normal) ease;
+}
+
+.shop-card:hover .shop-content h4 {
+    color: var(--neon-blue);
+}
+
+.shop-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    word-break: break-all;
+}
+
+.shop-link-arrow {
+    margin-left: 15px;
+    color: var(--text-secondary);
+    transition: all var(--transition-normal) ease;
+}
+
+.shop-card:hover .shop-link-arrow {
+    color: var(--neon-blue);
+    transform: translateX(5px);
+}
+
+.loading-shops {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px;
+    color: var(--text-secondary);
+}
+
+.loading-shops i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.empty-shops {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px;
+    color: var(--text-secondary);
+}
+
+.empty-shops i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    color: var(--neon-blue);
+    opacity: 0.5;
+}
+
+.empty-shops h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+
+.empty-shops p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .nav-header h2 {
+        font-size: 2rem;
+    }
+    
+    .shops-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .shop-link {
+        padding: 20px;
+    }
+    
+    .shop-icon {
+        width: 60px;
+        height: 60px;
+        margin-right: 15px;
+    }
+    
+    .shop-icon i {
+        font-size: 24px;
+    }
+    
+    .shop-content h4 {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .shops-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .shop-link {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .shop-icon {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    
+    .shop-link-arrow {
+        display: none;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadShops();
+});
+
+// 加载店铺列表
+function loadShops() {
+    const shopsGrid = document.getElementById('shops-nav-grid');
+    
+    // 显示加载状态
+    shopsGrid.innerHTML = `
+        <div class="loading-shops">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>正在加载店铺信息...</span>
+        </div>
+    `;
+    
+    // 发送AJAX请求获取店铺列表
+    fetch('/toolset/shops/list')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderShops(data.shops);
+            } else {
+                showError('加载店铺列表失败');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('加载店铺列表失败，请重试');
+        });
+}
+
+// 渲染店铺列表
+function renderShops(shops) {
+    const shopsGrid = document.getElementById('shops-nav-grid');
+    
+    if (shops.length === 0) {
+        shopsGrid.innerHTML = `
+            <div class="empty-shops">
+                <i class="fas fa-store-slash"></i>
+                <h3>暂无店铺信息</h3>
+                <p>请联系管理员添加店铺信息</p>
+            </div>
+        `;
+        return;
+    }
+    
+    shopsGrid.innerHTML = shops.map(shop => `
+        <div class="shop-card">
+            <a href="${escapeHtml(shop.shop_url)}" target="_blank" class="shop-link">
+                <div class="shop-icon">
+                    <i class="fas fa-store"></i>
+                </div>
+                <div class="shop-content">
+                    <h4>${escapeHtml(shop.shop_name)}</h4>
+                    <p>${escapeHtml(shop.shop_url)}</p>
+                </div>
+                <div class="shop-link-arrow">
+                    <i class="fas fa-external-link-alt"></i>
+                </div>
+            </a>
+        </div>
+    `).join('');
+}
+
+// 显示错误信息
+function showError(message) {
+    const shopsGrid = document.getElementById('shops-nav-grid');
+    shopsGrid.innerHTML = `
+        <div class="empty-shops">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>加载失败</h3>
+            <p>${message}</p>
+            <button class="btn btn-primary" onclick="loadShops()">
+                <i class="fas fa-redo"></i> 重试
+            </button>
+        </div>
+    `;
+}
+
+// 工具函数：转义HTML
+function escapeHtml(text) {
+    const map = {
+        '&': '&',
+        '<': '<',
+        '>': '>',
+        '"': '"',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+</script>
