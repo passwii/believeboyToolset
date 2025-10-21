@@ -1,50 +1,36 @@
-<!DOCTYPE html>
-<html lang="cn">
+<div class="container">
+    <h1>Amazon Monthly Report 
+        <br>月报（财报）</h1>
+    <form id="monthly-report-form" action="{{ url_for('dataset.monthly_report.monthly_report') }}" method="POST" enctype="multipart/form-data">
+        <label for="project_name">项目名称:</label>
+        <select name="project_name" id="project_name" required>
+            <option value="">请选择项目</option>
+            {% for project in projects %}
+            <option value="{{ project }}">{{ project }}</option>
+            {% endfor %}
+        </select>
+        
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amazon 月报</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='modern-dataset.css') }}">
-</head>
-
-<body>
-    <div class="container">
-        <h1>Amazon Monthly Report 
-            <br>月报（财报）</h1>
-        <form action="{{ url_for('dataset.monthly_report') }}" method="POST" enctype="multipart/form-data">
-            <label for="project_name">项目名称:</label>
-            <select name="project_name" id="project_name" required>
-                <option value="">请选择项目</option>
-                {% for project in projects %}
-                <option value="{{ project }}">{{ project }}</option>
-                {% endfor %}
-            </select>
+        <label for="report_date">报表日期:</label>
+        <select name="report_date" id="report_date" required>
+            <option value="">请选择日期</option>
+            <option value="2025-07">2025-07</option>
+            <option value="2025-08">2025-08</option>
+            <option value="2025-09">2025-09</option>
+            <option value="2025-10">2025-10</option>
+            <option value="2025-11">2025-11</option>
+            <option value="2025-12">2025-12</option>
+            <option value="2026-01">2026-01</option>
+            <option value="2026-02">2026-02</option>
+            <option value="2026-03">2026-03</option>
             
+        </select>
 
-            <label for="report_date">报表日期:</label>
-            <select name="report_date" id="report_date" required>
-                <option value="">请选择日期</option>
-                <option value="2025-07">2025-07</option>
-                <option value="2025-08">2025-08</option>
-                <option value="2025-09">2025-09</option>
-                <option value="2025-10">2025-10</option>
-                <option value="2025-11">2025-11</option>
-                <option value="2025-12">2025-12</option>
-                <option value="2026-01">2026-01</option>
-                <option value="2026-02">2026-02</option>
-                <option value="2026-03">2026-03</option>
-                
-            </select>
+        <label for="payment_range_report">付款报告:
+            <a href="{{ url_for('help.payment_report') }}" target="_blank" class="help-icon">?</a>
+        </label>
+        <input type="file" name="payment_range_report" accept=".csv" required>
 
-            <label for="payment_range_report">付款报告:
-                <a href="{{ url_for('help.payment_report') }}" target="_blank" class="help-icon">?</a>
-            </label>
-            <input type="file" name="payment_range_report" accept=".csv" required>
-
-            <button type="submit">生成月报</button>
-        </form>
-    </div>
-</body>
-
-</html>
+        <button type="submit">生成月报</button>
+    </form>
+</div>

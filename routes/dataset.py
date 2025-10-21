@@ -19,13 +19,15 @@ def daily_report():
         log_type="user",
         level="info"
     )
-    
-    # 读取项目名称
+    # 获取项目列表
+    projects_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'apps', 'model_file', 'projects.csv')
     projects = []
-    projects_file = os.path.join('apps', 'model_file', 'projects.csv')
-    if os.path.exists(projects_file):
-        df = pd.read_csv(projects_file)
-        projects = df['项目名称'].tolist()
+    if os.path.exists(projects_path):
+        try:
+            projects_df = pd.read_csv(projects_path)
+            projects = projects_df['项目名称'].tolist()
+        except Exception as e:
+            print(f"读取项目列表失败: {e}")
     
     return render_template('dataset/daily_report.html', projects=projects)
 
@@ -39,19 +41,21 @@ def monthly_report():
         log_type="user",
         level="info"
     )
-    
-    # 读取项目名称
+    # 获取项目列表
+    projects_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'apps', 'model_file', 'projects.csv')
     projects = []
-    projects_file = os.path.join('apps', 'model_file', 'projects.csv')
-    if os.path.exists(projects_file):
-        df = pd.read_csv(projects_file)
-        projects = df['项目名称'].tolist()
+    if os.path.exists(projects_path):
+        try:
+            projects_df = pd.read_csv(projects_path)
+            projects = projects_df['项目名称'].tolist()
+        except Exception as e:
+            print(f"读取项目列表失败: {e}")
     
     return render_template('dataset/monthly_report.html', projects=projects)
 
 @dataset_bp.route('/product-analysis')
 @login_required
-def product_analysis_page():
+def product_analysis():
     # 记录访问产品分析页面日志
     LogService.log(
         action="访问产品分析页面",
@@ -59,13 +63,15 @@ def product_analysis_page():
         log_type="user",
         level="info"
     )
-    
-    # 读取项目名称
+    # 获取项目列表
+    projects_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'apps', 'model_file', 'projects.csv')
     projects = []
-    projects_file = os.path.join('apps', 'model_file', 'projects.csv')
-    if os.path.exists(projects_file):
-        df = pd.read_csv(projects_file)
-        projects = df['项目名称'].tolist()
+    if os.path.exists(projects_path):
+        try:
+            projects_df = pd.read_csv(projects_path)
+            projects = projects_df['项目名称'].tolist()
+        except Exception as e:
+            print(f"读取项目列表失败: {e}")
     
     return render_template('dataset/product_analysis.html', projects=projects)
 
@@ -81,71 +87,7 @@ def timeline():
     )
     return render_template('dataset/timeline.html')
 
-# 添加用于在主页内显示日报内容的路由
-@dataset_bp.route('/daily-report-content')
-@login_required
-def daily_report_content():
-    # 记录访问日报页面日志
-    LogService.log(
-        action="访问日报内容",
-        resource="数据集",
-        log_type="user",
-        level="info"
-    )
-    
-    # 读取项目名称
-    projects = []
-    projects_file = os.path.join('apps', 'model_file', 'projects.csv')
-    if os.path.exists(projects_file):
-        df = pd.read_csv(projects_file)
-        projects = df['项目名称'].tolist()
-    
-    # 返回日报内容的部分HTML
-    return render_template('dataset/daily_report_content.html', projects=projects)
 
-# 添加用于在主页内显示月报内容的路由
-@dataset_bp.route('/monthly-report-content')
-@login_required
-def monthly_report_content():
-    # 记录访问月报页面日志
-    LogService.log(
-        action="访问月报内容",
-        resource="数据集",
-        log_type="user",
-        level="info"
-    )
-    
-    # 读取项目名称
-    projects = []
-    projects_file = os.path.join('apps', 'model_file', 'projects.csv')
-    if os.path.exists(projects_file):
-        df = pd.read_csv(projects_file)
-        projects = df['项目名称'].tolist()
-    
-    # 返回月报内容的部分HTML
-    return render_template('dataset/monthly_report_content.html', projects=projects)
-
-# 添加用于在主页内显示产品分析内容的路由
-@dataset_bp.route('/product-analysis-content')
-@login_required
-def product_analysis_content():
-    # 记录访问产品分析页面日志
-    LogService.log(
-        action="访问产品分析内容",
-        resource="数据集",
-        log_type="user",
-        level="info"
-    )
-    
-    # 读取项目名称
-    projects = []
-    projects_file = os.path.join('apps', 'model_file', 'projects.csv')
-    if os.path.exists(projects_file):
-        df = pd.read_csv(projects_file)
-        projects = df['项目名称'].tolist()
-    
-    # 返回产品分析内容的部分HTML
-    return render_template('dataset/product_analysis_content.html', projects=projects)
 
 # 注册子蓝图
 dataset_bp.register_blueprint(daily_report_bp)

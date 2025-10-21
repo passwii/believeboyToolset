@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from datetime import datetime, timedelta
 
 # 数据库文件路径
 DB_PATH = 'users.db'
@@ -134,11 +135,15 @@ def add_log(user_id, username, action, resource=None, details=None,
     cursor = conn.cursor()
     
     try:
+        # 获取北京时间 (UTC+8)
+        beijing_time = datetime.utcnow() + timedelta(hours=8)
+        timestamp_str = beijing_time.strftime('%Y-%m-%d %H:%M:%S')
+        
         cursor.execute(
             '''INSERT INTO logs
-               (user_id, username, action, resource, details, ip_address, user_agent, log_type, level)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-            (user_id, username, action, resource, details, ip_address, user_agent, log_type, level)
+               (timestamp, user_id, username, action, resource, details, ip_address, user_agent, log_type, level)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            (timestamp_str, user_id, username, action, resource, details, ip_address, user_agent, log_type, level)
         )
         conn.commit()
         return True

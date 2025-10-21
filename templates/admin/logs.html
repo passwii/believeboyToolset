@@ -4,25 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>系统日志</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='cyber-theme.css') }}">
     <style>
-        :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --card-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            --success-color: #4CAF50;
-            --warning-color: #FF9800;
-            --error-color: #F44336;
-            --info-color: #2196F3;
-            --debug-color: #9E9E9E;
-            --critical-color: #B71C1C;
-            --transition-duration: 0.3s;
-            --shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.2);
-        }
-
+        /* 赛博朋克日志页面样式 */
         body {
-            background: linear-gradient(135deg, #e6f3ff 0%, #ffffff 100%);
+            background: linear-gradient(135deg, var(--deep-space-1) 0%, var(--deep-space-2) 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
@@ -31,7 +17,7 @@
 
         .logs-container {
             max-width: 1400px;
-            margin: 20px auto;
+            margin: 100px auto 20px;
             padding: 20px;
         }
 
@@ -41,19 +27,32 @@
             align-items: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: var(--card-gradient);
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(15px);
             border-radius: 16px;
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logs-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(157, 78, 221, 0.05) 100%);
+            z-index: -1;
         }
 
         .logs-header h1 {
-            color: #2c3e50;
+            color: var(--text-primary);
             margin: 0;
             font-size: 2.2em;
             font-weight: 600;
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -67,30 +66,43 @@
 
         .back-link {
             padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.8);
-            color: #667eea;
+            background: rgba(26, 26, 46, 0.8);
+            color: var(--neon-blue);
             text-decoration: none;
             border-radius: 25px;
             font-weight: 500;
-            transition: all var(--transition-duration) ease;
-            border: 1px solid rgba(102, 126, 234, 0.3);
+            transition: all var(--transition-normal) ease;
+            border: 1px solid rgba(0, 212, 255, 0.3);
         }
 
         .back-link:hover {
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
         }
 
         .filter-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(15px);
             border-radius: 16px;
             padding: 25px;
             margin-bottom: 30px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .filter-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(157, 78, 221, 0.05) 100%);
+            z-index: -1;
         }
 
         .filter-form {
@@ -108,7 +120,7 @@
 
         .filter-group label {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-secondary);
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -116,18 +128,29 @@
 
         .filter-form select, .filter-form input {
             padding: 12px 15px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
             font-size: 14px;
-            transition: all var(--transition-duration) ease;
+            transition: all var(--transition-normal) ease;
             min-width: 150px;
+            color: var(--text-primary);
+        }
+        
+        /* 修复下拉菜单选项颜色问题 */
+        .filter-form select option {
+            background-color: var(--deep-space-2);
+            color: var(--text-primary);
         }
 
         .filter-form select:focus, .filter-form input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+        
+        .filter-form input::placeholder {
+            color: var(--text-secondary);
         }
 
         .filter-actions {
@@ -138,47 +161,59 @@
 
         .filter-form button {
             padding: 12px 25px;
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
             color: white;
             border: none;
             border-radius: 25px;
             cursor: pointer;
             font-weight: 500;
-            transition: all var(--transition-duration) ease;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: all var(--transition-normal) ease;
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
         }
 
         .filter-form button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.5);
         }
 
         .reset-btn {
             padding: 12px 25px;
-            background: rgba(255, 255, 255, 0.8);
-            color: #667eea;
-            border: 1px solid rgba(102, 126, 234, 0.3);
+            background: rgba(26, 26, 46, 0.8);
+            color: var(--neon-blue);
+            border: 1px solid rgba(0, 212, 255, 0.3);
             border-radius: 25px;
             cursor: pointer;
             font-weight: 500;
-            transition: all var(--transition-duration) ease;
+            transition: all var(--transition-normal) ease;
             text-decoration: none;
             display: inline-block;
         }
 
         .reset-btn:hover {
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(0, 212, 255, 0.1);
             transform: translateY(-2px);
         }
 
         .logs-table-container {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(15px);
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
             margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .logs-table-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(157, 78, 221, 0.05) 100%);
+            z-index: -1;
         }
 
         .logs-table {
@@ -188,29 +223,30 @@
         }
 
         .logs-table th {
-            background: var(--card-gradient);
+            background: rgba(26, 26, 46, 0.9);
             padding: 15px 12px;
             text-align: left;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--neon-blue);
             position: sticky;
             top: 0;
             z-index: 10;
-            border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
         }
 
         .logs-table td {
             padding: 12px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
             vertical-align: top;
+            color: var(--text-primary);
         }
 
         .logs-table tbody tr {
-            transition: all var(--transition-duration) ease;
+            transition: all var(--transition-normal) ease;
         }
 
         .logs-table tbody tr:hover {
-            background: rgba(102, 126, 234, 0.05);
+            background: rgba(0, 212, 255, 0.1);
         }
 
         .log-level-badge {
@@ -224,28 +260,34 @@
 
         .log-level-debug {
             background: rgba(158, 158, 158, 0.2);
-            color: var(--debug-color);
+            color: #9E9E9E;
+            border: 1px solid rgba(158, 158, 158, 0.3);
         }
 
         .log-level-info {
-            background: rgba(33, 150, 243, 0.2);
-            color: var(--info-color);
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--neon-blue);
+            border: 1px solid rgba(0, 212, 255, 0.3);
         }
 
         .log-level-warning {
-            background: rgba(255, 152, 0, 0.2);
+            background: rgba(255, 170, 0, 0.2);
             color: var(--warning-color);
+            border: 1px solid rgba(255, 170, 0, 0.3);
         }
 
         .log-level-error {
-            background: rgba(244, 67, 54, 0.2);
+            background: rgba(255, 0, 110, 0.2);
             color: var(--error-color);
+            border: 1px solid rgba(255, 0, 110, 0.3);
         }
 
         .log-level-critical {
-            background: rgba(183, 28, 28, 0.2);
-            color: var(--critical-color);
+            background: rgba(255, 0, 110, 0.3);
+            color: var(--error-color);
             font-weight: bold;
+            border: 1px solid rgba(255, 0, 110, 0.5);
+            box-shadow: 0 0 5px rgba(255, 0, 110, 0.3);
         }
 
         .log-type-badge {
@@ -257,18 +299,21 @@
         }
 
         .log-type-user {
-            background: rgba(102, 126, 234, 0.2);
-            color: #667eea;
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--neon-blue);
+            border: 1px solid rgba(0, 212, 255, 0.3);
         }
 
         .log-type-system {
-            background: rgba(255, 152, 0, 0.2);
+            background: rgba(255, 170, 0, 0.2);
             color: var(--warning-color);
+            border: 1px solid rgba(255, 170, 0, 0.3);
         }
 
         .log-type-security {
-            background: rgba(244, 67, 54, 0.2);
+            background: rgba(255, 0, 110, 0.2);
             color: var(--error-color);
+            border: 1px solid rgba(255, 0, 110, 0.3);
         }
 
         .log-details {
@@ -281,31 +326,44 @@
         .timestamp {
             font-family: 'Courier New', monospace;
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .pagination-info {
             text-align: center;
             padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(15px);
             border-radius: 16px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            color: #6c757d;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: var(--text-secondary);
             font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pagination-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(157, 78, 221, 0.05) 100%);
+            z-index: -1;
         }
 
         .clear-logs-btn {
             padding: 10px 20px;
-            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            background: linear-gradient(135deg, var(--error-color) 0%, #d32f2f 100%);
             color: white;
             border: none;
             border-radius: 25px;
             cursor: pointer;
             font-weight: 500;
-            transition: all var(--transition-duration) ease;
-            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+            transition: all var(--transition-normal) ease;
+            box-shadow: 0 5px 15px rgba(255, 0, 110, 0.4);
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -313,7 +371,7 @@
 
         .clear-logs-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(244, 67, 54, 0.4);
+            box-shadow: 0 8px 20px rgba(255, 0, 110, 0.5);
         }
 
         .clear-logs-form {
@@ -325,10 +383,17 @@
         .clear-logs-form input {
             width: 80px;
             padding: 8px 12px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
             font-size: 14px;
+            color: var(--text-primary);
+        }
+        
+        .clear-logs-form input:focus {
+            outline: none;
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
         }
 
         .flash-messages {
@@ -346,13 +411,13 @@
         }
 
         .flash-success {
-            background: rgba(76, 175, 80, 0.2);
+            background: rgba(0, 255, 136, 0.1);
             color: var(--success-color);
             border-left: 4px solid var(--success-color);
         }
 
         .flash-error {
-            background: rgba(244, 67, 54, 0.2);
+            background: rgba(255, 0, 110, 0.1);
             color: var(--error-color);
             border-left: 4px solid var(--error-color);
         }
@@ -360,24 +425,30 @@
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .empty-state-icon {
             font-size: 48px;
             margin-bottom: 20px;
             opacity: 0.5;
+            color: var(--neon-blue);
         }
 
         .empty-state h3 {
             margin: 0 0 10px 0;
-            color: #6c757d;
+            color: var(--text-primary);
+        }
+        
+        .empty-state p {
+            color: var(--text-secondary);
         }
 
         /* 响应式设计 */
         @media (max-width: 768px) {
             .logs-container {
                 padding: 10px;
+                margin: 80px 10px 10px;
             }
 
             .logs-header {
@@ -509,7 +580,7 @@
                 <tbody>
                     {% for log in logs %}
                     <tr>
-                        <td class="timestamp">{{ log.timestamp }}</td>
+                        <td class="timestamp">{{ log.timestamp | beijing_time }} (北京时间)</td>
                         <td>{{ log.username or '-' }}</td>
                         <td>{{ log.action }}</td>
                         <td>{{ log.resource or '-' }}</td>

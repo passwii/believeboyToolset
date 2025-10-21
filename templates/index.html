@@ -14,20 +14,25 @@
 <body>
     <!-- 顶部标题栏 -->
     <header class="cyber-header">
-        <h1 class="site-title">彼励扶运营中心</h1>
+        <h1 class="site-title"><a href="{{ url_for('main.home') }}" class="site-title-link">彼励扶运营中心</a></h1>
         <div class="user-container">
-            <div class="user-info">
-                <div class="user-avatar">{{ session.username[0]|upper }}</div>
-                <span class="user-name">{{ session.username }}</span>
-            </div>
-            <div class="user-actions">
-                <a href="{{ url_for('auth.change_password') }}" class="change-password-btn" title="修改密码">
-                    <i class="fas fa-key"></i>
-                </a>
-                <a href="{{ url_for('auth.logout') }}" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>注销</span>
-                </a>
+            <div class="user-dropdown">
+                <div class="user-info" id="user-dropdown-toggle">
+                    <div class="user-avatar">{{ session.username[0]|upper }}</div>
+                    <span class="user-name">{{ session.username }}</span>
+                    <i class="fas fa-chevron-down dropdown-arrow"></i>
+                </div>
+                <div class="dropdown-menu" id="user-dropdown-menu">
+                    <a href="{{ url_for('auth.change_password') }}" class="dropdown-item">
+                        <i class="fas fa-key"></i>
+                        <span>修改密码</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ url_for('auth.logout') }}" class="dropdown-item logout-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>注销</span>
+                    </a>
+                </div>
             </div>
         </div>
     </header>

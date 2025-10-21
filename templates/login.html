@@ -6,46 +6,90 @@
     <title>登录 - 彼励扶工具集</title>
     <link rel="icon" href="{{ url_for('static', filename='images/logo-i.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='tools.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='modern-tools.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='cyber-theme.css') }}">
     <style>
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* 隐藏滚动条 */
-            background: linear-gradient(135deg, #e6f3ff 0%, #ffffff 100%);
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--deep-space-1) 0%, var(--deep-space-2) 100%);
         }
         
         .login-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh; /* 使用 height 而不是 min-height */
+            height: 100vh;
             padding: 20px;
+            position: relative;
+        }
+        
+        /* 添加背景动画效果 */
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(157, 78, 221, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 0, 110, 0.05) 0%, transparent 50%);
+            z-index: 0;
         }
         
         .login-card {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(15px);
             border-radius: 16px;
             padding: 40px;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             text-align: center;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        /* 添加内部光效 */
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+            animation: scanLine 3s linear infinite;
+        }
+        
+        @keyframes scanLine {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(400px); }
         }
         
         .login-card:hover {
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 212, 255, 0.3);
+            border-color: var(--neon-blue);
         }
         
         .login-card h2 {
             margin-bottom: 30px;
-            color: #2c3e50;
+            color: var(--text-primary);
             font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
         
         .form-group {
@@ -56,49 +100,81 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #2c3e50;
-            font-weight: 500;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 14px;
         }
         
         .form-group input {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid #ddd;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
             border-radius: 8px;
+            color: var(--text-primary);
             font-size: 16px;
             box-sizing: border-box;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
         }
         
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
         
         .btn-login {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 25px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
             margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
         }
         
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+        }
+        
+        .btn-login:hover::before {
+            left: 100%;
         }
         
         .error-message {
-            color: #e74c3c;
+            color: var(--error-color);
             margin-top: 15px;
             font-size: 14px;
+            padding: 10px;
+            background: rgba(255, 0, 110, 0.1);
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            border-radius: 8px;
+            display: inline-block;
         }
         
         .login-logo {
@@ -107,7 +183,20 @@
         
         .login-logo i {
             font-size: 48px;
-            color: #667eea;
+            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: neonPulse 2s infinite alternate;
+        }
+        
+        @keyframes neonPulse {
+            0% {
+                filter: drop-shadow(0 0 5px var(--neon-blue));
+            }
+            100% {
+                filter: drop-shadow(0 0 20px var(--neon-blue)) drop-shadow(0 0 30px var(--neon-purple));
+            }
         }
     </style>
 </head>
@@ -121,16 +210,18 @@
             <form id="loginForm" method="POST">
                 <div class="form-group">
                     <label for="username">用户名</label>
-                    <input type="text" id="username" name="username" required>
+                    <input type="text" id="username" name="username" placeholder="请输入用户名" required>
                 </div>
                 <div class="form-group">
                     <label for="password">密码</label>
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password" placeholder="请输入密码" required>
                 </div>
-                <button type="submit" class="btn-login">登录</button>
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i> 登录
+                </button>
                 {% if error %}
                 <div class="error-message">
-                    {{ error }}
+                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
                 </div>
                 {% endif %}
             </form>
@@ -148,6 +239,17 @@
                     if (e.key === 'Enter') {
                         form.submit();
                     }
+                });
+            });
+            
+            // 添加输入框聚焦效果
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'scale(1.02)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'scale(1)';
                 });
             });
         });

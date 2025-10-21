@@ -1,93 +1,35 @@
-<!DOCTYPE html>
-<html lang="cn">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amazon 日报</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='modern-dataset.css') }}">
-    <style>
-        .date-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 8px;
-        }
+<div class="container">
+    <h1>Amazon Sales Report <br>日/周报</h1>
+    <form id="daily-report-form" action="{{ url_for('dataset.daily_report.daily_report') }}" method="POST" enctype="multipart/form-data">
+        <label for="project_name">项目名称:</label>
+        <select name="project_name" id="project_name" required>
+            <option value="">请选择项目</option>
+            {% for project in projects %}
+            <option value="{{ project }}">{{ project }}</option>
+            {% endfor %}
+        </select>
         
-        .date-container input[type="date"] {
-            flex: 1;
-        }
-        
-        #yesterday-btn {
-            padding: 12px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s ease;
-            margin-top: 8px;
-        }
-        
-        #yesterday-btn:hover {
-            background-color: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-    </style>
-    </head>
 
-<body>
-    <div class="container">
-        <h1>Amazon Sales Report <br>日/周报</h1>
-        <form action="{{ url_for('dataset.daily_report') }}" method="POST" enctype="multipart/form-data">
-            <label for="project_name">项目名称:</label>
-            <select name="project_name" id="project_name" required>
-                <option value="">请选择项目</option>
-                {% for project in projects %}
-                <option value="{{ project }}">{{ project }}</option>
-                {% endfor %}
-            </select>
-            
+        <label for="report_date">报表日期:</label>
+        <div class="date-container">
+            <input type="date" name="report_date" id="report_date" required>
+            <button type="button" id="yesterday-btn">昨天</button>
+        </div>
 
-            <label for="report_date">报表日期:</label>
-            <div class="date-container">
-                <input type="date" name="report_date" id="report_date" required>
-                <button type="button" id="yesterday-btn">昨天</button>
-            </div>
+        <label for="sales_report">所有订单:
+            <a href="{{ url_for('help.orders_report_help') }}" target="_blank" class="help-icon">?</a>
+        </label>
+        <input type="file" name="sales_report" accept=".txt" required>
+        <label for="ad_report">广告报表:
+            <a href="{{ url_for('help.ad_product_report') }}" target="_blank" class="help-icon">?</a>
+        </label>
+        <input type="file" name="ad_report" accept=".xlsx" required>
 
-            <label for="sales_report">所有订单:
-                <a href="{{ url_for('help.orders_report_help') }}" target="_blank" class="help-icon">?</a>
-            </label>
-            <input type="file" name="sales_report" accept=".txt" required>
-            <label for="ad_report">广告报表:
-                <a href="{{ url_for('help.ad_product_report') }}" target="_blank" class="help-icon">?</a>
-            </label>
-            <input type="file" name="ad_report" accept=".xlsx" required>
+        <label for="fba_report">FBA库存:
+            <a href="{{ url_for('help.fba_inventory_help') }}" target="_blank" class="help-icon">?</a>
+        </label>
+        <input type="file" name="fba_report" accept=".txt" required>
 
-            <label for="fba_report">FBA库存:
-                <a href="{{ url_for('help.fba_inventory_help') }}" target="_blank" class="help-icon">?</a>
-            </label>
-            <input type="file" name="fba_report" accept=".txt" required>
-
-            <button type="submit">生成日报</button>
-        </form>
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 昨天按钮点击事件
-            const yesterdayBtn = document.getElementById('yesterday-btn');
-            yesterdayBtn.addEventListener('click', function() {
-                // 获取昨天的日期
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                
-                // 设置日期输入框的值
-                document.getElementById('report_date').value = yesterday.toISOString().split('T')[0];
-            });
-        });
-    </script>
-</body>
-
-</html>
+        <button type="submit">生成日报</button>
+    </form>
+</div>
