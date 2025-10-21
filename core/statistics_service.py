@@ -40,7 +40,6 @@ class StatisticsService:
             """)
             all_report_actions = cursor.fetchall()
             all_actions = [action['action'] for action in all_report_actions]
-            print("所有报告生成操作:", all_actions)
             
             # 根据实际日志中的操作类型构建报告类型映射
             report_types = {

@@ -61,6 +61,8 @@ body {
   align-items: center;
   padding: 0 30px;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.8);
+  transform: translateY(0); /* 确保标题栏始终显示 */
+  transition: none; /* 移除过渡动画，避免滚动时的闪烁 */
 }
 
 .site-title {
@@ -935,4 +937,41 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, var(--neon-purple) 0%, var(--neon-blue) 100%);
+}
+
+/* 空主页样式 */
+.empty-homepage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 70vh;
+    text-align: center;
+}
+
+.welcome-message {
+    animation: fadeIn 1s ease-in-out;
+}
+
+.welcome-message h2 {
+    font-size: 2.5rem;
+    color: var(--neon-blue);
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+.welcome-message p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

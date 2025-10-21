@@ -185,3 +185,51 @@ def delete_user(user_id):
     if is_ajax:
         return jsonify({'success': True, 'message': '操作完成'})
     return redirect(url_for('admin.user_management'))
+
+@admin_bp.route('/operations-info')
+@login_required
+def operations_info():
+    """运营信息页面 - 全员可见"""
+    # 记录访问运营信息页面日志
+    LogService.log(
+        action="访问运营信息页面",
+        resource="运营信息",
+        log_type="user",
+        level="info"
+    )
+    
+    # 检查是否是AJAX请求（通过查询参数判断）
+    embed = request.args.get('embed', 'false').lower() == 'true'
+    
+    if embed:
+        # 返回内嵌模板
+        return render_template('admin/operations_info_embed.html')
+    else:
+        # 返回完整页面
+        return render_template('admin/operations_info.html')
+
+@admin_bp.route('/update-log')
+@login_required
+def update_log():
+    """更新日志页面 - 全员可见"""
+    # 记录访问更新日志页面日志
+    LogService.log(
+        action="访问更新日志页面",
+        resource="更新日志",
+        log_type="user",
+        level="info"
+    )
+    
+    # 检查是否是AJAX请求（通过查询参数判断）
+    embed = request.args.get('embed', 'false').lower() == 'true'
+    
+    # 这里可以添加获取Git提交历史的逻辑
+    # 目前先传递空列表，使用默认的更新日志内容
+    commits = []
+    
+    if embed:
+        # 返回内嵌模板
+        return render_template('admin/update_log_embed.html', commits=commits)
+    else:
+        # 返回完整页面
+        return render_template('admin/update_log_embed.html', commits=commits)

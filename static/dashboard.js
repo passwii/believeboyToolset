@@ -7,13 +7,15 @@ class Dashboard {
         this.statistics = null;
         this.charts = {};
         this.refreshInterval = null;
-        this.init();
+        this.init(false); // 传递false表示不要自动加载数据
     }
 
-    init() {
-        this.loadStatistics();
+    init(autoLoad = true) {
         this.initEventListeners();
         this.startAutoRefresh();
+        if (autoLoad) {
+            this.loadStatistics();
+        }
     }
 
     /**
@@ -536,7 +538,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // 等待内容加载完成后再初始化仪表板
         setTimeout(() => {
             if (defaultSection.classList.contains('active')) {
+                // 在首页时自动加载数据
                 window.dashboard = new Dashboard();
+                window.dashboard.loadStatistics();
             }
         }, 100);
     }
@@ -565,6 +569,7 @@ const observer = new MutationObserver(function(mutations) {
             if (defaultSection && defaultSection.classList.contains('active') && !window.dashboard) {
                 setTimeout(() => {
                     window.dashboard = new Dashboard();
+                    window.dashboard.loadStatistics();
                 }, 100);
             }
         }

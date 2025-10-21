@@ -1,0 +1,127 @@
+<div class="dashboard-container">
+    <!-- 统计卡片区域 -->
+    <div class="stats-grid">
+        <div class="stat-card" data-stat-type="daily">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-day"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-title">日报</h3>
+                <div class="stat-value">0</div>
+                <div class="stat-subtitle">今日生成</div>
+            </div>
+        </div>
+        
+        <div class="stat-card" data-stat-type="monthly">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-title">月报</h3>
+                <div class="stat-value">0</div>
+                <div class="stat-subtitle">本月生成</div>
+            </div>
+        </div>
+        
+        <div class="stat-card" data-stat-type="product-analysis">
+            <div class="stat-icon">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-title">产品分析</h3>
+                <div class="stat-value">0</div>
+                <div class="stat-subtitle">本周生成</div>
+            </div>
+        </div>
+        
+        <div class="stat-card" data-stat-type="total">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-title">总报告数</h3>
+                <div class="stat-value">0</div>
+                <div class="stat-subtitle">所有类型报告</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 图表区域 -->
+    <div class="charts-container">
+        <div class="chart-container">
+            <h3 class="chart-title">7天报告生成趋势</h3>
+            <canvas id="trend-chart" class="chart-canvas"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <h3 class="chart-title">报告类型分布</h3>
+            <canvas id="pie-chart" class="chart-canvas"></canvas>
+        </div>
+    </div>
+    
+    <!-- 最近活动区域 -->
+    <div class="recent-activities">
+        <h3 class="section-title">
+            最近活动
+            <button class="refresh-btn" onclick="window.dashboard?.loadStatistics()">
+                <i class="fas fa-sync-alt"></i> 刷新
+            </button>
+        </h3>
+        <ul class="activity-list" id="activity-list">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>加载中...</span>
+            </div>
+        </ul>
+    </div>
+    
+    <!-- 系统状态区域 -->
+    <div class="system-status">
+        <h3 class="section-title">系统状态</h3>
+        <div class="status-grid">
+            <div class="status-item" data-status-type="database">
+                <div class="status-indicator online"></div>
+                <div>
+                    <div class="status-label">数据库状态</div>
+                    <div class="status-value">检查中...</div>
+                </div>
+            </div>
+            
+            <div class="status-item" data-status-type="users">
+                <div class="status-indicator online"></div>
+                <div>
+                    <div class="status-label">用户数量</div>
+                    <div class="status-value">计算中...</div>
+                </div>
+            </div>
+            
+            <div class="status-item" data-status-type="logs">
+                <div class="status-indicator online"></div>
+                <div>
+                    <div class="status-label">日志记录</div>
+                    <div class="status-value">计算中...</div>
+                </div>
+            </div>
+            
+            <div class="status-item" data-status-type="last-login">
+                <div class="status-indicator online"></div>
+                <div>
+                    <div class="status-label">最近登录</div>
+                    <div class="status-value">查询中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 页面加载完成后初始化仪表板
+document.addEventListener('DOMContentLoaded', function() {
+    // 延迟初始化以确保DOM完全加载
+    setTimeout(() => {
+        if (!window.dashboard) {
+            window.dashboard = new Dashboard();
+        }
+    }, 100);
+});
+</script>

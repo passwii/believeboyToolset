@@ -275,27 +275,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     
-    // 标题栏滚动效果
-    let lastScrollTop = 0;
+    // 标题栏固定显示 - 不再根据滚动方向隐藏/显示
     const header = document.querySelector('.cyber-header');
     
     if (header) {
-        window.addEventListener('scroll', () => {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                // 向下滚动 - 隐藏标题栏
-                header.style.transform = 'translateY(-100%)';
-            } else {
-                // 向上滚动 - 显示标题栏
-                header.style.transform = 'translateY(0)';
-            }
-            
-            lastScrollTop = scrollTop;
-        });
+        // 确保标题栏始终显示在顶部
+        header.style.transform = 'translateY(0)';
+        header.style.position = 'fixed';
+        header.style.top = '0';
+        header.style.left = '0';
+        header.style.right = '0';
+        header.style.zIndex = '1000';
         
-        // 添加标题栏过渡动画
-        header.style.transition = 'transform 0.3s ease';
+        // 移除滚动事件监听器，避免标题栏隐藏
+        // 这样可以确保用户滚动时顶部导航始终可见
     }
     
     // 用户头像动画
@@ -387,11 +380,17 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'product-analysis':
                 url = '/dataset/product-analysis';
                 break;
+            case 'operations-info':
+                url = '/admin/operations-info?embed=true';
+                break;
             case 'user-management':
                 url = '/admin/users?embed=true';
                 break;
             case 'log-management':
                 url = '/admin/logs?embed=true';
+                break;
+            case 'update-log':
+                url = '/admin/update-log?embed=true';
                 break;
             default:
                 dynamicSection.innerHTML = '<div class="error-message">未知内容类型</div>';
@@ -439,6 +438,10 @@ document.addEventListener('DOMContentLoaded', function() {
         else if (contentType === 'product-analysis') {
             initializeProductAnalysis();
         }
+        // 处理运营信息页面
+        else if (contentType === 'operations-info') {
+            initializeOperationsInfo();
+        }
         // 处理用户管理页面
         else if (contentType === 'user-management') {
             initializeUserManagement();
@@ -446,6 +449,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // 处理日志管理页面
         else if (contentType === 'log-management') {
             initializeLogManagement();
+        }
+        // 处理更新日志页面
+        else if (contentType === 'update-log') {
+            initializeUpdateLog();
         }
     }
     
@@ -1007,6 +1014,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
     
+    // 初始化运营信息页面
+    function initializeOperationsInfo() {
+        // 确保DOM完全加载后再初始化仪表板
+        // 使用更短的延迟并立即触发数据加载
+        setTimeout(() => {
+            if (!window.dashboard) {
+                window.dashboard = new Dashboard();
+                // 确保仪表板创建后立即加载数据
+                window.dashboard.loadStatistics();
+            } else {
+                // 如果仪表板已存在，直接重新加载数据
+                window.dashboard.loadStatistics();
+            }
+        }, 50);
+    }
+    
     // 初始化用户管理页面
     function initializeUserManagement() {
         // 处理添加用户表单
@@ -1135,6 +1158,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+    }
+    
+    // 初始化更新日志页面
+    function initializeUpdateLog() {
+        // 更新日志页面不需要特殊的初始化逻辑
+        // 时间轴动画已经通过CSS自动处理
+        console.log('更新日志页面已加载');
     }
     
 });
