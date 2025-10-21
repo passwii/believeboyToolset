@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for, jsonify
 
 from .toolset import toolset_bp
 from .dataset import dataset_bp
@@ -6,6 +6,7 @@ from .help import help_bp
 from .admin import admin_bp
 from core.auth import login_required
 from core.log_service import LogService
+from core.statistics_service import StatisticsService
 
 main = Blueprint('main', __name__)
 
@@ -21,6 +22,31 @@ def home():
         level="info"
     )
     return render_template('index.html')
+
+@main.route('/api/statistics')
+@login_required
+def get_statistics():
+    """获取统计数据API"""
+    try:
+        # 获取报告统计数据
+        report_stats = StatisticsService.get_report_statistics(days=7)
+        
+        # 获取系统状态
+        system_status = StatisticsService.get_system_status()
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'report_statistics': report_stats,
+                'system_status': system_status
+            }
+        })
+    except Exception as e:
+        print(f"获取统计数据失败: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 # 注册子蓝图
 def init_app(app):

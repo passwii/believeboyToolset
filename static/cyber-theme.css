@@ -84,7 +84,6 @@ body {
 
 .site-title-link:hover {
   filter: brightness(1.2);
-  transform: scale(1.02);
 }
 
 .app-container {
@@ -490,7 +489,6 @@ body {
 }
 
 .retry-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
 }
 
@@ -577,7 +575,6 @@ body {
 }
 
 .dynamic-section button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
 }
 
@@ -620,7 +617,6 @@ body {
 }
 
 .dynamic-section .help-icon:hover {
-  transform: scale(1.1);
   box-shadow: 0 4px 10px rgba(0, 212, 255, 0.3);
 }
 
@@ -655,7 +651,6 @@ body {
 }
 
 .content-card:hover {
-  transform: translateY(-5px);
   border-color: var(--neon-blue);
   box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
 }
@@ -730,7 +725,6 @@ body {
 }
 
 .card-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
 }
 
@@ -764,7 +758,6 @@ body {
 }
 
 .welcome-card:hover {
-  transform: translateY(-5px);
   border-color: var(--neon-blue);
   box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
 }

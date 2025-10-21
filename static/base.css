@@ -110,7 +110,6 @@ body {
 
 .category-item:hover {
   color: white;
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -192,10 +191,9 @@ body {
 }
 
 .subcategory-card:hover {
-  box-shadow: 
+  box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.2),
     0 10px 15px rgba(0, 0, 0, 0.15);
-  transform: translateY(-8px);
   background: linear-gradient(135deg, #ffffff 0%, #e6e9f0 100%);
 }
 
@@ -217,7 +215,7 @@ body {
 }
 
 .subcategory-card:hover i {
-  transform: scale(1.1);
+  /* 移除scale变换效果 */
 }
 
 .subcategory-card h3 {

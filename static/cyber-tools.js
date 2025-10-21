@@ -387,6 +387,12 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'product-analysis':
                 url = '/dataset/product-analysis';
                 break;
+            case 'user-management':
+                url = '/admin/users?embed=true';
+                break;
+            case 'log-management':
+                url = '/admin/logs?embed=true';
+                break;
             default:
                 dynamicSection.innerHTML = '<div class="error-message">未知内容类型</div>';
                 return;
@@ -432,6 +438,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // 处理产品分析页面
         else if (contentType === 'product-analysis') {
             initializeProductAnalysis();
+        }
+        // 处理用户管理页面
+        else if (contentType === 'user-management') {
+            initializeUserManagement();
+        }
+        // 处理日志管理页面
+        else if (contentType === 'log-management') {
+            initializeLogManagement();
         }
     }
     
@@ -991,6 +1005,136 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('找不到上周按钮');
             }
         }, 100);
+    }
+    
+    // 初始化用户管理页面
+    function initializeUserManagement() {
+        // 处理添加用户表单
+        const addUserForm = document.getElementById('add-user-form');
+        if (addUserForm) {
+            addUserForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                // 发送AJAX请求
+                fetch('/admin/users/add', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('用户添加成功', 'success');
+                        // 重新加载用户管理页面
+                        loadContent('user-management');
+                    } else {
+                        showNotification(data.message || '添加用户失败', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('添加用户失败，请重试', 'error');
+                });
+            });
+        }
+        
+        // 处理删除用户按钮
+        const deleteButtons = document.querySelectorAll('.delete-user-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const userId = this.getAttribute('data-user-id');
+                const username = this.getAttribute('data-username');
+                
+                if (confirm(`确定要删除用户 ${username} 吗？此操作不可恢复！`)) {
+                    fetch(`/admin/users/delete/${userId}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification('用户删除成功', 'success');
+                            // 重新加载用户管理页面
+                            loadContent('user-management');
+                        } else {
+                            showNotification(data.message || '删除用户失败', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('删除用户失败，请重试', 'error');
+                    });
+                }
+            });
+        });
+    }
+    
+    // 初始化日志管理页面
+    function initializeLogManagement() {
+        // 处理筛选表单
+        const filterForm = document.getElementById('log-filter-form');
+        if (filterForm) {
+            filterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const params = new URLSearchParams(formData);
+                
+                // 重新加载日志管理页面，带上筛选参数
+                fetch(`/admin/logs?${params.toString()}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        dynamicSection.innerHTML = html;
+                        initializeLogManagement();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('加载日志失败，请重试', 'error');
+                    });
+            });
+        }
+        
+        // 处理清理日志表单
+        const clearLogsForm = document.getElementById('clear-logs-form');
+        if (clearLogsForm) {
+            clearLogsForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (confirm('确定要清理旧日志吗？此操作不可恢复！')) {
+                    const formData = new FormData(this);
+                    
+                    fetch('/admin/logs/clear', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification(data.message || '日志清理成功', 'success');
+                            // 重新加载日志管理页面
+                            loadContent('log-management');
+                        } else {
+                            showNotification(data.message || '清理日志失败', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('清理日志失败，请重试', 'error');
+                    });
+                }
+            });
+        }
     }
     
 });

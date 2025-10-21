@@ -1,0 +1,372 @@
+<div class="user-management-embed">
+    <div class="section-header">
+        <h2><i class="fas fa-users-cog"></i> 用户管理</h2>
+    </div>
+    
+    <!-- 显示消息 -->
+    <div id="user-management-messages"></div>
+    
+    <!-- 添加用户表单 -->
+    <div class="add-user-form">
+        <div class="section-title">
+            <i class="fas fa-user-plus"></i> 添加新用户
+        </div>
+        <form id="add-user-form" method="POST">
+            <div class="form-group">
+                <div class="form-field">
+                    <label for="username">用户名:</label>
+                    <input type="text" id="username" name="username" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-field">
+                    <label for="password">密码:</label>
+                    <input type="password" id="password" name="password" placeholder="请输入密码（至少6位）" required minlength="6">
+                </div>
+                <div class="form-field">
+                    <label for="chinese_name">中文姓名:</label>
+                    <input type="text" id="chinese_name" name="chinese_name" placeholder="请输入中文姓名">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 添加用户
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- 用户列表 -->
+    <div class="section-title">
+        <i class="fas fa-list"></i> 用户列表
+    </div>
+    <table class="user-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>用户名</th>
+                <th>中文姓名</th>
+                <th>创建时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>
+                    <strong>{{ user.username }}</strong>
+                    {% if user.username == 'damonrock' %}
+                        <span class="admin-badge">
+                            <i class="fas fa-crown"></i> 管理员
+                        </span>
+                    {% endif %}
+                </td>
+                <td>{{ user.chinese_name if user.chinese_name else '未设置' }}</td>
+                <td>{{ user.created_at if user.created_at else '未知' }}</td>
+                <td>
+                    <div class="actions">
+                        {% if user.username != 'damonrock' %}
+                        <button type="button"
+                                class="btn btn-danger delete-user-btn"
+                                data-user-id="{{ user.id }}"
+                                data-username="{{ user.username }}"
+                                title="删除用户">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                        {% else %}
+                        <span class="protected-badge">
+                            <i class="fas fa-shield-alt"></i> 不可删除
+                        </span>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if users|length == 0 %}
+    <div class="empty-state">
+        <i class="fas fa-users"></i>
+        <p>暂无用户数据</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* 用户管理内嵌样式 */
+.user-management-embed {
+    padding: 20px;
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.user-management-embed::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(157, 78, 221, 0.05) 100%);
+    z-index: -1;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.section-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.section-header h2 i {
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px var(--neon-blue);
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title i {
+    color: var(--neon-blue);
+    text-shadow: 0 0 5px var(--neon-blue);
+}
+
+.add-user-form {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 12px;
+    margin: 30px 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.add-user-form::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(157, 78, 221, 0.05) 100%);
+    z-index: -1;
+}
+
+.form-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    align-items: end;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-field label {
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.form-field input {
+    padding: 12px 16px;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all var(--transition-normal) ease;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.form-field input:focus {
+    border-color: var(--neon-blue);
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+.form-field input::placeholder {
+    color: var(--text-secondary);
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.user-table th, .user-table td {
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.user-table th {
+    background: rgba(26, 26, 46, 0.7);
+    font-weight: 600;
+    color: var(--neon-blue);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.user-table tr:last-child td {
+    border-bottom: none;
+}
+
+.user-table tr:hover {
+    background-color: rgba(0, 212, 255, 0.1);
+}
+
+.user-table tr:hover td {
+    color: var(--text-primary);
+}
+
+.btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all var(--transition-normal) ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--error-color) 0%, #d32f2f 100%);
+    color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 0, 110, 0.4);
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-left: 10px;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.protected-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: linear-gradient(135deg, var(--warning-color) 0%, #e65100 100%);
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+    color: var(--neon-blue);
+}
+
+.empty-state p {
+    font-size: 18px;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .user-management-embed {
+        padding: 15px;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .form-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .user-table {
+        font-size: 14px;
+    }
+    
+    .user-table th, .user-table td {
+        padding: 12px 15px;
+    }
+    
+    .actions {
+        flex-direction: column;
+    }
+}
+</style>

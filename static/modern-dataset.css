@@ -109,14 +109,13 @@ button {
 }
 
 button:hover {
-  transform: translateY(-3px);
   box-shadow:
     0 8px 25px rgba(0, 0, 0, 0.2),
     0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 button:active {
-  transform: translateY(-1px);
+  /* 移除active状态的位移效果 */
 }
 
 .help-icon {
@@ -136,7 +135,6 @@ button:active {
 }
 
 .help-icon:hover {
-  transform: scale(1.1);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
