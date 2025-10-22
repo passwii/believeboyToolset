@@ -143,9 +143,9 @@ def delete_user(user_id):
     
     # 检查是否试图删除管理员账户
     admin_user = User.get_user_by_username('damonrock')
-    if admin_user and admin_user['id'] == user_id:
+    if admin_user and admin_user.id == user_id:
         # 记录尝试删除管理员账户日志
-        log_user_management("尝试删除管理员账户", user_to_delete['username'], "安全阻止")
+        log_user_management("尝试删除管理员账户", user_to_delete.username, "安全阻止")
         error_msg = '不能删除管理员账户'
         # 检查是否是AJAX请求
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -157,7 +157,7 @@ def delete_user(user_id):
     result = User.delete_user(user_id)
     if result:
         # 记录删除用户成功日志
-        log_user_management("删除用户", user_to_delete['username'])
+        log_user_management("删除用户", user_to_delete.username)
         success_msg = '用户删除成功'
         # 检查是否是AJAX请求
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -166,7 +166,7 @@ def delete_user(user_id):
         flash(success_msg, 'success')
     else:
         # 记录删除用户失败日志
-        log_user_management("删除用户失败", user_to_delete['username'], "数据库操作失败")
+        log_user_management("删除用户失败", user_to_delete.username, "数据库操作失败")
         error_msg = '用户删除失败'
         # 检查是否是AJAX请求
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -305,6 +305,14 @@ def add_shop():
         flash(error_msg, 'error')
         return redirect(url_for('admin.shop_management', embed='true'))
     
+    # 检查店铺名称是否已存在
+    if Shop.shop_name_exists(shop_name):
+        error_msg = f'店铺名称 "{shop_name}" 已存在，请使用其他名称'
+        if is_ajax:
+            return jsonify({'success': False, 'message': error_msg})
+        flash(error_msg, 'error')
+        return redirect(url_for('admin.shop_management', embed='true'))
+    
     # 获取当前用户ID
     from core.user_model import User
     username = session.get('username')
@@ -358,6 +366,25 @@ def list_shops():
         print(f"获取店铺列表失败: {e}")
         return jsonify({'success': False, 'message': '获取店铺列表失败'})
 
+@admin_bp.route('/shops/check-name')
+@login_required
+def check_shop_name():
+    """检查店铺名称是否已存在"""
+    from core.shop_model import Shop
+    
+    shop_name = request.args.get('shop_name', '')
+    exclude_id = request.args.get('exclude_id', type=int)
+    
+    if not shop_name:
+        return jsonify({'exists': False})
+    
+    try:
+        exists = Shop.shop_name_exists(shop_name, exclude_id)
+        return jsonify({'exists': exists})
+    except Exception as e:
+        print(f"检查店铺名称失败: {e}")
+        return jsonify({'exists': False})
+
 @admin_bp.route('/shops/update/<int:shop_id>', methods=['POST'])
 @login_required
 def update_shop(shop_id):
@@ -382,6 +409,14 @@ def update_shop(shop_id):
     from core.shop_model import Shop
     if not Shop.validate_shop_url(shop_url):
         error_msg = '请输入有效的URL（以http://或https://开头）'
+        if is_ajax:
+            return jsonify({'success': False, 'message': error_msg})
+        flash(error_msg, 'error')
+        return redirect(url_for('admin.shop_management', embed='true'))
+    
+    # 检查店铺名称是否已存在（排除当前编辑的店铺）
+    if Shop.shop_name_exists(shop_name, exclude_id=shop_id):
+        error_msg = f'店铺名称 "{shop_name}" 已存在，请使用其他名称'
         if is_ajax:
             return jsonify({'success': False, 'message': error_msg})
         flash(error_msg, 'error')
@@ -422,7 +457,7 @@ def update_shop(shop_id):
             log_type="user",
             level="error"
         )
-        error_msg = f'店铺信息更新失败'
+        error_msg = f'店铺信息更新失败，可能是店铺名称已重复'
         if is_ajax:
             return jsonify({'success': False, 'message': error_msg})
         flash(error_msg, 'error')

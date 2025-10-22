@@ -580,29 +580,46 @@ document.addEventListener('DOMContentLoaded', function() {
         addShopForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const formData = new FormData(this);
+            const shopName = document.getElementById('shop_name').value.trim();
             
-            // 发送AJAX请求
-            fetch('/admin/shops/add', {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('店铺添加成功', 'success');
-                    this.reset();
-                    location.reload(); // 重新加载页面以显示新数据
-                } else {
-                    showNotification(data.message || '添加店铺失败', 'error');
+            // 检查店铺名称是否为空
+            if (!shopName) {
+                showNotification('请输入店铺名称', 'error');
+                return;
+            }
+            
+            // 检查店铺名称是否已存在
+            checkShopNameExists(shopName).then(exists => {
+                if (exists) {
+                    showNotification(`店铺名称 "${shopName}" 已存在，请使用其他名称`, 'error');
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('添加店铺失败，请重试', 'error');
+                
+                // 如果名称不存在，提交表单
+                const formData = new FormData(this);
+                
+                // 发送AJAX请求
+                fetch('/admin/shops/add', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('店铺添加成功', 'success');
+                        this.reset();
+                        location.reload(); // 重新加载页面以显示新数据
+                    } else {
+                        showNotification(data.message || '添加店铺失败', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('添加店铺失败，请重试', 'error');
+                });
             });
         });
     }
@@ -636,29 +653,30 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const formData = new FormData(this);
             const shopId = formData.get('shop_id');
+            const shopName = document.getElementById('edit_shop_name').value.trim();
+            const originalShopName = document.getElementById('edit_shop_name').getAttribute('data-original-name') || '';
             
-            // 发送AJAX请求
-            fetch(`/admin/shops/update/${shopId}`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('店铺信息更新成功', 'success');
-                    closeModal();
-                    location.reload(); // 重新加载页面以显示更新后的数据
-                } else {
-                    showNotification(data.message || '更新店铺信息失败', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('更新店铺信息失败，请重试', 'error');
-            });
+            // 检查店铺名称是否为空
+            if (!shopName) {
+                showNotification('请输入店铺名称', 'error');
+                return;
+            }
+            
+            // 如果店铺名称有变化，检查是否已存在
+            if (shopName !== originalShopName) {
+                checkShopNameExists(shopName, shopId).then(exists => {
+                    if (exists) {
+                        showNotification(`店铺名称 "${shopName}" 已存在，请使用其他名称`, 'error');
+                        return;
+                    }
+                    
+                    // 如果名称不存在，提交表单
+                    submitEditForm(formData, shopId);
+                });
+            } else {
+                // 名称未变化，直接提交
+                submitEditForm(formData, shopId);
+            }
         });
     }
     
@@ -688,12 +706,39 @@ document.addEventListener('DOMContentLoaded', function() {
 function editShop(shopId, shopName, brandName, shopUrl, operator, shopType) {
     document.getElementById('edit_shop_id').value = shopId;
     document.getElementById('edit_shop_name').value = shopName;
+    document.getElementById('edit_shop_name').setAttribute('data-original-name', shopName);
     document.getElementById('edit_brand_name').value = brandName;
     document.getElementById('edit_shop_url').value = shopUrl;
     document.getElementById('edit_operator').value = operator;
     document.getElementById('edit_shop_type').value = shopType;
     
     document.getElementById('edit-shop-modal').style.display = 'block';
+}
+
+// 提交编辑表单
+function submitEditForm(formData, shopId) {
+    // 发送AJAX请求
+    fetch(`/admin/shops/update/${shopId}`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('店铺信息更新成功', 'success');
+            closeModal();
+            location.reload(); // 重新加载页面以显示更新后的数据
+        } else {
+            showNotification(data.message || '更新店铺信息失败', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('更新店铺信息失败，请重试', 'error');
+    });
 }
 
 // 删除店铺
@@ -709,7 +754,7 @@ function deleteShop(shopId, shopName) {
         .then(data => {
             if (data.success) {
                 showNotification('店铺删除成功', 'success');
-                loadShops(); // 重新加载店铺列表
+                location.reload(); // 重新加载页面以显示更新后的数据
             } else {
                 showNotification(data.message || '删除店铺失败', 'error');
             }
@@ -726,6 +771,46 @@ function closeModal() {
     document.getElementById('edit-shop-modal').style.display = 'none';
 }
 
+// 加载店铺列表
+function loadShops() {
+    fetch('/admin/shops/list', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 这里可以更新店铺列表，但为了简单起见，我们直接重新加载页面
+            location.reload();
+        } else {
+            showNotification('加载店铺列表失败', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('加载店铺列表失败，请重试', 'error');
+    });
+}
+
+// 检查店铺名称是否已存在
+function checkShopNameExists(shopName, excludeId = null) {
+    return fetch(`/admin/shops/check-name?shop_name=${encodeURIComponent(shopName)}${excludeId ? `&exclude_id=${excludeId}` : ''}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        return data.exists;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return false;
+    });
+}
 
 // 工具函数：转义HTML
 function escapeHtml(text) {

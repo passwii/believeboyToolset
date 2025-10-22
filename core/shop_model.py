@@ -24,6 +24,10 @@ class Shop:
         if not shop_name or not shop_url:
             return None
         
+        # 检查店铺名称是否已存在
+        if cls.shop_name_exists(shop_name):
+            return None
+        
         shop_id = add_shop(shop_name, brand_name, shop_url, operator, shop_type, created_by)
         if shop_id:
             return cls.get_by_id(shop_id)
@@ -37,10 +41,10 @@ class Shop:
             return cls(
                 id=shop_data['id'],
                 shop_name=shop_data['shop_name'],
-                brand_name=shop_data.get('brand_name'),
+                brand_name=shop_data['brand_name'] if shop_data['brand_name'] else None,
                 shop_url=shop_data['shop_url'],
-                operator=shop_data.get('operator'),
-                shop_type=shop_data.get('shop_type', '自有'),
+                operator=shop_data['operator'] if shop_data['operator'] else None,
+                shop_type=shop_data['shop_type'] if shop_data['shop_type'] else '自有',
                 created_at=shop_data['created_at'],
                 updated_at=shop_data['updated_at'],
                 created_by=shop_data['created_by']
@@ -56,18 +60,52 @@ class Shop:
             shops.append(cls(
                 id=shop_data['id'],
                 shop_name=shop_data['shop_name'],
-                brand_name=shop_data.get('brand_name'),
+                brand_name=shop_data['brand_name'] if shop_data['brand_name'] else None,
                 shop_url=shop_data['shop_url'],
-                operator=shop_data.get('operator'),
-                shop_type=shop_data.get('shop_type', '自有'),
+                operator=shop_data['operator'] if shop_data['operator'] else None,
+                shop_type=shop_data['shop_type'] if shop_data['shop_type'] else '自有',
                 created_at=shop_data['created_at'],
                 updated_at=shop_data['updated_at'],
                 created_by=shop_data['created_by']
             ))
         return shops
     
+    @classmethod
+    def get_by_type(cls, shop_type):
+        """根据类型获取店铺"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("SELECT * FROM shops WHERE shop_type = ?", (shop_type,))
+            shops_data = cursor.fetchall()
+            shops = []
+            for shop_data in shops_data:
+                shops.append(cls(
+                    id=shop_data['id'],
+                    shop_name=shop_data['shop_name'],
+                    brand_name=shop_data['brand_name'] if shop_data['brand_name'] else None,
+                    shop_url=shop_data['shop_url'],
+                    operator=shop_data['operator'] if shop_data['operator'] else None,
+                    shop_type=shop_data['shop_type'] if shop_data['shop_type'] else '自有',
+                    created_at=shop_data['created_at'],
+                    updated_at=shop_data['updated_at'],
+                    created_by=shop_data['created_by']
+                ))
+            return shops
+        except Exception as e:
+            print(f"根据类型获取店铺失败: {e}")
+            return []
+        finally:
+            conn.close()
+    
     def update(self, shop_name=None, brand_name=None, shop_url=None, operator=None, shop_type=None):
         """更新店铺信息"""
+        # 如果要更新店铺名称，检查是否与其他店铺重复
+        if shop_name and shop_name != self.shop_name:
+            if self.shop_name_exists(shop_name, exclude_id=self.id):
+                return False
+        
         if shop_name:
             self.shop_name = shop_name
         if brand_name is not None:
@@ -113,3 +151,23 @@ class Shop:
         
         # 简单的URL验证，确保以http://或https://开头
         return url.startswith('http://') or url.startswith('https://')
+    
+    @staticmethod
+    def shop_name_exists(shop_name, exclude_id=None):
+        """检查店铺名称是否已存在"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        try:
+            if exclude_id:
+                cursor.execute("SELECT id FROM shops WHERE shop_name = ? AND id != ?", (shop_name, exclude_id))
+            else:
+                cursor.execute("SELECT id FROM shops WHERE shop_name = ?", (shop_name,))
+            
+            result = cursor.fetchone()
+            return result is not None
+        except Exception as e:
+            print(f"检查店铺名称是否存在失败: {e}")
+            return False
+        finally:
+            conn.close()

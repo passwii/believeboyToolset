@@ -203,9 +203,45 @@
                     <!-- 默认显示区域 - 留空 -->
                     <div class="default-section active" id="default-content">
                         <div class="empty-homepage">
-                            <div class="welcome-message">
-                                <h2>欢迎使用彼励扶运营中心</h2>
-                                <p>请从左侧导航栏选择功能模块</p>
+                            <div class="welcome-container">
+                                <div class="welcome-visual">
+                                    <div class="welcome-icon">
+                                        <i class="fas fa-rocket"></i>
+                                    </div>
+                                    <div class="welcome-particles">
+                                        <div class="particle"></div>
+                                        <div class="particle"></div>
+                                        <div class="particle"></div>
+                                        <div class="particle"></div>
+                                        <div class="particle"></div>
+                                    </div>
+                                </div>
+                                <div class="welcome-content">
+                                    <div class="welcome-greeting">
+                                        <h2>Hi，{{ chinese_name if chinese_name else session.username }}</h2>
+                                    </div>
+                                    <div class="welcome-title">
+                                        <h3>欢迎使用彼励扶运营中心</h3>
+                                    </div>
+                                    <div class="welcome-description">
+                                        <p>探索强大的工具集，提升您的运营效率</p>
+                                        <p class="welcome-hint">请从左侧导航栏选择功能模块开始使用</p>
+                                    </div>
+                                    <div class="welcome-features">
+                                        <div class="feature-item">
+                                            <i class="fas fa-chart-line"></i>
+                                            <span>数据分析</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-compass"></i>
+                                            <span>运营导航</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-tools"></i>
+                                            <span>实用工具</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

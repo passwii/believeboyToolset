@@ -34,11 +34,15 @@ def shop_nav():
     user = User.get_user_by_username(username)
     chinese_name = user.chinese_name if user and user.chinese_name else username
     
-    # 获取所有店铺数据
+    # 获取分类店铺数据
     from core.shop_model import Shop
-    shops = Shop.get_all()
+    own_shops = Shop.get_by_type('自有')
+    competitor_shops = Shop.get_by_type('竞品')
     
-    return render_template('toolset/shop_nav_embed.html', chinese_name=chinese_name, shops=shops)
+    return render_template('toolset/shop_nav_embed.html',
+                          chinese_name=chinese_name,
+                          own_shops=own_shops,
+                          competitor_shops=competitor_shops)
 
 @toolset_bp.route('/shops/list')
 @login_required

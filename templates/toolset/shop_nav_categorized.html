@@ -1,6 +1,6 @@
-<div class="shop-nav-container">
+<div class="shop-nav-categorized-container">
     <div class="nav-header">
-        <h2>Hi，{{ chinese_name if chinese_name else session.username }}</h2>
+        <h2><i class="fas fa-store"></i> 店铺导航</h2>
         <p>快速访问自有店铺和竞品店铺</p>
     </div>
     
@@ -10,22 +10,22 @@
             <div class="category-title">
                 <i class="fas fa-home"></i>
                 <h3>自有店铺</h3>
-                <span class="shop-count">{{ own_shops|length if own_shops else 0 }}</span>
+                <span class="shop-count">{{ own_shops|length }}</span>
             </div>
             <div class="shop-cards">
                 {% if own_shops %}
                     {% for shop in own_shops %}
                     <div class="shop-card">
-                        <a href="{{ shop.shop_url }}" target="_blank" class="shop-link">
-                            <div class="shop-icon">
+                        <a href="{{ shop.shop_url }}" target="_blank" class="card-link">
+                            <div class="card-icon">
                                 <i class="fas fa-store"></i>
                             </div>
-                            <div class="shop-content">
+                            <div class="card-content">
                                 <h4>{{ shop.shop_name }}</h4>
                                 <p>{{ shop.brand_name if shop.brand_name else '无品牌信息' }}</p>
                                 <p class="shop-url">{{ shop.shop_url }}</p>
                             </div>
-                            <div class="shop-link-arrow">
+                            <div class="card-arrow">
                                 <i class="fas fa-external-link-alt"></i>
                             </div>
                         </a>
@@ -46,22 +46,22 @@
             <div class="category-title">
                 <i class="fas fa-chart-line"></i>
                 <h3>竞品店铺</h3>
-                <span class="shop-count">{{ competitor_shops|length if competitor_shops else 0 }}</span>
+                <span class="shop-count">{{ competitor_shops|length }}</span>
             </div>
             <div class="shop-cards">
                 {% if competitor_shops %}
                     {% for shop in competitor_shops %}
                     <div class="shop-card">
-                        <a href="{{ shop.shop_url }}" target="_blank" class="shop-link">
-                            <div class="shop-icon">
+                        <a href="{{ shop.shop_url }}" target="_blank" class="card-link">
+                            <div class="card-icon">
                                 <i class="fas fa-store"></i>
                             </div>
-                            <div class="shop-content">
+                            <div class="card-content">
                                 <h4>{{ shop.shop_name }}</h4>
                                 <p>{{ shop.brand_name if shop.brand_name else '无品牌信息' }}</p>
                                 <p class="shop-url">{{ shop.shop_url }}</p>
                             </div>
-                            <div class="shop-link-arrow">
+                            <div class="card-arrow">
                                 <i class="fas fa-external-link-alt"></i>
                             </div>
                         </a>
@@ -80,7 +80,7 @@
 </div>
 
 <style>
-.shop-nav-container {
+.shop-nav-categorized-container {
     padding: 20px;
     color: var(--text-primary);
 }
@@ -165,20 +165,13 @@
     gap: 20px;
 }
 
-.shop-url {
-    font-size: 0.8rem !important;
-    word-break: break-all;
-    opacity: 0.7;
-}
-
 .shop-card {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 15px;
+    border-radius: 12px;
     overflow: hidden;
     position: relative;
     transition: all var(--transition-normal) ease;
-    cursor: pointer;
 }
 
 .shop-card::before {
@@ -195,91 +188,83 @@
 
 .shop-card:hover {
     border-color: var(--neon-blue);
-    box-shadow: 0 15px 35px rgba(0, 212, 255, 0.3);
-    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
+    transform: translateY(-5px);
 }
 
 .shop-card:hover::before {
     opacity: 1;
 }
 
-.shop-link {
+.card-link {
     display: flex;
     align-items: center;
-    padding: 25px;
+    padding: 20px;
     text-decoration: none;
     color: var(--text-primary);
     position: relative;
     z-index: 1;
 }
 
-.shop-icon {
-    width: 70px;
-    height: 70px;
+.card-icon {
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 255, 136, 0.2));
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 20px;
+    margin-right: 15px;
     flex-shrink: 0;
     transition: all var(--transition-normal) ease;
 }
 
-.shop-card:hover .shop-icon {
+.shop-card:hover .card-icon {
     transform: scale(1.1);
     background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(0, 255, 136, 0.3));
 }
 
-.shop-icon i {
-    font-size: 30px;
+.card-icon i {
+    font-size: 24px;
     color: var(--neon-blue);
 }
 
-.shop-content {
+.card-content {
     flex: 1;
 }
 
-.shop-content h4 {
-    margin: 0 0 8px 0;
-    font-size: 1.4rem;
+.card-content h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.2rem;
     font-weight: 600;
     transition: color var(--transition-normal) ease;
 }
 
-.shop-card:hover .shop-content h4 {
+.shop-card:hover .card-content h4 {
     color: var(--neon-blue);
 }
 
-.shop-content p {
-    margin: 0;
+.card-content p {
+    margin: 0 0 3px 0;
     font-size: 0.9rem;
     color: var(--text-secondary);
-    word-break: break-all;
 }
 
-.shop-link-arrow {
+.shop-url {
+    font-size: 0.8rem !important;
+    word-break: break-all;
+    opacity: 0.7;
+}
+
+.card-arrow {
     margin-left: 15px;
     color: var(--text-secondary);
     transition: all var(--transition-normal) ease;
 }
 
-.shop-card:hover .shop-link-arrow {
+.shop-card:hover .card-arrow {
     color: var(--neon-blue);
     transform: translateX(5px);
-}
-
-.loading-shops {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px;
-    color: var(--text-secondary);
-}
-
-.loading-shops i {
-    font-size: 3rem;
-    margin-bottom: 15px;
-    display: block;
 }
 
 .empty-shops {
@@ -315,33 +300,20 @@
     
     .shop-cards {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
+        gap: 15px;
     }
     
-    .shop-link {
-        padding: 20px;
+    .card-link {
+        padding: 15px;
     }
     
-    .shop-icon {
-        width: 60px;
-        height: 60px;
-        margin-right: 15px;
+    .card-icon {
+        width: 50px;
+        height: 50px;
     }
     
-    .shop-icon i {
-        font-size: 24px;
-    }
-    
-    .shop-content h4 {
-        font-size: 1.2rem;
-    }
-    
-    .category-title h3 {
-        font-size: 1.5em;
-    }
-    
-    .category-title i {
-        font-size: 1.5em;
+    .card-icon i {
+        font-size: 20px;
     }
 }
 
@@ -350,28 +322,18 @@
         grid-template-columns: 1fr;
     }
     
-    .shop-link {
+    .card-link {
         flex-direction: column;
         text-align: center;
     }
     
-    .shop-icon {
+    .card-icon {
         margin-right: 0;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
     }
     
-    .shop-link-arrow {
+    .card-arrow {
         display: none;
-    }
-    
-    .category-title {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
-    }
-    
-    .category-title h3 {
-        font-size: 1.3em;
     }
 }
 </style>

@@ -232,9 +232,10 @@
 }
 
 .user-table th, .user-table td {
-    padding: 16px 20px;
+    padding: 12px 20px;
     text-align: left;
     border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    vertical-align: middle;
 }
 
 .user-table th {
@@ -283,18 +284,25 @@
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, var(--error-color) 0%, #d32f2f 100%);
-    color: white;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    font-size: 13px;
 }
 
 .btn-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 0, 110, 0.4);
+    background: rgba(255, 0, 110, 0.1);
+    color: var(--error-color);
+    border-color: rgba(255, 0, 110, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 0, 110, 0.2);
 }
 
 .actions {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
 .admin-badge {
@@ -319,9 +327,10 @@
     color: white;
     font-size: 12px;
     font-weight: 500;
-    padding: 4px 10px;
+    padding: 6px 12px;
     border-radius: 20px;
     box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+    height: 32px;
 }
 
 .empty-state {

@@ -59,13 +59,32 @@ def init_db():
         CREATE TABLE IF NOT EXISTS shops (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             shop_name TEXT NOT NULL,
+            brand_name TEXT,
             shop_url TEXT NOT NULL,
+            operator TEXT,
+            shop_type TEXT DEFAULT "自有",
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             created_by INTEGER,
             FOREIGN KEY (created_by) REFERENCES users (id)
         )
     ''')
+    
+    # 检查并添加缺失的字段（用于更新现有数据库）
+    cursor.execute("PRAGMA table_info(shops)")
+    existing_columns = [column[1] for column in cursor.fetchall()]
+    
+    # 添加brand_name字段（如果不存在）
+    if 'brand_name' not in existing_columns:
+        cursor.execute('ALTER TABLE shops ADD COLUMN brand_name TEXT')
+    
+    # 添加operator字段（如果不存在）
+    if 'operator' not in existing_columns:
+        cursor.execute('ALTER TABLE shops ADD COLUMN operator TEXT')
+    
+    # 添加shop_type字段（如果不存在）
+    if 'shop_type' not in existing_columns:
+        cursor.execute('ALTER TABLE shops ADD COLUMN shop_type TEXT DEFAULT "自有"')
     
     conn.commit()
     conn.close()

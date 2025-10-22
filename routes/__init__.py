@@ -55,8 +55,29 @@ def get_statistics():
             'error': str(e)
         }), 500
 
+# 检查并应用店铺表迁移
+def apply_shop_migrations():
+    """应用店铺表相关的迁移"""
+    try:
+        # 导入并运行迁移脚本
+        from core.add_unique_constraint import add_shop_name_unique_constraint
+        from core.migrate_shop_table import migrate_shop_table
+        
+        # 首先运行基本表结构迁移
+        migrate_shop_table()
+        
+        # 然后添加唯一性约束
+        add_shop_name_unique_constraint()
+        
+        print("店铺表迁移完成")
+    except Exception as e:
+        print(f"店铺表迁移失败: {e}")
+
 # 注册子蓝图
 def init_app(app):
+    # 应用迁移
+    apply_shop_migrations()
+    
     app.register_blueprint(main)
     app.register_blueprint(toolset_bp, url_prefix='/toolset')
     app.register_blueprint(dataset_bp, url_prefix='/dataset')
