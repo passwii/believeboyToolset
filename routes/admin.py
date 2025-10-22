@@ -262,22 +262,29 @@ def shop_management():
         level="info"
     )
     
+    # 获取所有店铺数据
+    from core.shop_model import Shop
+    shops = Shop.get_all()
+    
     # 检查是否是AJAX请求（通过查询参数判断）
     embed = request.args.get('embed', 'false').lower() == 'true'
     
     if embed:
         # 返回内嵌模板
-        return render_template('admin/shop_management_embed.html')
+        return render_template('admin/shop_management_embed.html', shops=shops)
     else:
         # 返回完整页面（如果需要的话）
-        return render_template('admin/shop_management_embed.html')
+        return render_template('admin/shop_management_embed.html', shops=shops)
 
 @admin_bp.route('/shops/add', methods=['POST'])
 @login_required
 def add_shop():
     """添加新店铺"""
     shop_name = request.form.get('shop_name')
+    brand_name = request.form.get('brand_name')
     shop_url = request.form.get('shop_url')
+    operator = request.form.get('operator')
+    shop_type = request.form.get('shop_type', '自有')
     
     # 检查是否是AJAX请求
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -287,7 +294,7 @@ def add_shop():
         if is_ajax:
             return jsonify({'success': False, 'message': error_msg})
         flash(error_msg, 'error')
-        return redirect(url_for('admin.shop_management'))
+        return redirect(url_for('admin.shop_management', embed='true'))
     
     # 验证URL格式
     from core.shop_model import Shop
@@ -296,16 +303,16 @@ def add_shop():
         if is_ajax:
             return jsonify({'success': False, 'message': error_msg})
         flash(error_msg, 'error')
-        return redirect(url_for('admin.shop_management'))
+        return redirect(url_for('admin.shop_management', embed='true'))
     
     # 获取当前用户ID
     from core.user_model import User
     username = session.get('username')
     current_user = User.get_user_by_username(username)
-    user_id = current_user['id'] if current_user else None
+    user_id = current_user.id if current_user else None
     
     # 创建店铺
-    shop = Shop.create(shop_name, shop_url, user_id)
+    shop = Shop.create(shop_name, brand_name, shop_url, operator, shop_type, user_id)
     if shop:
         # 记录添加店铺成功日志
         LogService.log(
@@ -335,7 +342,7 @@ def add_shop():
     
     if is_ajax:
         return jsonify({'success': True, 'message': '操作完成'})
-    return redirect(url_for('admin.shop_management'))
+    return redirect(url_for('admin.shop_management', embed='true'))
 
 @admin_bp.route('/shops/list')
 @login_required
@@ -356,7 +363,10 @@ def list_shops():
 def update_shop(shop_id):
     """更新店铺信息"""
     shop_name = request.form.get('shop_name')
+    brand_name = request.form.get('brand_name')
     shop_url = request.form.get('shop_url')
+    operator = request.form.get('operator')
+    shop_type = request.form.get('shop_type', '自有')
     
     # 检查是否是AJAX请求
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -366,7 +376,7 @@ def update_shop(shop_id):
         if is_ajax:
             return jsonify({'success': False, 'message': error_msg})
         flash(error_msg, 'error')
-        return redirect(url_for('admin.shop_management'))
+        return redirect(url_for('admin.shop_management', embed='true'))
     
     # 验证URL格式
     from core.shop_model import Shop
@@ -375,7 +385,7 @@ def update_shop(shop_id):
         if is_ajax:
             return jsonify({'success': False, 'message': error_msg})
         flash(error_msg, 'error')
-        return redirect(url_for('admin.shop_management'))
+        return redirect(url_for('admin.shop_management', embed='true'))
     
     # 获取店铺并更新
     shop = Shop.get_by_id(shop_id)
@@ -384,12 +394,12 @@ def update_shop(shop_id):
         if is_ajax:
             return jsonify({'success': False, 'message': error_msg})
         flash(error_msg, 'error')
-        return redirect(url_for('admin.shop_management'))
+        return redirect(url_for('admin.shop_management', embed='true'))
     
     old_name = shop.shop_name
     old_url = shop.shop_url
     
-    success = shop.update(shop_name, shop_url)
+    success = shop.update(shop_name, brand_name, shop_url, operator, shop_type)
     if success:
         # 记录更新店铺成功日志
         LogService.log(
@@ -419,7 +429,7 @@ def update_shop(shop_id):
     
     if is_ajax:
         return jsonify({'success': True, 'message': '操作完成'})
-    return redirect(url_for('admin.shop_management'))
+    return redirect(url_for('admin.shop_management', embed='true'))
 
 @admin_bp.route('/shops/delete/<int:shop_id>', methods=['POST'])
 @login_required
@@ -435,7 +445,7 @@ def delete_shop(shop_id):
         if is_ajax:
             return jsonify({'success': False, 'message': error_msg})
         flash(error_msg, 'error')
-        return redirect(url_for('admin.shop_management'))
+        return redirect(url_for('admin.shop_management', embed='true'))
     
     shop_name = shop.shop_name
     shop_url = shop.shop_url
@@ -476,4 +486,4 @@ def delete_shop(shop_id):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if is_ajax:
         return jsonify({'success': True, 'message': '操作完成'})
-    return redirect(url_for('admin.shop_management'))
+    return redirect(url_for('admin.shop_management', embed='true'))

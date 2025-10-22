@@ -247,15 +247,15 @@ def clean_old_logs(days_to_keep=30):
         conn.close()
 
 # 店铺相关操作函数
-def add_shop(shop_name, shop_url, created_by=None):
+def add_shop(shop_name, brand_name=None, shop_url=None, operator=None, shop_type="自有", created_by=None):
     """添加新店铺"""
     conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
         cursor.execute(
-            'INSERT INTO shops (shop_name, shop_url, created_by) VALUES (?, ?, ?)',
-            (shop_name, shop_url, created_by)
+            'INSERT INTO shops (shop_name, brand_name, shop_url, operator, shop_type, created_by) VALUES (?, ?, ?, ?, ?, ?)',
+            (shop_name, brand_name, shop_url, operator, shop_type, created_by)
         )
         conn.commit()
         return cursor.lastrowid  # 返回新插入记录的ID
@@ -295,15 +295,16 @@ def get_shop_by_id(shop_id):
     finally:
         conn.close()
 
-def update_shop(shop_id, shop_name, shop_url):
+def update_shop(shop_id, shop_name, brand_name=None, shop_url=None, operator=None, shop_type=None):
     """更新店铺信息"""
     conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
         cursor.execute(
-            'UPDATE shops SET shop_name = ?, shop_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            (shop_name, shop_url, shop_id)
+            '''UPDATE shops SET shop_name = ?, brand_name = ?, shop_url = ?, operator = ?, shop_type = ?, updated_at = CURRENT_TIMESTAMP
+               WHERE id = ?''',
+            (shop_name, brand_name, shop_url, operator, shop_type, shop_id)
         )
         conn.commit()
         return cursor.rowcount > 0  # 返回是否成功更新

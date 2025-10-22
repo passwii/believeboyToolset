@@ -9,15 +9,32 @@
         <div class="section-title">
             <h3><i class="fas fa-plus-circle"></i> 添加新店铺</h3>
         </div>
-        <form id="add-shop-form" class="shop-form">
+        <form id="add-shop-form" class="shop-form" action="/admin/shops/add" method="POST">
             <div class="form-row">
                 <div class="form-group">
                     <label for="shop_name">店铺名称</label>
                     <input type="text" id="shop_name" name="shop_name" required placeholder="请输入店铺名称">
                 </div>
                 <div class="form-group">
+                    <label for="brand_name">品牌名称</label>
+                    <input type="text" id="brand_name" name="brand_name" placeholder="请输入品牌名称">
+                </div>
+                <div class="form-group">
                     <label for="shop_url">店铺链接</label>
                     <input type="url" id="shop_url" name="shop_url" required placeholder="https://example.com">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="operator">运营者</label>
+                    <input type="text" id="operator" name="operator" placeholder="请输入运营者姓名（可选）">
+                </div>
+                <div class="form-group">
+                    <label for="shop_type">店铺属性</label>
+                    <select id="shop_type" name="shop_type" class="form-control">
+                        <option value="自有">自有</option>
+                        <option value="竞品">竞品</option>
+                    </select>
                 </div>
                 <div class="form-group form-actions">
                     <button type="submit" class="btn btn-primary">
@@ -32,15 +49,66 @@
     <div class="shops-list-section">
         <div class="section-title">
             <h3><i class="fas fa-list"></i> 店铺列表</h3>
-            <span class="shops-count">共 <span id="shops-total-count">0</span> 个店铺</span>
+            <span class="shops-count">共 <span id="shops-total-count">{{ shops|length if shops else 0 }}</span> 个店铺</span>
         </div>
         
-        <div class="shops-grid" id="shops-grid">
-            <!-- 店铺卡片将通过JavaScript动态加载 -->
-            <div class="loading-shops">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>正在加载店铺信息...</span>
-            </div>
+        <div class="shops-table-container">
+            {% if shops %}
+                <table class="shops-table">
+                    <thead>
+                        <tr>
+                            <th>店铺名称</th>
+                            <th>品牌名称</th>
+                            <th>店铺链接</th>
+                            <th>运营者</th>
+                            <th>店铺属性</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for shop in shops %}
+                        <tr class="shop-row" data-shop-id="{{ shop.id }}">
+                            <td class="shop-name">{{ shop.shop_name }}</td>
+                            <td class="brand-name">{{ shop.brand_name or '-' }}</td>
+                            <td class="shop-url">
+                                <a href="{{ shop.shop_url }}" target="_blank" class="url-link" title="{{ shop.shop_url }}">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    <span class="url-text">{{ shop.shop_url[:30] }}{% if shop.shop_url|length > 30 %}...{% endif %}</span>
+                                </a>
+                            </td>
+                            <td class="operator">{{ shop.operator or '-' }}</td>
+                            <td class="shop-type">
+                                <span class="type-badge {{ 'own' if shop.shop_type == '自有' else 'competitor' }}">
+                                    {{ shop.shop_type or '自有' }}
+                                </span>
+                            </td>
+                            <td class="created-at">{{ shop.created_at[:10] if shop.created_at else '-' }}</td>
+                            <td class="actions">
+                                <button class="edit-shop-btn" data-shop-id="{{ shop.id }}"
+                                        data-shop-name="{{ shop.shop_name }}"
+                                        data-brand-name="{{ shop.brand_name or '' }}"
+                                        data-shop-url="{{ shop.shop_url }}"
+                                        data-operator="{{ shop.operator or '' }}"
+                                        data-shop-type="{{ shop.shop_type or '自有' }}"
+                                        title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="delete-shop-btn" data-shop-id="{{ shop.id }}" data-shop-name="{{ shop.shop_name }}" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-shops">
+                    <i class="fas fa-store-slash"></i>
+                    <h3>暂无店铺信息</h3>
+                    <p>请使用上方表单添加新店铺</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -52,15 +120,30 @@
             <h3><i class="fas fa-edit"></i> 编辑店铺信息</h3>
             <span class="close-modal">&times;</span>
         </div>
-        <form id="edit-shop-form" class="shop-form">
+        <form id="edit-shop-form" class="shop-form" method="POST">
             <input type="hidden" id="edit_shop_id" name="shop_id">
             <div class="form-group">
                 <label for="edit_shop_name">店铺名称</label>
                 <input type="text" id="edit_shop_name" name="shop_name" required>
             </div>
             <div class="form-group">
+                <label for="edit_brand_name">品牌名称</label>
+                <input type="text" id="edit_brand_name" name="brand_name">
+            </div>
+            <div class="form-group">
                 <label for="edit_shop_url">店铺链接</label>
                 <input type="url" id="edit_shop_url" name="shop_url" required>
+            </div>
+            <div class="form-group">
+                <label for="edit_operator">运营者</label>
+                <input type="text" id="edit_operator" name="operator">
+            </div>
+            <div class="form-group">
+                <label for="edit_shop_type">店铺属性</label>
+                <select id="edit_shop_type" name="shop_type" class="form-control">
+                    <option value="自有">自有</option>
+                    <option value="竞品">竞品</option>
+                </select>
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
@@ -168,7 +251,8 @@
     color: var(--text-primary);
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 12px 15px;
     background: rgba(255, 255, 255, 0.1);
@@ -179,7 +263,12 @@
     transition: all var(--transition-normal) ease;
 }
 
-.form-group input:focus {
+.form-group select {
+    cursor: pointer;
+}
+
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
     border-color: var(--neon-blue);
     box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
@@ -234,87 +323,130 @@
     box-shadow: 0 5px 15px rgba(255, 0, 110, 0.4);
 }
 
-.shops-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+.shops-table-container {
+    overflow-x: auto;
+    margin-top: 20px;
 }
 
-.shop-card {
+.shops-table {
+    width: 100%;
+    border-collapse: collapse;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(0, 212, 255, 0.2);
     border-radius: 12px;
-    padding: 20px;
+    overflow: hidden;
+}
+
+.shops-table th,
+.shops-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.shops-table th {
+    background: rgba(0, 212, 255, 0.1);
+    color: var(--neon-blue);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.shops-table tr:last-child td {
+    border-bottom: none;
+}
+
+.shop-row {
     transition: all var(--transition-normal) ease;
-    position: relative;
 }
 
-.shop-card:hover {
-    border-color: var(--neon-blue);
-    box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
-    transform: translateY(-5px);
-}
-
-.shop-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    margin-bottom: 15px;
+.shop-row:hover {
+    background: rgba(0, 212, 255, 0.05);
 }
 
 .shop-name {
-    font-size: 1.3rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin: 0;
-    word-break: break-word;
+    font-size: 1.1rem;
 }
 
-.shop-actions {
+.brand-name {
+    color: var(--text-primary);
+}
+
+.url-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--neon-blue);
+    text-decoration: none;
+    transition: color var(--transition-normal) ease;
+}
+
+.url-link:hover {
+    color: var(--neon-purple);
+}
+
+.url-text {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.operator {
+    color: var(--text-primary);
+}
+
+.type-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.type-badge.own {
+    background: rgba(0, 255, 127, 0.2);
+    color: #00ff7f;
+    border: 1px solid rgba(0, 255, 127, 0.3);
+}
+
+.type-badge.competitor {
+    background: rgba(255, 69, 0, 0.2);
+    color: #ff4500;
+    border: 1px solid rgba(255, 69, 0, 0.3);
+}
+
+.created-at {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.actions {
     display: flex;
     gap: 8px;
 }
 
-.shop-actions button {
+.actions button {
     background: none;
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
-    padding: 5px;
+    padding: 8px;
     border-radius: 5px;
     transition: all var(--transition-normal) ease;
 }
 
-.shop-actions button:hover {
+.actions button:hover {
     background: rgba(255, 255, 255, 0.1);
     color: var(--neon-blue);
 }
 
-.shop-url {
-    margin-bottom: 15px;
-}
-
-.shop-url a {
-    color: var(--neon-blue);
-    text-decoration: none;
-    word-break: break-all;
-    transition: color var(--transition-normal) ease;
-}
-
-.shop-url a:hover {
-    color: var(--neon-purple);
-    text-decoration: underline;
-}
-
-.shop-meta {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    display: flex;
-    justify-content: space-between;
-}
-
 .loading-shops {
-    grid-column: 1 / -1;
     text-align: center;
     padding: 40px;
     color: var(--text-secondary);
@@ -327,10 +459,13 @@
 }
 
 .empty-shops {
-    grid-column: 1 / -1;
     text-align: center;
     padding: 40px;
     color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 12px;
+    margin-top: 20px;
 }
 
 .empty-shops i {
@@ -421,8 +556,12 @@
         gap: 15px;
     }
     
-    .shops-grid {
-        grid-template-columns: 1fr;
+    .shops-table-container {
+        overflow-x: scroll;
+    }
+    
+    .shops-table {
+        min-width: 800px;
     }
     
     .modal-content {
@@ -435,9 +574,6 @@
 <script>
 // 店铺管理JavaScript代码
 document.addEventListener('DOMContentLoaded', function() {
-    // 加载店铺列表
-    loadShops();
-    
     // 处理添加店铺表单提交
     const addShopForm = document.getElementById('add-shop-form');
     if (addShopForm) {
@@ -459,7 +595,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     showNotification('店铺添加成功', 'success');
                     this.reset();
-                    loadShops(); // 重新加载店铺列表
+                    location.reload(); // 重新加载页面以显示新数据
                 } else {
                     showNotification(data.message || '添加店铺失败', 'error');
                 }
@@ -470,6 +606,27 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    
+    // 使用事件委托处理编辑按钮点击
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.edit-shop-btn')) {
+            const btn = e.target.closest('.edit-shop-btn');
+            const shopId = btn.getAttribute('data-shop-id');
+            const shopName = btn.getAttribute('data-shop-name');
+            const brandName = btn.getAttribute('data-brand-name');
+            const shopUrl = btn.getAttribute('data-shop-url');
+            const operator = btn.getAttribute('data-operator');
+            const shopType = btn.getAttribute('data-shop-type');
+            editShop(shopId, shopName, brandName, shopUrl, operator, shopType);
+        }
+        
+        if (e.target.closest('.delete-shop-btn')) {
+            const btn = e.target.closest('.delete-shop-btn');
+            const shopId = btn.getAttribute('data-shop-id');
+            const shopName = btn.getAttribute('data-shop-name');
+            deleteShop(shopId, shopName);
+        }
+    });
     
     // 处理编辑店铺表单提交
     const editShopForm = document.getElementById('edit-shop-form');
@@ -493,7 +650,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     showNotification('店铺信息更新成功', 'success');
                     closeModal();
-                    loadShops(); // 重新加载店铺列表
+                    location.reload(); // 重新加载页面以显示更新后的数据
                 } else {
                     showNotification(data.message || '更新店铺信息失败', 'error');
                 }
@@ -526,89 +683,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// 加载店铺列表
-function loadShops() {
-    const shopsGrid = document.getElementById('shops-grid');
-    
-    // 显示加载状态
-    shopsGrid.innerHTML = `
-        <div class="loading-shops">
-            <i class="fas fa-spinner fa-spin"></i>
-            <span>正在加载店铺信息...</span>
-        </div>
-    `;
-    
-    // 发送AJAX请求获取店铺列表
-    fetch('/admin/shops/list')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                renderShops(data.shops);
-                updateShopsCount(data.shops.length);
-            } else {
-                showError('加载店铺列表失败');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showError('加载店铺列表失败，请重试');
-        });
-}
-
-// 渲染店铺列表
-function renderShops(shops) {
-    const shopsGrid = document.getElementById('shops-grid');
-    
-    if (shops.length === 0) {
-        shopsGrid.innerHTML = `
-            <div class="empty-shops">
-                <i class="fas fa-store-slash"></i>
-                <h3>暂无店铺信息</h3>
-                <p>请使用上方表单添加新店铺</p>
-            </div>
-        `;
-        return;
-    }
-    
-    shopsGrid.innerHTML = shops.map(shop => `
-        <div class="shop-card" data-shop-id="${shop.id}">
-            <div class="shop-card-header">
-                <h4 class="shop-name">${escapeHtml(shop.shop_name)}</h4>
-                <div class="shop-actions">
-                    <button onclick="editShop(${shop.id}, '${escapeHtml(shop.shop_name)}', '${escapeHtml(shop.shop_url)}')" title="编辑">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="deleteShop(${shop.id}, '${escapeHtml(shop.shop_name)}')" title="删除">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="shop-url">
-                <a href="${escapeHtml(shop.shop_url)}" target="_blank">
-                    <i class="fas fa-external-link-alt"></i> ${escapeHtml(shop.shop_url)}
-                </a>
-            </div>
-            <div class="shop-meta">
-                <span>创建时间: ${formatDate(shop.created_at)}</span>
-                <span>更新时间: ${formatDate(shop.updated_at)}</span>
-            </div>
-        </div>
-    `).join('');
-}
-
-// 更新店铺数量
-function updateShopsCount(count) {
-    const countElement = document.getElementById('shops-total-count');
-    if (countElement) {
-        countElement.textContent = count;
-    }
-}
 
 // 编辑店铺
-function editShop(shopId, shopName, shopUrl) {
+function editShop(shopId, shopName, brandName, shopUrl, operator, shopType) {
     document.getElementById('edit_shop_id').value = shopId;
     document.getElementById('edit_shop_name').value = shopName;
+    document.getElementById('edit_brand_name').value = brandName;
     document.getElementById('edit_shop_url').value = shopUrl;
+    document.getElementById('edit_operator').value = operator;
+    document.getElementById('edit_shop_type').value = shopType;
     
     document.getElementById('edit-shop-modal').style.display = 'block';
 }
@@ -643,20 +726,6 @@ function closeModal() {
     document.getElementById('edit-shop-modal').style.display = 'none';
 }
 
-// 显示错误信息
-function showError(message) {
-    const shopsGrid = document.getElementById('shops-grid');
-    shopsGrid.innerHTML = `
-        <div class="empty-shops">
-            <i class="fas fa-exclamation-triangle"></i>
-            <h3>加载失败</h3>
-            <p>${message}</p>
-            <button class="btn btn-primary" onclick="loadShops()">
-                <i class="fas fa-redo"></i> 重试
-            </button>
-        </div>
-    `;
-}
 
 // 工具函数：转义HTML
 function escapeHtml(text) {

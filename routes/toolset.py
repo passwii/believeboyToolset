@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, render_template, jsonify, session
 from core.auth import login_required
 from core.log_service import LogService
 
@@ -34,7 +34,11 @@ def shop_nav():
     user = User.get_user_by_username(username)
     chinese_name = user.chinese_name if user and user.chinese_name else username
     
-    return render_template('toolset/shop_nav_embed.html', chinese_name=chinese_name)
+    # 获取所有店铺数据
+    from core.shop_model import Shop
+    shops = Shop.get_all()
+    
+    return render_template('toolset/shop_nav_embed.html', chinese_name=chinese_name, shops=shops)
 
 @toolset_bp.route('/shops/list')
 @login_required
