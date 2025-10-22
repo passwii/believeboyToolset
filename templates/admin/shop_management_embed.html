@@ -83,7 +83,7 @@
                                     {{ shop.shop_type or '自有' }}
                                 </span>
                             </td>
-                            <td class="created-at">{{ shop.created_at[:10] if shop.created_at else '-' }}</td>
+                            <td class="created-at">{{ shop.created_at | beijing_time if shop.created_at else '-' }}</td>
                             <td class="actions">
                                 <button class="edit-shop-btn" data-shop-id="{{ shop.id }}"
                                         data-shop-name="{{ shop.shop_name }}"
@@ -183,18 +183,17 @@
 }
 
 .add-shop-section, .shops-list-section {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(0, 212, 255, 0.2);
     border-radius: 15px;
     padding: 25px;
     margin-bottom: 30px;
-    transition: all var(--transition-normal) ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .add-shop-section:hover, .shops-list-section:hover {
     border-color: var(--neon-blue);
-    box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 212, 255, 0.2);
 }
 
 .section-title {
@@ -260,7 +259,7 @@
     border-radius: 8px;
     color: var(--text-primary);
     font-size: 1rem;
-    transition: all var(--transition-normal) ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .form-group select {
@@ -271,7 +270,7 @@
 .form-group select:focus {
     outline: none;
     border-color: var(--neon-blue);
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 5px rgba(0, 212, 255, 0.3);
 }
 
 .form-actions {
@@ -286,7 +285,7 @@
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all var(--transition-normal) ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -298,8 +297,8 @@
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 212, 255, 0.3);
 }
 
 .btn-secondary {
@@ -314,13 +313,14 @@
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, #ff006e 0%, #ff4458 100%);
+    background: linear-gradient(135deg, #ff4757 0%, #ff4458 100%);
     color: white;
+    font-weight: 600;
 }
 
 .btn-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 0, 110, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(255, 71, 87, 0.3);
 }
 
 .shops-table-container {
@@ -331,7 +331,7 @@
 .shops-table {
     width: 100%;
     border-collapse: collapse;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(0, 212, 255, 0.2);
     border-radius: 12px;
     overflow: hidden;
@@ -358,7 +358,7 @@
 }
 
 .shop-row {
-    transition: all var(--transition-normal) ease;
+    transition: background-color 0.2s ease;
 }
 
 .shop-row:hover {
@@ -381,7 +381,7 @@
     gap: 8px;
     color: var(--neon-blue);
     text-decoration: none;
-    transition: color var(--transition-normal) ease;
+    transition: color 0.2s ease;
 }
 
 .url-link:hover {
@@ -438,7 +438,7 @@
     cursor: pointer;
     padding: 8px;
     border-radius: 5px;
-    transition: all var(--transition-normal) ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .actions button:hover {
@@ -462,7 +462,7 @@
     text-align: center;
     padding: 40px;
     color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(0, 212, 255, 0.2);
     border-radius: 12px;
     margin-top: 20px;
@@ -484,31 +484,18 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
+    background-color: rgba(0, 0, 0, 0.8);
 }
 
 .modal-content {
-    background: rgba(20, 20, 30, 0.95);
+    background: rgba(20, 20, 30, 0.98);
     border: 1px solid rgba(0, 212, 255, 0.3);
     border-radius: 15px;
     margin: 10% auto;
     padding: 0;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    animation: modalSlideIn 0.3s ease;
-}
-
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
 }
 
 .modal-header {
@@ -533,7 +520,7 @@
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
-    transition: color var(--transition-normal) ease;
+    transition: color 0.2s ease;
 }
 
 .close-modal:hover {

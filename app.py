@@ -8,6 +8,8 @@ from flask import Flask
 from routes import init_app
 from core.config import APP_CONFIG, SECRET_KEY, SESSION_CONFIG
 from core.auth import auth_bp
+from core.database_config import get_db_connection
+from core.database import init_db
 from datetime import datetime, timedelta
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -35,13 +37,42 @@ def beijing_time_filter(timestamp):
             dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
         except ValueError:
             # 如果解析失败，返回原始字符串
-            return timestamp + " (北京时间)"
+            return timestamp
     else:
         # 如果是datetime对象
         dt = timestamp
     
-    # 格式化为更友好的显示
+    # 格式化为更友好的显示（数据库中已经是北京时间，不需要转换）
     return dt.strftime('%Y-%m-%d %H:%M:%S')
+
+def verify_timezone_setting():
+    """验证时区设置是否正确"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 检查UTC时间和北京时间
+        cursor.execute("SELECT datetime('now') as utc_time, datetime('now', '+8 hours') as beijing_time")
+        times = cursor.fetchone()
+        
+        conn.close()
+        
+        print(f"系统时区验证:")
+        print(f"  UTC时间: {times[0]}")
+        print(f"  北京时间: {times[1]}")
+        
+        return True
+    except Exception as e:
+        print(f"时区验证失败: {e}")
+        return False
+
+# 初始化数据库
+print("正在初始化数据库...")
+init_db()
+
+# 验证时区设置
+print("正在验证时区设置...")
+verify_timezone_setting()
 
 # 初始化路由
 init_app(app)

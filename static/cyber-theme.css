@@ -21,7 +21,8 @@
   /* 功能色 */
   --success-color: #00ff88;
   --warning-color: #ffaa00;
-  --error-color: #ff006e;
+  --error-color: #ff4757;  /* 修改为更清晰的红色，提高可读性 */
+  --error-hover-bg: rgba(255, 71, 87, 0.1);  /* 错误色悬停背景 */
   
   /* 过渡时间 */
   --transition-fast: 0.2s;
@@ -355,8 +356,10 @@ body {
 }
 
 .dropdown-item.logout-item:hover {
-  background: rgba(255, 0, 110, 0.1);
+  background: var(--error-hover-bg);
   color: var(--error-color);
+  font-weight: 600;  /* 增加字体粗细提高可读性 */
+  text-shadow: 0 0 3px rgba(255, 71, 87, 0.3);  /* 添加轻微文字阴影提高清晰度 */
 }
 
 .dropdown-item.logout-item:hover i {

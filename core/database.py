@@ -1,9 +1,10 @@
 import sqlite3
 import os
 from datetime import datetime, timedelta
+from .database_config import get_db_connection, init_db_with_beijing_time, DB_PATH
 
-# 数据库文件路径
-DB_PATH = 'users.db'
+# 数据库文件路径 - 从database_config导入
+# DB_PATH = 'users.db'
 
 def update_password(user_id, new_password_hash):
     """更新用户密码"""
@@ -22,78 +23,10 @@ def update_password(user_id, new_password_hash):
 
 def init_db():
     """初始化数据库，创建用户表和日志表"""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
-    # 创建用户表
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            chinese_name TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    # 创建日志表
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            user_id INTEGER,
-            username VARCHAR(50),
-            action VARCHAR(100) NOT NULL,
-            resource VARCHAR(100),
-            details TEXT,
-            ip_address VARCHAR(45),
-            user_agent TEXT,
-            log_type VARCHAR(20) DEFAULT 'user',
-            level VARCHAR(10) DEFAULT 'info',
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-    ''')
-    
-    # 创建店铺表
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS shops (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            shop_name TEXT NOT NULL,
-            brand_name TEXT,
-            shop_url TEXT NOT NULL,
-            operator TEXT,
-            shop_type TEXT DEFAULT "自有",
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            created_by INTEGER,
-            FOREIGN KEY (created_by) REFERENCES users (id)
-        )
-    ''')
-    
-    # 检查并添加缺失的字段（用于更新现有数据库）
-    cursor.execute("PRAGMA table_info(shops)")
-    existing_columns = [column[1] for column in cursor.fetchall()]
-    
-    # 添加brand_name字段（如果不存在）
-    if 'brand_name' not in existing_columns:
-        cursor.execute('ALTER TABLE shops ADD COLUMN brand_name TEXT')
-    
-    # 添加operator字段（如果不存在）
-    if 'operator' not in existing_columns:
-        cursor.execute('ALTER TABLE shops ADD COLUMN operator TEXT')
-    
-    # 添加shop_type字段（如果不存在）
-    if 'shop_type' not in existing_columns:
-        cursor.execute('ALTER TABLE shops ADD COLUMN shop_type TEXT DEFAULT "自有"')
-    
-    conn.commit()
-    conn.close()
+    # 使用新的初始化函数，自动设置北京时间
+    init_db_with_beijing_time()
 
-def get_db_connection():
-    """获取数据库连接"""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # 使结果可以通过列名访问
-    return conn
+# get_db_connection 函数已从 database_config 导入
 
 def add_user(username, password_hash, chinese_name=None):
     """添加新用户"""
@@ -167,15 +100,12 @@ def add_log(user_id, username, action, resource=None, details=None,
     cursor = conn.cursor()
     
     try:
-        # 获取北京时间 (UTC+8)
-        beijing_time = datetime.utcnow() + timedelta(hours=8)
-        timestamp_str = beijing_time.strftime('%Y-%m-%d %H:%M:%S')
-        
+        # 使用数据库的默认时间设置（已经是北京时间）
         cursor.execute(
             '''INSERT INTO logs
-               (timestamp, user_id, username, action, resource, details, ip_address, user_agent, log_type, level)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-            (timestamp_str, user_id, username, action, resource, details, ip_address, user_agent, log_type, level)
+               (user_id, username, action, resource, details, ip_address, user_agent, log_type, level)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            (user_id, username, action, resource, details, ip_address, user_agent, log_type, level)
         )
         conn.commit()
         return True
@@ -255,7 +185,7 @@ def clean_old_logs(days_to_keep=30):
     
     try:
         cursor.execute(
-            "DELETE FROM logs WHERE timestamp < datetime('now', '-{} days')".format(days_to_keep)
+            "DELETE FROM logs WHERE timestamp < datetime('now', '+8 hours', '-{} days')".format(days_to_keep)
         )
         conn.commit()
         return cursor.rowcount
@@ -321,7 +251,7 @@ def update_shop(shop_id, shop_name, brand_name=None, shop_url=None, operator=Non
     
     try:
         cursor.execute(
-            '''UPDATE shops SET shop_name = ?, brand_name = ?, shop_url = ?, operator = ?, shop_type = ?, updated_at = CURRENT_TIMESTAMP
+            '''UPDATE shops SET shop_name = ?, brand_name = ?, shop_url = ?, operator = ?, shop_type = ?, updated_at = (datetime('now', '+8 hours'))
                WHERE id = ?''',
             (shop_name, brand_name, shop_url, operator, shop_type, shop_id)
         )

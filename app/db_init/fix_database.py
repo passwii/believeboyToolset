@@ -3,6 +3,9 @@
 修复数据库脚本 - 添加缺失的 logs 表
 """
 
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), '..'))
 from core.database import init_db, get_db_connection
 import sqlite3
 

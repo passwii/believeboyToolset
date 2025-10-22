@@ -1,50 +1,57 @@
 <div class="logs-management-embed">
     <div class="section-header">
         <h2><i class="fas fa-list-alt"></i> 系统日志</h2>
-        <form id="clear-logs-form" class="clear-logs-form" onsubmit="return confirm('确定要清理旧日志吗？此操作不可恢复！')">
-            <input type="number" name="days" value="30" min="1" max="365" title="保留天数">
-            <button type="submit" class="clear-logs-btn">清理旧日志</button>
-        </form>
     </div>
     
     <!-- 显示消息 -->
     <div id="log-management-messages"></div>
     
-    <!-- 筛选表单 -->
-    <div class="filter-card">
-        <form id="log-filter-form" method="GET" class="filter-form">
-            <div class="filter-group">
-                <label for="type">日志类型</label>
-                <select name="type" id="type">
-                    <option value="">所有类型</option>
-                    <option value="user" {% if current_type == 'user' %}selected{% endif %}>用户操作</option>
-                    <option value="system" {% if current_type == 'system' %}selected{% endif %}>系统事件</option>
-                    <option value="security" {% if current_type == 'security' %}selected{% endif %}>安全事件</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label for="level">日志级别</label>
-                <select name="level" id="level">
-                    <option value="">所有级别</option>
-                    <option value="debug" {% if current_level == 'debug' %}selected{% endif %}>调试</option>
-                    <option value="info" {% if current_level == 'info' %}selected{% endif %}>信息</option>
-                    <option value="warning" {% if current_level == 'warning' %}selected{% endif %}>警告</option>
-                    <option value="error" {% if current_level == 'error' %}selected{% endif %}>错误</option>
-                    <option value="critical" {% if current_level == 'critical' %}selected{% endif %}>严重</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label for="limit">显示条数</label>
-                <input type="number" name="limit" id="limit" value="{{ limit }}" min="10" max="1000" step="10" placeholder="显示条数">
-            </div>
-            
-            <div class="filter-actions">
-                <button type="submit">筛选</button>
-                <a href="javascript:void(0)" class="reset-btn" onclick="loadContent('log-management')">重置</a>
-            </div>
-        </form>
+    <!-- 筛选和清理区域 -->
+    <div class="filter-clear-container">
+        <!-- 筛选表单 -->
+        <div class="filter-card">
+            <form id="log-filter-form" method="GET" class="filter-form">
+                <div class="filter-group">
+                    <label for="type">日志类型</label>
+                    <select name="type" id="type">
+                        <option value="">所有类型</option>
+                        <option value="user" {% if current_type == 'user' %}selected{% endif %}>用户操作</option>
+                        <option value="system" {% if current_type == 'system' %}selected{% endif %}>系统事件</option>
+                        <option value="security" {% if current_type == 'security' %}selected{% endif %}>安全事件</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="level">日志级别</label>
+                    <select name="level" id="level">
+                        <option value="">所有级别</option>
+                        <option value="debug" {% if current_level == 'debug' %}selected{% endif %}>调试</option>
+                        <option value="info" {% if current_level == 'info' %}selected{% endif %}>信息</option>
+                        <option value="warning" {% if current_level == 'warning' %}selected{% endif %}>警告</option>
+                        <option value="error" {% if current_level == 'error' %}selected{% endif %}>错误</option>
+                        <option value="critical" {% if current_level == 'critical' %}selected{% endif %}>严重</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="limit">显示条数</label>
+                    <input type="number" name="limit" id="limit" value="{{ limit }}" min="10" max="1000" step="10" placeholder="显示条数">
+                </div>
+                
+                <div class="filter-actions">
+                    <button type="submit">筛选</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 清理旧日志 -->
+        <div class="clear-logs-card">
+            <form id="clear-logs-form" class="clear-logs-form" onsubmit="return confirm('确定要清理旧日志吗？此操作不可恢复！')">
+                <label for="days">保留天数</label>
+                <input type="number" name="days" value="30" min="1" max="365" title="保留天数">
+                <button type="submit" class="clear-logs-btn">清理旧日志</button>
+            </form>
+        </div>
     </div>
     
     <!-- 日志表格 -->
@@ -65,7 +72,7 @@
             <tbody>
                 {% for log in logs %}
                 <tr>
-                    <td class="timestamp">{{ log.timestamp | beijing_time }} (北京时间)</td>
+                    <td class="timestamp">{{ log.timestamp | beijing_time }}</td>
                     <td>{{ log.username or '-' }}</td>
                     <td>{{ log.action }}</td>
                     <td>{{ log.resource or '-' }}</td>
@@ -118,29 +125,16 @@
 /* 日志管理内嵌样式 */
 .logs-management-embed {
     padding: 20px;
-    background: rgba(26, 26, 46, 0.8);
-    backdrop-filter: blur(15px);
+    background: rgba(26, 26, 46, 0.9);
     border: 1px solid rgba(0, 212, 255, 0.2);
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     position: relative;
-    overflow: hidden;
-}
-
-.logs-management-embed::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(157, 78, 221, 0.05) 100%);
-    z-index: -1;
 }
 
 .section-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
@@ -166,76 +160,96 @@
     text-shadow: 0 0 10px var(--neon-blue);
 }
 
-.clear-logs-form {
+.filter-clear-container {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+    margin-bottom: 30px;
+}
+
+.filter-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    flex: 1;
+}
+
+.clear-logs-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 71, 87, 0.2);
     display: flex;
     align-items: center;
-    gap: 10px;
+}
+
+.clear-logs-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    width: 100%;
+}
+
+.clear-logs-form label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    margin-bottom: 12px;
 }
 
 .clear-logs-form input {
     width: 80px;
-    padding: 8px 12px;
-    border: 1px solid rgba(0, 212, 255, 0.3);
+    padding: 12px 15px;
+    border: 1px solid rgba(255, 71, 87, 0.3);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.1);
     font-size: 14px;
     color: var(--text-primary);
+    height: 44px;
+    box-sizing: border-box;
 }
 
 .clear-logs-form input:focus {
     outline: none;
-    border-color: var(--neon-blue);
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    border-color: #ff4757;
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
 }
 
 .clear-logs-btn {
-    padding: 8px 16px;
-    background: linear-gradient(135deg, var(--error-color) 0%, #d32f2f 100%);
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #ff4757 0%, #d32f2f 100%);
     color: white;
     border: none;
-    border-radius: 20px;
+    border-radius: 25px;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
     transition: all var(--transition-normal) ease;
-    box-shadow: 0 5px 15px rgba(255, 0, 110, 0.4);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+    display: inline-block;
+    text-align: center;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+    height: 44px;
+    box-sizing: border-box;
+    line-height: 20px;
+    white-space: nowrap;
 }
 
 .clear-logs-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 0, 110, 0.5);
-}
-
-.filter-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 25px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    position: relative;
-    overflow: hidden;
-}
-
-.filter-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(157, 78, 221, 0.05) 100%);
-    z-index: -1;
+    box-shadow: 0 8px 20px rgba(255, 71, 87, 0.5);
 }
 
 .filter-form {
     display: flex;
     gap: 15px;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-end;
 }
 
 .filter-group {
@@ -261,6 +275,8 @@
     transition: all var(--transition-normal) ease;
     min-width: 150px;
     color: var(--text-primary);
+    height: 44px;
+    box-sizing: border-box;
 }
 
 .filter-form select option {
@@ -281,7 +297,7 @@
 .filter-actions {
     display: flex;
     gap: 10px;
-    align-items: flex-end;
+    align-items: center;
 }
 
 .filter-form button {
@@ -294,6 +310,8 @@
     font-weight: 500;
     transition: all var(--transition-normal) ease;
     box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+    height: 44px;
+    box-sizing: border-box;
 }
 
 .filter-form button:hover {
@@ -301,44 +319,13 @@
     box-shadow: 0 8px 20px rgba(0, 212, 255, 0.5);
 }
 
-.reset-btn {
-    padding: 12px 25px;
-    background: rgba(26, 26, 46, 0.8);
-    color: var(--neon-blue);
-    border: 1px solid rgba(0, 212, 255, 0.3);
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all var(--transition-normal) ease;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.reset-btn:hover {
-    background: rgba(0, 212, 255, 0.1);
-    transform: translateY(-2px);
-}
-
 .logs-table-container {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(0, 212, 255, 0.2);
     margin-bottom: 30px;
-    position: relative;
-}
-
-.logs-table-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(157, 78, 221, 0.05) 100%);
-    z-index: -1;
 }
 
 .logs-table {
@@ -367,7 +354,7 @@
 }
 
 .logs-table tbody tr {
-    transition: all var(--transition-normal) ease;
+    transition: background-color 0.2s ease;
 }
 
 .logs-table tbody tr:hover {
@@ -402,17 +389,20 @@
 }
 
 .log-level-error {
-    background: rgba(255, 0, 110, 0.2);
-    color: var(--error-color);
-    border: 1px solid rgba(255, 0, 110, 0.3);
+    background: rgba(255, 71, 87, 0.2);
+    color: #ff4757;
+    border: 1px solid rgba(255, 71, 87, 0.3);
+    font-weight: 600;  /* 增加字体粗细 */
+    text-shadow: 0 0 2px rgba(255, 71, 87, 0.2);  /* 添加轻微文字阴影 */
 }
 
 .log-level-critical {
-    background: rgba(255, 0, 110, 0.3);
-    color: var(--error-color);
+    background: rgba(255, 71, 87, 0.3);
+    color: #ff4757;
     font-weight: bold;
-    border: 1px solid rgba(255, 0, 110, 0.5);
-    box-shadow: 0 0 5px rgba(255, 0, 110, 0.3);
+    border: 1px solid rgba(255, 71, 87, 0.5);
+    box-shadow: 0 0 5px rgba(255, 71, 87, 0.3);
+    text-shadow: 0 0 3px rgba(255, 71, 87, 0.3);  /* 增强文字阴影 */
 }
 
 .log-type-badge {
@@ -436,9 +426,11 @@
 }
 
 .log-type-security {
-    background: rgba(255, 0, 110, 0.2);
-    color: var(--error-color);
-    border: 1px solid rgba(255, 0, 110, 0.3);
+    background: rgba(255, 71, 87, 0.2);
+    color: #ff4757;
+    border: 1px solid rgba(255, 71, 87, 0.3);
+    font-weight: 600;  /* 增加字体粗细 */
+    text-shadow: 0 0 2px rgba(255, 71, 87, 0.2);  /* 添加轻微文字阴影 */
 }
 
 .log-details {
@@ -457,26 +449,12 @@
 .pagination-info {
     text-align: center;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(0, 212, 255, 0.2);
     color: var(--text-secondary);
     font-size: 14px;
-    position: relative;
-    overflow: hidden;
-}
-
-.pagination-info::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(157, 78, 221, 0.05) 100%);
-    z-index: -1;
 }
 
 .empty-state {
@@ -512,6 +490,11 @@
         text-align: center;
     }
 
+    .filter-clear-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+
     .filter-form {
         flex-direction: column;
         align-items: stretch;
@@ -541,6 +524,7 @@
     .clear-logs-form {
         flex-direction: column;
         align-items: center;
+        gap: 10px;
     }
 
     .clear-logs-form input {
