@@ -99,6 +99,70 @@ class Shop:
         finally:
             conn.close()
     
+    @classmethod
+    def get_by_user_permission(cls, username, chinese_name=None, is_admin=False):
+        """根据用户权限获取店铺"""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        try:
+            shops = []
+            
+            if is_admin:
+                # 管理员可以看到所有店铺
+                cursor.execute("SELECT * FROM shops ORDER BY shop_type, shop_name")
+            else:
+                # 普通用户只能看到自己负责的店铺（自有和竞品）
+                # 使用中文名称匹配
+                if chinese_name:
+                    cursor.execute("""
+                        SELECT * FROM shops
+                        WHERE operator = ?
+                        ORDER BY shop_type, shop_name
+                    """, (chinese_name,))
+                else:
+                    # 如果没有中文名称，看不到任何店铺
+                    pass  # 返回空列表
+            
+            shops_data = cursor.fetchall()
+            for shop_data in shops_data:
+                shops.append(cls(
+                    id=shop_data['id'],
+                    shop_name=shop_data['shop_name'],
+                    brand_name=shop_data['brand_name'] if shop_data['brand_name'] else None,
+                    shop_url=shop_data['shop_url'],
+                    operator=shop_data['operator'] if shop_data['operator'] else None,
+                    shop_type=shop_data['shop_type'] if shop_data['shop_type'] else '自有',
+                    created_at=shop_data['created_at'],
+                    updated_at=shop_data['updated_at'],
+                    created_by=shop_data['created_by']
+                ))
+            return shops
+        except Exception as e:
+            print(f"根据用户权限获取店铺失败: {e}")
+            return []
+        finally:
+            conn.close()
+    
+    @classmethod
+    def get_shops_by_user_permission(cls, username, chinese_name=None, is_admin=False):
+        """根据用户权限获取分类店铺（自有和竞品分开）"""
+        all_shops = cls.get_by_user_permission(username, chinese_name, is_admin)
+        
+        own_shops = []
+        competitor_shops = []
+        
+        for shop in all_shops:
+            if shop.shop_type == '自有':
+                own_shops.append(shop)
+            elif shop.shop_type == '竞品':
+                competitor_shops.append(shop)
+        
+        return {
+            'own_shops': own_shops,
+            'competitor_shops': competitor_shops
+        }
+    
     def update(self, shop_name=None, brand_name=None, shop_url=None, operator=None, shop_type=None):
         """更新店铺信息"""
         # 如果要更新店铺名称，检查是否与其他店铺重复

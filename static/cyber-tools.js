@@ -1044,16 +1044,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 newBtn.addEventListener('click', function() {
                     console.log('上周按钮被点击');
                     try {
-                        // 获取当前日期
+                        // 获取当前日期（使用本地时间）
                         const now = new Date();
                         
-                        // 计算上周的开始日期（7天前）
-                        const lastWeekStart = new Date(now);
-                        lastWeekStart.setDate(now.getDate() - 7);
+                        // 计算本周的周一
+                        const today = new Date(now);
+                        const dayOfWeek = today.getDay();
+                        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 如果是周日(0)，需要减6天，否则减(dayOfWeek-1)天
+                        const thisWeekMonday = new Date(today);
+                        thisWeekMonday.setDate(today.getDate() - daysToSubtract);
                         
-                        // 计算上周的结束日期（昨天）
-                        const lastWeekEnd = new Date(now);
-                        lastWeekEnd.setDate(now.getDate() - 1);
+                        // 计算上周的周一（本周周一减7天）
+                        const lastWeekStart = new Date(thisWeekMonday);
+                        lastWeekStart.setDate(thisWeekMonday.getDate() - 7);
+                        
+                        // 计算上周的周日（本周周一减1天）
+                        const lastWeekEnd = new Date(thisWeekMonday);
+                        lastWeekEnd.setDate(thisWeekMonday.getDate() - 1);
                         
                         // 格式化日期为 YYYY-MM-DD
                         const startYear = lastWeekStart.getFullYear();

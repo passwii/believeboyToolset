@@ -28,21 +28,23 @@ def shop_nav():
         level="info"
     )
     
-    # 获取当前用户的中文姓名
+    # 获取当前用户信息
     from core.user_model import User
     username = session.get('username')
     user = User.get_user_by_username(username)
     chinese_name = user.chinese_name if user and user.chinese_name else username
     
-    # 获取分类店铺数据
+    # 判断是否为管理员
+    is_admin = username == 'damonrock'
+    
+    # 根据权限获取店铺数据
     from core.shop_model import Shop
-    own_shops = Shop.get_by_type('自有')
-    competitor_shops = Shop.get_by_type('竞品')
+    shops_data = Shop.get_shops_by_user_permission(username, chinese_name, is_admin)
     
     return render_template('toolset/shop_nav_embed.html',
                           chinese_name=chinese_name,
-                          own_shops=own_shops,
-                          competitor_shops=competitor_shops)
+                          own_shops=shops_data['own_shops'],
+                          competitor_shops=shops_data['competitor_shops'])
 
 @toolset_bp.route('/shops/list')
 @login_required
