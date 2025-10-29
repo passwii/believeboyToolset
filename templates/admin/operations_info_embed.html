@@ -1,4 +1,4 @@
-<div class="dashboard-container">
+<div class="dashboard-container" style="padding: 20px; max-width: 100%; margin: 0 auto;">
     <!-- 统计卡片区域 -->
     <div class="stats-grid">
         <div class="stat-card" data-stat-type="daily">
@@ -6,7 +6,7 @@
                 <i class="fas fa-calendar-day"></i>
             </div>
             <div class="stat-content">
-                <h3 class="stat-title">日报</h3>
+                <div class="stat-title">日报</div>
                 <div class="stat-value">0</div>
                 <div class="stat-subtitle">今日生成</div>
             </div>
@@ -17,7 +17,7 @@
                 <i class="fas fa-calendar-alt"></i>
             </div>
             <div class="stat-content">
-                <h3 class="stat-title">月报</h3>
+                <div class="stat-title">月报</div>
                 <div class="stat-value">0</div>
                 <div class="stat-subtitle">本月生成</div>
             </div>
@@ -28,7 +28,7 @@
                 <i class="fas fa-calculator"></i>
             </div>
             <div class="stat-content">
-                <h3 class="stat-title">产品分析</h3>
+                <div class="stat-title">产品分析</div>
                 <div class="stat-value">0</div>
                 <div class="stat-subtitle">本周生成</div>
             </div>
@@ -39,7 +39,7 @@
                 <i class="fas fa-chart-line"></i>
             </div>
             <div class="stat-content">
-                <h3 class="stat-title">总报告数</h3>
+                <div class="stat-title">总报告数</div>
                 <div class="stat-value">0</div>
                 <div class="stat-subtitle">所有类型报告</div>
             </div>
@@ -49,24 +49,24 @@
     <!-- 图表区域 -->
     <div class="charts-container">
         <div class="chart-container">
-            <h3 class="chart-title">7天报告生成趋势</h3>
+            <div class="chart-title">7天报告生成趋势</div>
             <canvas id="trend-chart" class="chart-canvas"></canvas>
         </div>
         
         <div class="chart-container">
-            <h3 class="chart-title">报告类型分布</h3>
+            <div class="chart-title">报告类型分布</div>
             <canvas id="pie-chart" class="chart-canvas"></canvas>
         </div>
     </div>
     
     <!-- 最近活动区域 -->
     <div class="recent-activities">
-        <h3 class="section-title">
-            最近活动
+        <div class="section-title">
+            <span>最近活动</span>
             <button class="refresh-btn" onclick="window.dashboard?.loadStatistics()">
                 <i class="fas fa-sync-alt"></i> 刷新
             </button>
-        </h3>
+        </div>
         <ul class="activity-list" id="activity-list">
             <div class="loading-spinner">
                 <i class="fas fa-spinner fa-spin"></i>
@@ -77,7 +77,7 @@
     
     <!-- 系统状态区域 -->
     <div class="system-status">
-        <h3 class="section-title">系统状态</h3>
+        <div class="section-title">系统状态</div>
         <div class="status-grid">
             <div class="status-item" data-status-type="database">
                 <div class="status-indicator online"></div>
@@ -119,9 +119,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     // 延迟初始化以确保DOM完全加载
     setTimeout(() => {
-        if (!window.dashboard) {
+        if (window.dashboard) {
+            window.dashboard.loadStatistics();
+        } else {
+            // 如果没有全局仪表板实例，创建一个
             window.dashboard = new Dashboard();
+            window.dashboard.loadStatistics();
         }
-    }, 100);
+    }, 200);
 });
 </script>

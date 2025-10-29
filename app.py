@@ -57,22 +57,13 @@ def verify_timezone_setting():
         
         conn.close()
         
-        print(f"系统时区验证:")
-        print(f"  UTC时间: {times[0]}")
-        print(f"  北京时间: {times[1]}")
-        
         return True
     except Exception as e:
         print(f"时区验证失败: {e}")
         return False
 
 # 初始化数据库
-print("正在初始化数据库...")
 init_db()
-
-# 验证时区设置
-print("正在验证时区设置...")
-verify_timezone_setting()
 
 # 初始化路由
 init_app(app)

@@ -184,13 +184,53 @@ def clean_old_logs(days_to_keep=30):
     cursor = conn.cursor()
     
     try:
+        # 使用简化的时间计算，数据库已经设置为北京时间
         cursor.execute(
-            "DELETE FROM logs WHERE timestamp < datetime('now', '+8 hours', '-{} days')".format(days_to_keep)
+            "DELETE FROM logs WHERE timestamp < datetime('now', '-{} days')".format(days_to_keep)
         )
         conn.commit()
-        return cursor.rowcount
+        deleted_count = cursor.rowcount
+        print(f"成功清理了 {deleted_count} 条旧日志")
+        return deleted_count
     except Exception as e:
         print(f"清理旧日志失败: {e}")
+        return 0
+    finally:
+        conn.close()
+
+def get_all_logs():
+    """获取所有日志记录"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("SELECT * FROM logs ORDER BY timestamp DESC")
+        logs = cursor.fetchall()
+        return logs
+    except Exception as e:
+        print(f"获取所有日志失败: {e}")
+        return []
+    finally:
+        conn.close()
+
+def delete_all_logs():
+    """删除所有日志记录"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 首先获取日志数量
+        cursor.execute("SELECT COUNT(*) FROM logs")
+        count = cursor.fetchone()[0]
+        
+        # 然后删除所有日志
+        cursor.execute("DELETE FROM logs")
+        conn.commit()
+        
+        print(f"成功删除了 {count} 条日志记录")
+        return count
+    except Exception as e:
+        print(f"删除所有日志失败: {e}")
         return 0
     finally:
         conn.close()
@@ -221,7 +261,22 @@ def get_all_shops():
     
     try:
         cursor.execute('SELECT * FROM shops ORDER BY created_at DESC')
-        shops = cursor.fetchall()
+        rows = cursor.fetchall()
+        # 将tuple转换为字典格式
+        shops = []
+        for row in rows:
+            shop_dict = {
+                'id': row[0],
+                'shop_name': row[1],
+                'brand_name': row[2],
+                'shop_url': row[3],
+                'operator': row[4],
+                'shop_type': row[5],
+                'created_at': row[6],
+                'updated_at': row[7],
+                'created_by': row[8]
+            }
+            shops.append(shop_dict)
         return shops
     except Exception as e:
         print(f"获取店铺列表失败: {e}")
@@ -236,8 +291,22 @@ def get_shop_by_id(shop_id):
     
     try:
         cursor.execute('SELECT * FROM shops WHERE id = ?', (shop_id,))
-        shop = cursor.fetchone()
-        return shop
+        row = cursor.fetchone()
+        if row:
+            # 将tuple转换为字典格式
+            shop_dict = {
+                'id': row[0],
+                'shop_name': row[1],
+                'brand_name': row[2],
+                'shop_url': row[3],
+                'operator': row[4],
+                'shop_type': row[5],
+                'created_at': row[6],
+                'updated_at': row[7],
+                'created_by': row[8]
+            }
+            return shop_dict
+        return None
     except Exception as e:
         print(f"获取店铺信息失败: {e}")
         return None

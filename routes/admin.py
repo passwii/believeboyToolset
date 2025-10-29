@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+from datetime import datetime
 from core.auth import login_required, admin_required
 from core.user_model import User
 from core.auth_service import AuthService
@@ -21,8 +22,24 @@ def user_management():
     
     # 检查是否是AJAX请求（通过查询参数判断）
     embed = request.args.get('embed', 'false').lower() == 'true'
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     
     users = AuthService.get_all_users()
+    
+    # 如果是AJAX请求，返回JSON数据
+    if is_ajax or (embed and request.args.get('format') == 'json'):
+        users_data = []
+        for user in users:
+            users_data.append({
+                'id': user.id,
+                'username': user.username,
+                'chinese_name': user.chinese_name,
+                'created_at': user.created_at
+            })
+        return jsonify({
+            'success': True,
+            'users': users_data
+        })
     
     if embed:
         # 返回内嵌模板
@@ -118,6 +135,82 @@ def clear_logs():
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     
     message = f'已清理 {count} 条超过 {days} 天的日志记录'
+    
+    if is_ajax:
+        return jsonify({'success': True, 'message': message})
+    
+    flash(message, 'success')
+    return redirect(url_for('admin.view_logs'))
+
+@admin_bp.route('/logs/download')
+@login_required
+@admin_required
+def download_logs():
+    """下载所有日志为CSV格式"""
+    from core.database import get_all_logs
+    import csv
+    from io import StringIO
+    
+    # 获取所有日志
+    logs = get_all_logs()
+    
+    if not logs:
+        flash('没有日志记录可下载', 'warning')
+        return redirect(url_for('admin.view_logs'))
+    
+    # 创建CSV内容
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # 写入表头
+    writer.writerow(['ID', '时间', '用户', '操作', '资源', '详情', 'IP地址', '用户代理', '类型', '级别'])
+    
+    # 写入数据
+    for log in logs:
+        writer.writerow([
+            log[0],  # id
+            log[1],  # timestamp
+            log[2] or '',  # username
+            log[3] or '',  # action
+            log[4] or '',  # resource
+            log[5] or '',  # details
+            log[6] or '',  # ip_address
+            log[7] or '',  # user_agent
+            log[8] or '',  # log_type
+            log[9] or ''   # level
+        ])
+    
+    # 准备响应
+    csv_content = output.getvalue()
+    output.close()
+    
+    # 创建响应
+    from flask import Response
+    response = Response(
+        csv_content,
+        mimetype='text/csv',
+        headers={
+            'Content-Disposition': f'attachment; filename=logs_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        }
+    )
+    
+    return response
+
+@admin_bp.route('/logs/delete-all', methods=['POST'])
+@login_required
+@admin_required
+def delete_all_logs():
+    """删除所有日志"""
+    from core.database import delete_all_logs
+    
+    count = delete_all_logs()
+    
+    # 不记录删除日志操作 - 按要求移除日志记录
+    
+    # 检查是否是AJAX请求
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    message = f'成功删除所有日志记录，共 {count} 条'
     
     if is_ajax:
         return jsonify({'success': True, 'message': message})

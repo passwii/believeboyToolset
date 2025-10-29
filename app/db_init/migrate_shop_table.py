@@ -22,20 +22,16 @@ def migrate_shop_table():
         # 添加品牌名称字段
         if 'brand_name' not in columns:
             cursor.execute('ALTER TABLE shops ADD COLUMN brand_name TEXT')
-            print("已添加品牌名称字段")
         
         # 添加运营者字段
         if 'operator' not in columns:
             cursor.execute('ALTER TABLE shops ADD COLUMN operator TEXT')
-            print("已添加运营者字段")
         
         # 添加店铺属性字段
         if 'shop_type' not in columns:
             cursor.execute('ALTER TABLE shops ADD COLUMN shop_type TEXT DEFAULT "自有"')
-            print("已添加店铺属性字段")
         
         conn.commit()
-        print("店铺表迁移完成")
         return True
     except Exception as e:
         print(f"店铺表迁移失败: {e}")

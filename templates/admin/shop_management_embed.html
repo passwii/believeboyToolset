@@ -1,3 +1,11 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<!-- 优化后的模块化CSS文件 -->
+<link rel="stylesheet" href="/static/css/core.css">
+<link rel="stylesheet" href="/static/css/components.css">
+<link rel="stylesheet" href="/static/css/layouts.css">
+<link rel="stylesheet" href="/static/css/themes.css">
+<link rel="stylesheet" href="/static/css/responsive.css">
+
 <div class="shop-management-container">
     <div class="page-header">
         <h2><i class="fas fa-store"></i> 店铺信息维护</h2>
@@ -9,7 +17,7 @@
         <div class="section-title">
             <h3><i class="fas fa-plus-circle"></i> 添加新店铺</h3>
         </div>
-        <form id="add-shop-form" class="shop-form" action="/admin/shops/add" method="POST">
+        <form id="add-shop-form" class="shop-form" action="/admin/shops/add?embed=true" method="POST">
             <div class="form-row">
                 <div class="form-group">
                     <label for="shop_name">店铺名称</label>
@@ -120,7 +128,7 @@
             <h3><i class="fas fa-edit"></i> 编辑店铺信息</h3>
             <span class="close-modal">&times;</span>
         </div>
-        <form id="edit-shop-form" class="shop-form" method="POST">
+        <form id="edit-shop-form" class="shop-form" method="POST" action="?embed=true">
             <input type="hidden" id="edit_shop_id" name="shop_id">
             <div class="form-group">
                 <label for="edit_shop_name">店铺名称</label>
@@ -571,14 +579,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 检查店铺名称是否为空
             if (!shopName) {
-                showNotification('请输入店铺名称', 'error');
+                createNotification('请输入店铺名称', 'error');
                 return;
             }
             
             // 检查店铺名称是否已存在
             checkShopNameExists(shopName).then(exists => {
                 if (exists) {
-                    showNotification(`店铺名称 "${shopName}" 已存在，请使用其他名称`, 'error');
+                    createNotification(`店铺名称 "${shopName}" 已存在，请使用其他名称`, 'error');
                     return;
                 }
                 
@@ -586,26 +594,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 const formData = new FormData(this);
                 
                 // 发送AJAX请求
-                fetch('/admin/shops/add', {
+                fetch('/admin/shops/add?embed=true', {
                     method: 'POST',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
                     },
                     body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showNotification('店铺添加成功', 'success');
+                        createNotification('店铺添加成功', 'success');
                         this.reset();
-                        location.reload(); // 重新加载页面以显示新数据
+                        // 重新加载店铺列表而不是整个页面
+                        loadShops();
                     } else {
-                        showNotification(data.message || '添加店铺失败', 'error');
+                        createNotification(data.message || '添加店铺失败', 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showNotification('添加店铺失败，请重试', 'error');
+                    createNotification('添加店铺失败，请重试', 'error');
                 });
             });
         });
@@ -614,6 +624,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 使用事件委托处理编辑按钮点击
     document.addEventListener('click', function(e) {
         if (e.target.closest('.edit-shop-btn')) {
+            e.preventDefault();
             const btn = e.target.closest('.edit-shop-btn');
             const shopId = btn.getAttribute('data-shop-id');
             const shopName = btn.getAttribute('data-shop-name');
@@ -625,6 +636,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (e.target.closest('.delete-shop-btn')) {
+            e.preventDefault();
             const btn = e.target.closest('.delete-shop-btn');
             const shopId = btn.getAttribute('data-shop-id');
             const shopName = btn.getAttribute('data-shop-name');
@@ -645,7 +657,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 检查店铺名称是否为空
             if (!shopName) {
-                showNotification('请输入店铺名称', 'error');
+                createNotification('请输入店铺名称', 'error');
                 return;
             }
             
@@ -653,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (shopName !== originalShopName) {
                 checkShopNameExists(shopName, shopId).then(exists => {
                     if (exists) {
-                        showNotification(`店铺名称 "${shopName}" 已存在，请使用其他名称`, 'error');
+                        createNotification(`店铺名称 "${shopName}" 已存在，请使用其他名称`, 'error');
                         return;
                     }
                     
@@ -705,50 +717,62 @@ function editShop(shopId, shopName, brandName, shopUrl, operator, shopType) {
 // 提交编辑表单
 function submitEditForm(formData, shopId) {
     // 发送AJAX请求
-    fetch(`/admin/shops/update/${shopId}`, {
+    fetch(`/admin/shops/update/${shopId}?embed=true`, {
         method: 'POST',
         headers: {
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
         },
         body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showNotification('店铺信息更新成功', 'success');
+            createNotification('店铺信息更新成功', 'success');
             closeModal();
-            location.reload(); // 重新加载页面以显示更新后的数据
+            // 重新加载店铺管理页面
+            if (typeof loadContent === 'function') {
+                loadContent('shop-management');
+            } else {
+                loadShops();
+            }
         } else {
-            showNotification(data.message || '更新店铺信息失败', 'error');
+            createNotification(data.message || '更新店铺信息失败', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('更新店铺信息失败，请重试', 'error');
+        createNotification('更新店铺信息失败，请重试', 'error');
     });
 }
 
 // 删除店铺
 function deleteShop(shopId, shopName) {
     if (confirm(`确定要删除店铺 "${shopName}" 吗？此操作不可恢复！`)) {
-        fetch(`/admin/shops/delete/${shopId}`, {
+        fetch(`/admin/shops/delete/${shopId}?embed=true`, {
             method: 'POST',
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showNotification('店铺删除成功', 'success');
-                location.reload(); // 重新加载页面以显示更新后的数据
+                createNotification('店铺删除成功', 'success');
+                // 重新加载店铺管理页面
+                if (typeof loadContent === 'function') {
+                    loadContent('shop-management');
+                } else {
+                    loadShops();
+                }
             } else {
-                showNotification(data.message || '删除店铺失败', 'error');
+                createNotification(data.message || '删除店铺失败', 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showNotification('删除店铺失败，请重试', 'error');
+            createNotification('删除店铺失败，请重试', 'error');
         });
     }
 }
@@ -760,33 +784,123 @@ function closeModal() {
 
 // 加载店铺列表
 function loadShops() {
-    fetch('/admin/shops/list', {
+    fetch('/admin/shops/list?embed=true', {
         method: 'GET',
         headers: {
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
         }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // 这里可以更新店铺列表，但为了简单起见，我们直接重新加载页面
-            location.reload();
+            // 更新页面上的店铺列表
+            updateShopList(data.shops);
         } else {
-            showNotification('加载店铺列表失败', 'error');
+            createNotification('加载店铺列表失败', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('加载店铺列表失败，请重试', 'error');
+        createNotification('加载店铺列表失败，请重试', 'error');
     });
+}
+
+// 更新店铺列表显示
+function updateShopList(shops) {
+    const tableContainer = document.querySelector('.shops-table-container');
+    const shopsTotalCount = document.getElementById('shops-total-count');
+    
+    if (!tableContainer) return;
+    
+    // 更新总数量
+    if (shopsTotalCount) {
+        shopsTotalCount.textContent = shops.length;
+    }
+    
+    if (shops.length === 0) {
+        // 显示空状态
+        tableContainer.innerHTML = `
+            <div class="empty-shops">
+                <i class="fas fa-store-slash"></i>
+                <h3>暂无店铺信息</h3>
+                <p>请使用上方表单添加新店铺</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // 生成表格HTML
+    let tableHtml = `
+        <table class="shops-table">
+            <thead>
+                <tr>
+                    <th>店铺名称</th>
+                    <th>品牌名称</th>
+                    <th>店铺链接</th>
+                    <th>运营者</th>
+                    <th>店铺属性</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    shops.forEach(shop => {
+        const typeClass = shop.shop_type === '自有' ? 'own' : 'competitor';
+        const displayUrl = shop.shop_url.length > 30 ? shop.shop_url.substring(0, 30) + '...' : shop.shop_url;
+        
+        tableHtml += `
+            <tr class="shop-row" data-shop-id="${shop.id}">
+                <td class="shop-name">${escapeHtml(shop.shop_name)}</td>
+                <td class="brand-name">${escapeHtml(shop.brand_name) || '-'}</td>
+                <td class="shop-url">
+                    <a href="${escapeHtml(shop.shop_url)}" target="_blank" class="url-link" title="${escapeHtml(shop.shop_url)}">
+                        <i class="fas fa-external-link-alt"></i>
+                        <span class="url-text">${escapeHtml(displayUrl)}</span>
+                    </a>
+                </td>
+                <td class="operator">${escapeHtml(shop.operator) || '-'}</td>
+                <td class="shop-type">
+                    <span class="type-badge ${typeClass}">
+                        ${escapeHtml(shop.shop_type) || '自有'}
+                    </span>
+                </td>
+                <td class="created-at">${formatDate(shop.created_at)}</td>
+                <td class="actions">
+                    <button class="edit-shop-btn" data-shop-id="${shop.id}"
+                            data-shop-name="${escapeHtml(shop.shop_name)}"
+                            data-brand-name="${escapeHtml(shop.brand_name || '')}"
+                            data-shop-url="${escapeHtml(shop.shop_url)}"
+                            data-operator="${escapeHtml(shop.operator || '')}"
+                            data-shop-type="${escapeHtml(shop.shop_type || '自有')}"
+                            title="编辑">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="delete-shop-btn" data-shop-id="${shop.id}" data-shop-name="${escapeHtml(shop.shop_name)}" title="删除">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tableHtml += `
+            </tbody>
+        </table>
+    `;
+    
+    tableContainer.innerHTML = tableHtml;
 }
 
 // 检查店铺名称是否已存在
 function checkShopNameExists(shopName, excludeId = null) {
-    return fetch(`/admin/shops/check-name?shop_name=${encodeURIComponent(shopName)}${excludeId ? `&exclude_id=${excludeId}` : ''}`, {
+    return fetch(`/admin/shops/check-name?shop_name=${encodeURIComponent(shopName)}${excludeId ? `&exclude_id=${excludeId}` : ''}&embed=true`, {
         method: 'GET',
         headers: {
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
         }
     })
     .then(response => response.json())
@@ -823,14 +937,88 @@ function formatDate(dateString) {
     return `${year}-${month}-${day}`;
 }
 
-// 显示通知（重用全局函数）
-function showNotification(message, type = 'info') {
-    // 如果全局showNotification函数存在，则使用它
-    if (typeof window.showNotification === 'function') {
-        window.showNotification(message, type);
-    } else {
-        // 否则创建一个简单的通知
-        console.log(`${type.toUpperCase()}: ${message}`);
+// 创建通知函数 - 使用页面特定的通知容器，避免与其他页面冲突
+function createNotification(message, type = 'info') {
+    // 创建专属于店铺管理页面的通知容器
+    let container = document.getElementById('shop-management-notification-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'shop-management-notification-container';
+        container.style.cssText = `
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            z-index: 10000;
+            pointer-events: none;
+        `;
+        // 确保添加到当前页面的body，而不是其他页面
+        if (document.body) {
+            document.body.appendChild(container);
+        }
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = `shop-management-notification shop-management-notification-${type}`;
+    notification.style.cssText = `
+        position: relative;
+        background: rgba(10, 10, 10, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid ${getNotificationColor(type)};
+        border-radius: 10px;
+        padding: 15px 20px;
+        color: white;
+        font-weight: 500;
+        min-width: 250px;
+        max-width: 400px;
+        margin-bottom: 10px;
+        box-shadow: 0 0 20px ${getNotificationColor(type)}40;
+        transform: translateX(400px);
+        transition: all 0.3s ease;
+        pointer-events: auto;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    `;
+    
+    notification.innerHTML = `
+        <i class="fas ${getNotificationIcon(type)}" style="color: ${getNotificationColor(type)}; font-size: 18px; flex-shrink: 0;"></i>
+        <span style="flex: 1; line-height: 1.4;">${message}</span>
+    `;
+    
+    container.appendChild(notification);
+    
+    // 滑入动画
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // 3秒后自动移除
+    setTimeout(() => {
+        notification.style.transform = 'translateX(400px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+function getNotificationIcon(type) {
+    switch(type) {
+        case 'success': return 'fa-check-circle';
+        case 'warning': return 'fa-exclamation-triangle';
+        case 'error': return 'fa-times-circle';
+        default: return 'fa-info-circle';
+    }
+}
+
+function getNotificationColor(type) {
+    switch(type) {
+        case 'success': return '#00ff88';
+        case 'warning': return '#ffaa00';
+        case 'error': return '#ff006e';
+        default: return '#00d4ff';
     }
 }
 </script>

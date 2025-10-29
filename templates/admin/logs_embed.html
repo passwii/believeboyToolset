@@ -1,4 +1,4 @@
-<div class="logs-management-embed">
+u<div class="logs-management-embed">
     <div class="section-header">
         <h2><i class="fas fa-list-alt"></i> 系统日志</h2>
     </div>
@@ -6,51 +6,14 @@
     <!-- 显示消息 -->
     <div id="log-management-messages"></div>
     
-    <!-- 筛选和清理区域 -->
-    <div class="filter-clear-container">
-        <!-- 筛选表单 -->
-        <div class="filter-card">
-            <form id="log-filter-form" method="GET" class="filter-form">
-                <div class="filter-group">
-                    <label for="type">日志类型</label>
-                    <select name="type" id="type">
-                        <option value="">所有类型</option>
-                        <option value="user" {% if current_type == 'user' %}selected{% endif %}>用户操作</option>
-                        <option value="system" {% if current_type == 'system' %}selected{% endif %}>系统事件</option>
-                        <option value="security" {% if current_type == 'security' %}selected{% endif %}>安全事件</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label for="level">日志级别</label>
-                    <select name="level" id="level">
-                        <option value="">所有级别</option>
-                        <option value="debug" {% if current_level == 'debug' %}selected{% endif %}>调试</option>
-                        <option value="info" {% if current_level == 'info' %}selected{% endif %}>信息</option>
-                        <option value="warning" {% if current_level == 'warning' %}selected{% endif %}>警告</option>
-                        <option value="error" {% if current_level == 'error' %}selected{% endif %}>错误</option>
-                        <option value="critical" {% if current_level == 'critical' %}selected{% endif %}>严重</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label for="limit">显示条数</label>
-                    <input type="number" name="limit" id="limit" value="{{ limit }}" min="10" max="1000" step="10" placeholder="显示条数">
-                </div>
-                
-                <div class="filter-actions">
-                    <button type="submit">筛选</button>
-                </div>
-            </form>
+    <!-- 操作按钮区域 -->
+    <div class="logs-actions-container">
+        <div class="action-card">
+            <button id="download-logs-btn" class="download-logs-btn">📥 下载所有日志</button>
         </div>
         
-        <!-- 清理旧日志 -->
-        <div class="clear-logs-card">
-            <form id="clear-logs-form" class="clear-logs-form" onsubmit="return confirm('确定要清理旧日志吗？此操作不可恢复！')">
-                <label for="days">保留天数</label>
-                <input type="number" name="days" value="30" min="1" max="365" title="保留天数">
-                <button type="submit" class="clear-logs-btn">清理旧日志</button>
-            </form>
+        <div class="action-card danger-zone">
+            <button id="delete-all-logs-btn" class="delete-all-logs-btn">删除所有日志</button>
         </div>
     </div>
     
@@ -160,89 +123,103 @@
     text-shadow: 0 0 10px var(--neon-blue);
 }
 
-.filter-clear-container {
+.logs-actions-container {
     display: flex;
     gap: 20px;
-    align-items: stretch;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 30px;
 }
 
-.filter-card {
+.action-card {
     background: rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 25px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(0, 212, 255, 0.2);
-    flex: 1;
+    text-align: center;
+    min-width: 180px;
 }
 
-.clear-logs-card {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 71, 87, 0.2);
-    display: flex;
-    align-items: center;
-}
-
-.clear-logs-form {
-    display: flex;
-    align-items: flex-end;
-    gap: 15px;
-    width: 100%;
-}
-
-.clear-logs-form label {
-    font-size: 12px;
-    color: var(--text-secondary);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    margin-bottom: 12px;
-}
-
-.clear-logs-form input {
-    width: 80px;
-    padding: 12px 15px;
+.action-card.danger-zone {
     border: 1px solid rgba(255, 71, 87, 0.3);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    font-size: 14px;
-    color: var(--text-primary);
-    height: 44px;
-    box-sizing: border-box;
+    background: rgba(255, 71, 87, 0.1);
 }
 
-.clear-logs-form input:focus {
-    outline: none;
-    border-color: #ff4757;
-    box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
-}
-
-.clear-logs-btn {
-    padding: 12px 20px;
-    background: linear-gradient(135deg, #ff4757 0%, #d32f2f 100%);
+.download-logs-btn {
+    padding: 15px 25px;
+    background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
     color: white;
     border: none;
     border-radius: 25px;
     cursor: pointer;
     font-weight: 600;
+    font-size: 16px;
     transition: all var(--transition-normal) ease;
-    box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
-    display: inline-block;
-    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     text-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
-    height: 44px;
+    height: 50px;
     box-sizing: border-box;
-    line-height: 20px;
     white-space: nowrap;
 }
 
-.clear-logs-btn:hover {
+.download-logs-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 71, 87, 0.5);
+    box-shadow: 0 8px 20px rgba(0, 212, 255, 0.5);
+}
+
+.download-logs-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 5px 15px rgba(0, 212, 255, 0.2);
+}
+
+.delete-all-logs-btn {
+    padding: 15px 25px;
+    background: linear-gradient(135deg, #ff4757 0%, #d32f2f 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 16px;
+    transition: all var(--transition-normal) ease;
+    box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+    height: 50px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    position: relative;
+}
+
+.delete-all-logs-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 71, 87, 0.6);
+}
+
+.delete-all-logs-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 5px 15px rgba(255, 71, 87, 0.2);
+}
+
+.delete-all-logs-btn::before {
+    content: "⚠️";
+    margin-right: 5px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 .filter-form {
@@ -479,6 +456,122 @@
     color: var(--text-secondary);
 }
 
+/* 消息提示样式 */
+#log-management-messages {
+    margin-bottom: 20px;
+}
+
+#log-management-messages .message {
+    padding: 16px 20px;
+    margin: 15px 0;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message-success {
+    background: linear-gradient(135deg, rgba(0, 255, 127, 0.15), rgba(0, 255, 127, 0.05));
+    color: #00ff7f;
+    border: 2px solid rgba(0, 255, 127, 0.4);
+    box-shadow: 0 0 20px rgba(0, 255, 127, 0.2);
+}
+
+.message-success::before {
+    content: "✓";
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.message-success {
+    padding-left: 50px;
+}
+
+.message-error {
+    background: linear-gradient(135deg, rgba(255, 71, 87, 0.15), rgba(255, 71, 87, 0.05));
+    color: #ff4757;
+    border: 2px solid rgba(255, 71, 87, 0.4);
+    box-shadow: 0 0 20px rgba(255, 71, 87, 0.2);
+}
+
+.message-error::before {
+    content: "✗";
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.message-error {
+    padding-left: 50px;
+}
+
+/* 额外的成功通知样式 */
+.success-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #00ff7f, #00cc6a);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 16px;
+    box-shadow: 0 8px 32px rgba(0, 255, 127, 0.3);
+    z-index: 10000;
+    animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 3.5s;
+    min-width: 300px;
+    text-align: center;
+}
+
+.success-notification::before {
+    content: "🎉";
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
 @media (max-width: 768px) {
     .logs-management-embed {
         padding: 15px;
@@ -490,27 +583,20 @@
         text-align: center;
     }
 
-    .filter-clear-container {
+    .logs-actions-container {
         flex-direction: column;
         gap: 15px;
     }
 
-    .filter-form {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .filter-group {
+    .action-card {
         width: 100%;
+        min-width: unset;
     }
 
-    .filter-form select, .filter-form input {
+    .download-logs-btn, .delete-all-logs-btn {
         width: 100%;
-    }
-
-    .filter-actions {
         justify-content: center;
-        margin-top: 10px;
+        font-size: 14px;
     }
 
     .logs-table-container {
@@ -520,15 +606,219 @@
     .logs-table {
         min-width: 700px;
     }
-
-    .clear-logs-form {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .clear-logs-form input {
-        width: 100px;
-    }
 }
 </style>
+
+<script>
+// 重新设计的清理日志功能 - 使用独立按钮而非表单
+(function() {
+    // 等待DOM准备完成
+    function initFunctions() {
+        console.log('初始化日志管理功能');
+        
+        // 初始化下载日志功能
+        initDownloadLogs();
+        
+        // 初始化删除所有日志功能
+        initDeleteAllLogs();
+    }
+    
+    // 下载所有日志功能
+    function initDownloadLogs() {
+        const downloadBtn = document.getElementById('download-logs-btn');
+        
+        if (downloadBtn) {
+            console.log('找到下载按钮');
+            
+            downloadBtn.addEventListener('click', function() {
+                console.log('下载按钮被点击');
+                
+                // 显示下载提示
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = '正在准备下载...';
+                
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.href = '/admin/logs/download';
+                link.download = `logs_${new Date().toISOString().split('T')[0]}.csv`;
+                
+                // 添加到页面并触发下载
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // 显示成功消息
+                showMessage('开始下载日志文件...', 'success');
+                showSuccessNotification('📥 日志文件下载已开始');
+                
+                // 恢复按钮状态
+                setTimeout(() => {
+                    downloadBtn.disabled = false;
+                    downloadBtn.textContent = '📥 下载所有日志';
+                }, 2000);
+            });
+            
+            console.log('下载日志事件绑定完成');
+        }
+    }
+    
+    // 删除所有日志功能
+    function initDeleteAllLogs() {
+        const deleteBtn = document.getElementById('delete-all-logs-btn');
+        
+        if (deleteBtn) {
+            console.log('找到删除所有日志按钮');
+            
+            deleteBtn.addEventListener('click', function() {
+                console.log('删除所有日志按钮被点击');
+                
+                // 第一次警告确认
+                const firstConfirm = confirm('⚠️ 危险警告 ⚠️\n\n您即将删除所有日志记录！\n\n此操作将：\n1. 删除所有用户操作记录\n2. 删除所有系统事件记录\n3. 删除所有安全事件记录\n4. 此操作不可恢复！\n\n请确认您真的需要删除所有日志吗？');
+                
+                if (!firstConfirm) {
+                    console.log('用户取消了删除操作');
+                    return;
+                }
+                
+                // 第二次确认输入
+                const secondConfirm = prompt('⚠️ 最终确认 ⚠️\n\n为了确保安全，请输入 "确认删除" 来最终确认删除所有日志：');
+                
+                if (secondConfirm !== '确认删除') {
+                    if (secondConfirm !== null) {
+                        showMessage('确认文本不正确，删除操作已取消', 'error');
+                    }
+                    return;
+                }
+                
+                console.log('用户最终确认删除所有日志');
+                
+                // 第三次确认
+                const finalConfirm = confirm('最后确认：真的要删除所有日志吗？\n\n删除后：\n• 所有历史记录将永久丢失\n• 无法恢复任何删除的数据\n• 可能影响系统的审计追踪\n\n请再次确认！');
+                
+                if (!finalConfirm) {
+                    console.log('用户最终取消了删除操作');
+                    return;
+                }
+                
+                console.log('用户最终确认，开始发送删除请求');
+                
+                // 禁用按钮并显示加载状态
+                deleteBtn.disabled = true;
+                deleteBtn.textContent = '删除中...';
+                deleteBtn.style.background = 'linear-gradient(135deg, #cc0000 0%, #990000 100%)';
+                
+                // 发送删除请求
+                fetch('/admin/logs/delete-all', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    console.log('收到删除响应:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('删除结果:', data);
+                    if (data.success) {
+                        // 显示页面内消息
+                        showMessage(data.message, 'success');
+                        // 显示特别醒目的成功通知
+                        showSuccessNotification(`🗑️ ${data.message}`);
+                        
+                        // 2秒后刷新页面
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        // 显示错误消息
+                        showMessage(data.message || '删除失败', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('删除错误:', error);
+                    let errorMessage = '删除失败: ';
+                    
+                    if (error.message.includes('fetch')) {
+                        errorMessage += '网络连接失败，请检查网络连接';
+                    } else if (error.message.includes('HTTP')) {
+                        errorMessage += '服务器错误，请稍后重试';
+                    } else {
+                        errorMessage += error.message;
+                    }
+                    
+                    showMessage(errorMessage, 'error');
+                })
+                .finally(() => {
+                    // 恢复按钮状态
+                    deleteBtn.disabled = false;
+                    deleteBtn.textContent = '🗑️ 删除所有日志';
+                    deleteBtn.style.background = 'linear-gradient(135deg, #ff4757 0%, #d32f2f 100%)';
+                    console.log('删除操作完成');
+                });
+            });
+            
+            console.log('删除所有日志事件绑定完成');
+        }
+    }
+    
+    
+    
+    // 显示消息函数
+    function showMessage(message, type = 'success') {
+        const messagesContainer = document.getElementById('log-management-messages');
+        if (!messagesContainer) return;
+        
+        messagesContainer.innerHTML = '';
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message message-${type}`;
+        messageDiv.textContent = message;
+        
+        messagesContainer.appendChild(messageDiv);
+        
+        // 3秒后隐藏消息
+        setTimeout(() => {
+            messageDiv.style.opacity = '0';
+            messageDiv.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 300);
+        }, 3000);
+    }
+    
+    // 显示醒目的成功通知
+    function showSuccessNotification(message) {
+        // 移除可能存在的旧通知
+        const existingNotification = document.querySelector('.success-notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
+        const notification = document.createElement('div');
+        notification.className = 'success-notification';
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // 4秒后自动移除通知
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 4000);
+    }
+    
+    // 立即开始初始化
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initFunctions);
+    } else {
+        initFunctions();
+    }
+})();
+</script>

@@ -1,0 +1,572 @@
+/* 
+ * 响应式设计样式
+ * 整合了原来mobile.css和各个文件中的响应式设计规则
+ * 包含所有屏幕尺寸的适配
+ */
+
+/* 超大屏幕 (1400px 以上) */
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1320px;
+  }
+  
+  .content-area {
+    padding-left: 8%;
+    padding-right: 8%;
+  }
+  
+  .subcategory-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 35px;
+  }
+  
+  .content-grid {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+  }
+  
+  .cyber-sidebar {
+    width: 280px;
+  }
+  
+  .main-content {
+    margin-left: 280px;
+    width: calc(100% - 280px);
+  }
+}
+
+/* 大屏幕 (1200px - 1399px) */
+@media (max-width: 1399px) and (min-width: 1200px) {
+  .subcategory-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+  }
+  
+  .content-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+  }
+}
+
+/* 平板横屏 (1024px - 1199px) */
+@media (max-width: 1199px) and (min-width: 1024px) {
+  .content-area {
+    padding-left: 4%;
+    padding-right: 4%;
+  }
+  
+  .category-list {
+    max-width: 800px;
+  }
+  
+  .subcategory-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+  }
+  
+  .cyber-sidebar {
+    width: 240px;
+  }
+  
+  .main-content {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .charts-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 平板 (769px - 1023px) */
+@media (max-width: 1023px) and (min-width: 769px) {
+  .content-area {
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-top: 120px;
+  }
+  
+  .category-list {
+    max-width: 768px;
+  }
+  
+  .subcategory-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+  }
+  
+  .subcategory-card {
+    min-height: 200px;
+    padding: 25px;
+  }
+  
+  .subcategory-card i {
+    font-size: 3em;
+    margin-bottom: 15px;
+  }
+  
+  .subcategory-card h3 {
+    font-size: 1.4em;
+  }
+  
+  .cyber-sidebar {
+    width: 220px;
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal) ease;
+  }
+  
+  .cyber-sidebar.active {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .charts-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .stat-card {
+    padding: 20px;
+  }
+  
+  .stat-value {
+    font-size: 28px;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .cyber-modal-content {
+    width: 95%;
+    padding: 25px;
+  }
+  
+  .cyber-tabs {
+    flex-direction: column;
+  }
+  
+  .cyber-tab {
+    text-align: left;
+  }
+}
+
+/* 移动端 (768px 及以下) */
+@media (max-width: 768px) {
+  /* 顶部标题栏调整 */
+  .cyber-header {
+    padding: 0 15px;
+    height: 60px;
+  }
+  
+  .site-title {
+    font-size: 18px;
+  }
+  
+  .user-info {
+    padding: 6px 15px;
+  }
+  
+  .user-name {
+    font-size: 12px;
+  }
+  
+  /* 移动端菜单切换按钮 */
+  .menu-toggle {
+    display: block;
+  }
+  
+  /* 侧边栏移动端适配 */
+  .cyber-sidebar {
+    width: 100%;
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal) ease;
+    top: 60px;
+    height: calc(100vh - 60px);
+  }
+  
+  .cyber-sidebar.active {
+    transform: translateX(0);
+  }
+  
+  /* 主内容区域 */
+  .app-container {
+    margin-top: 60px;
+    min-height: calc(100vh - 60px);
+  }
+  
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px 15px;
+  }
+  
+  /* 内容区域 */
+  .content-area {
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-top: 120px;
+  }
+  
+  /* 分类侧边栏 */
+  .category-sidebar {
+    top: 35px;
+    padding: 8px 0;
+  }
+  
+  .category-list {
+    padding: 8px 3%;
+    border-radius: 25px;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  
+  .category-item {
+    padding: 6px 12px;
+    font-size: 13px;
+    margin: 2px;
+    border-radius: 20px;
+  }
+  
+  /* 子分类网格 */
+  .subcategory-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px;
+    padding: 15px 5px;
+  }
+  
+  .subcategory-card {
+    min-height: 220px;
+    padding: 20px;
+  }
+  
+  .subcategory-card i {
+    font-size: 2.8em;
+    margin-bottom: 15px;
+  }
+  
+  .subcategory-card h3 {
+    font-size: 1.4em;
+    margin: 0 0 10px 0;
+  }
+  
+  /* 统计卡片 */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    padding: 20px;
+  }
+  
+  .stat-value {
+    font-size: 28px;
+  }
+  
+  /* 图表容器 */
+  .chart-container {
+    padding: 20px;
+  }
+  
+  .chart-canvas {
+    height: 250px;
+  }
+  
+  /* 表格 */
+  .cyber-table {
+    font-size: 12px;
+  }
+  
+  .cyber-table th,
+  .cyber-table td {
+    padding: 8px 10px;
+  }
+  
+  /* 表单 */
+  .cyber-form-container {
+    padding: 20px;
+    margin: 20px 10px;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  /* 模态框 */
+  .cyber-modal-content {
+    width: 95%;
+    max-height: 85vh;
+    padding: 20px;
+    margin: 10px;
+  }
+  
+  .cyber-modal-header {
+    margin-bottom: 15px;
+  }
+  
+  .cyber-modal-title {
+    font-size: 1.2em;
+  }
+  
+  /* 按钮 */
+  .btn {
+    width: 100%;
+    padding: 12px 20px;
+  }
+  
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 11px;
+  }
+  
+  /* 欢迎页面 */
+  .welcome-container {
+    padding: 0 20px;
+  }
+  
+  .welcome-greeting h2 {
+    font-size: 2rem;
+  }
+  
+  .welcome-title h3 {
+    font-size: 1.5rem;
+  }
+  
+  .welcome-icon {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .welcome-icon i {
+    font-size: 3rem;
+  }
+  
+  .welcome-features {
+    gap: 15px;
+    margin-top: 30px;
+  }
+  
+  .feature-item {
+    min-width: 80px;
+    padding: 10px;
+  }
+}
+
+/* 小屏移动端 (480px 及以下) */
+@media (max-width: 480px) {
+  /* 顶部标题栏 */
+  .site-title {
+    font-size: 16px;
+  }
+  
+  /* 侧边栏 */
+  .cyber-sidebar {
+    top: 60px;
+    height: calc(100vh - 60px);
+  }
+  
+  /* 主内容 */
+  .main-content {
+    padding: 15px 10px;
+  }
+  
+  .content-area {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  /* 分类列表 */
+  .category-item {
+    padding: 5px 10px;
+    font-size: 12px;
+    margin: 1px;
+  }
+  
+  /* 子分类网格 */
+  .subcategory-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px;
+    padding: 15px 5px;
+  }
+  
+  .subcategory-card {
+    min-height: 220px;
+    padding: 20px;
+  }
+  
+  .subcategory-card i {
+    font-size: 2.5em;
+    margin-bottom: 15px;
+  }
+  
+  .subcategory-card h3 {
+    font-size: 1.3em;
+    margin: 0 0 10px 0;
+  }
+  
+  /* 欢迎页面 */
+  .welcome-greeting h2 {
+    font-size: 1.8rem;
+  }
+  
+  .welcome-title h3 {
+    font-size: 1.3rem;
+  }
+  
+  .welcome-description p {
+    font-size: 1rem;
+  }
+  
+  .welcome-features {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .feature-item {
+    width: 100%;
+    max-width: 200px;
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  /* 表单 */
+  .cyber-form-container {
+    padding: 15px;
+    margin: 15px 5px;
+  }
+  
+  .cyber-input,
+  .cyber-select {
+    padding: 10px 12px;
+  }
+  
+  /* 表格 */
+  .cyber-table {
+    font-size: 11px;
+  }
+  
+  .cyber-table th,
+  .cyber-table td {
+    padding: 6px 8px;
+  }
+  
+  /* 模态框 */
+  .cyber-modal-content {
+    padding: 15px;
+  }
+  
+  .cyber-modal-title {
+    font-size: 1.1em;
+  }
+  
+  /* 统计卡片 */
+  .stat-card {
+    padding: 15px;
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .stat-icon i {
+    font-size: 20px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+}
+
+/* 极小屏幕 (320px 及以下) */
+@media (max-width: 320px) {
+  .site-title {
+    font-size: 14px;
+  }
+  
+  .user-name {
+    display: none;
+  }
+  
+  .content-area {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .cyber-form-container {
+    padding: 10px;
+    margin: 10px 2px;
+  }
+  
+  .subcategory-card {
+    padding: 15px;
+  }
+  
+  .welcome-icon {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .welcome-icon i {
+    font-size: 2.5rem;
+  }
+}
+
+/* 仪表板响应式样式 - 来自老版本 */
+@media (max-width: 1024px) {
+    .charts-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .status-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-card {
+        padding: 20px;
+    }
+    
+    .stat-value {
+        font-size: 28px;
+    }
+    
+    .chart-container {
+        padding: 20px;
+    }
+    
+    .chart-canvas {
+        height: 250px;
+    }
+}

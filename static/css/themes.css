@@ -1,0 +1,680 @@
+/* 
+ * 主题色彩文件
+ * 包含cyber主题的特定样式和配色方案
+ * 整合了原来cyber-theme.css中的主题相关样式
+ */
+
+/* 深空黑配霓虹科技感主题背景 */
+body {
+  background: linear-gradient(135deg, var(--deep-space-1) 0%, var(--deep-space-2) 100%);
+  color: var(--text-primary);
+}
+
+/* 霓虹发光效果 */
+.neon-glow-blue {
+  box-shadow: var(--shadow-neon-blue);
+}
+
+.neon-glow-purple {
+  box-shadow: var(--shadow-neon-purple);
+}
+
+/* 科技感卡片样式 */
+.cyber-card {
+  background: linear-gradient(135deg, rgba(10, 10, 10, 0.9), rgba(20, 20, 20, 0.9));
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 15px;
+  padding: 25px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-normal) ease;
+}
+
+.cyber-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(157, 78, 221, 0.1) 100%);
+  opacity: 0;
+  transition: opacity var(--transition-normal) ease;
+  pointer-events: none;
+}
+
+.cyber-card:hover {
+  border-color: var(--neon-blue);
+  box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+}
+
+.cyber-card:hover::before {
+  opacity: 1;
+}
+
+/* 科技感按钮 */
+.cyber-btn {
+  background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+  border: none;
+  border-radius: 25px;
+  padding: 12px 25px;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left var(--transition-slow) ease;
+}
+
+.cyber-btn:hover {
+  box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+}
+
+.cyber-btn:hover::before {
+  left: 100%;
+}
+
+/* 科技感输入框 */
+.cyber-input {
+  width: 100%;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 8px;
+  color: var(--text-primary);
+  transition: all var(--transition-normal) ease;
+  font-size: 14px;
+}
+
+.cyber-input:focus {
+  outline: none;
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.cyber-input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* 科技感选择框 */
+.cyber-select {
+  width: 100%;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 8px;
+  color: var(--text-primary);
+  transition: all var(--transition-normal) ease;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cyber-select:focus {
+  outline: none;
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+.cyber-select option {
+  background-color: var(--deep-space-2);
+  color: var(--text-primary);
+  padding: 8px 12px;
+}
+
+.cyber-select option:hover,
+.cyber-select option:focus {
+  background-color: var(--deep-space-3);
+  color: var(--neon-blue);
+}
+
+/* 科技感表单容器 */
+.cyber-form-container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 15px;
+  padding: 30px;
+  margin-top: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 科技感标题 */
+.cyber-title {
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 30px;
+  background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2em;
+  font-weight: 600;
+}
+
+/* 科技感标签 */
+.cyber-label {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-top: 15px;
+  display: block;
+  font-size: 14px;
+}
+
+/* 科技感日期容器 */
+.cyber-date-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.cyber-date-container input {
+  flex: 1;
+}
+
+.cyber-date-container button {
+  width: auto;
+  margin-top: 0;
+  padding: 12px 15px;
+  background: var(--success-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.cyber-date-container button:hover {
+  background: var(--success-hover);
+}
+
+/* 科技感徽章 */
+.cyber-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cyber-badge.feature {
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  color: var(--text-primary);
+}
+
+.cyber-badge.improvement {
+  background: linear-gradient(135deg, var(--success-color), var(--neon-cyan));
+  color: var(--text-primary);
+}
+
+.cyber-badge.fix {
+  background: linear-gradient(135deg, var(--warning-color), #ffa500);
+  color: var(--text-primary);
+}
+
+.cyber-badge.admin {
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+  color: var(--text-primary);
+}
+
+/* 科技感状态指示器 */
+.cyber-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.cyber-status.online {
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--success-color);
+  border: 1px solid var(--success-color);
+}
+
+.cyber-status.offline {
+  background: rgba(255, 0, 110, 0.2);
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+}
+
+.cyber-status.warning {
+  background: rgba(255, 170, 0, 0.2);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
+}
+
+/* 科技感进度条 */
+.cyber-progress {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.cyber-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+  border-radius: 4px;
+  transition: width var(--transition-normal) ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* 科技感标签页 */
+.cyber-tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.cyber-tab {
+  flex: 1;
+  padding: 12px 20px;
+  text-align: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.cyber-tab.active {
+  background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 100%);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.cyber-tab:hover:not(.active) {
+  color: var(--neon-blue);
+  background: rgba(0, 212, 255, 0.1);
+}
+
+/* 科技感模态框 */
+.cyber-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-normal) ease;
+}
+
+.cyber-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.cyber-modal-content {
+  background: linear-gradient(135deg, var(--deep-space-2), var(--deep-space-3));
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 15px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  transform: scale(0.8);
+  transition: transform var(--transition-normal) ease;
+}
+
+.cyber-modal.show .cyber-modal-content {
+  transform: scale(1);
+}
+
+.cyber-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.cyber-modal-title {
+  font-size: 1.5em;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.cyber-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 24px;
+  cursor: pointer;
+  transition: color var(--transition-normal) ease;
+}
+
+.cyber-modal-close:hover {
+  color: var(--neon-blue);
+}
+
+/* 科技感工具提示 */
+.cyber-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.cyber-tooltip::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-normal) ease;
+  z-index: 1000;
+}
+
+.cyber-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: 115%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-normal) ease;
+}
+
+.cyber-tooltip:hover::before,
+.cyber-tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 科技感切换开关 */
+.cyber-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.cyber-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.cyber-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  transition: var(--transition-normal) ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.cyber-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  border-radius: 50%;
+  transition: var(--transition-normal) ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.cyber-switch input:checked + .cyber-switch-slider {
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  border-color: var(--neon-blue);
+}
+
+.cyber-switch input:checked + .cyber-switch-slider:before {
+  transform: translateX(26px);
+}
+
+/* 科技感数据表格 */
+.cyber-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.cyber-table th,
+.cyber-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cyber-table th {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--text-primary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.cyber-table tbody tr {
+  transition: all var(--transition-normal) ease;
+}
+
+.cyber-table tbody tr:hover {
+  background: rgba(0, 212, 255, 0.05);
+}
+
+.cyber-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* 科技感分页 */
+.cyber-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.cyber-pagination button {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 6px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+  font-size: 14px;
+}
+
+.cyber-pagination button:hover {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: var(--neon-blue);
+}
+
+.cyber-pagination button.active {
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  border-color: var(--neon-blue);
+  color: var(--text-primary);
+}
+
+.cyber-pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* 科技感时间轴 */
+.cyber-timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.cyber-timeline::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--neon-blue), var(--neon-purple));
+}
+
+.cyber-timeline-item {
+  position: relative;
+  margin-bottom: 30px;
+  padding-left: 20px;
+}
+
+.cyber-timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -23px;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  border-radius: 50%;
+  border: 3px solid var(--deep-space-2);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.cyber-timeline-content {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+}
+
+.cyber-timeline-content::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 20px;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-right-color: rgba(0, 212, 255, 0.2);
+}
+
+.cyber-timeline-date {
+  color: var(--neon-blue);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.cyber-timeline-title {
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.cyber-timeline-description {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* 主题特定的动画效果 */
+@keyframes neonPulse {
+  0% {
+    box-shadow: 0 0 5px var(--neon-blue);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--neon-blue), 0 0 30px var(--neon-blue);
+  }
+  100% {
+    box-shadow: 0 0 5px var(--neon-blue);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.neon-animate {
+  animation: neonPulse 2s infinite ease-in-out;
+}
+
+.slide-in-animate {
+  animation: slideInFromTop 0.8s ease-out;
+}

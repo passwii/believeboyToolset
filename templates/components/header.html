@@ -1,0 +1,33 @@
+emplates/components/header.html</path>
+<content">{# 基础头部组件 #}
+<header class="cyber-header">
+  <h1 class="site-title">
+    <a href="{{ url_for('main.home') }}" class="site-title-link">
+      彼励扶运营中心
+    </a>
+  </h1>
+  <div class="user-container">
+    <div class="user-dropdown">
+      <div class="user-info" id="user-dropdown-toggle">
+        <div class="user-avatar">
+          {{ (chinese_name or session.username)[0]|upper if chinese_name or session.username else 'U' }}
+        </div>
+        <span class="user-name">
+          {{ chinese_name or session.username }}
+        </span>
+        <i class="fas fa-chevron-down dropdown-arrow"></i>
+      </div>
+      <div class="dropdown-menu" id="user-dropdown-menu">
+        <a href="#" data-content="change-password" class="dropdown-item">
+          <i class="fas fa-key"></i>
+          <span>更改密码</span>
+        </a>
+        <div class="dropdown-divider"></div>
+        <a href="{{ url_for('auth.logout') }}" class="dropdown-item logout-item">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>登出</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

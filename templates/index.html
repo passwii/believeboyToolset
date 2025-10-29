@@ -7,10 +7,28 @@
     <title>彼励扶工具集-Tools</title>
     <link rel="icon" href="{{ url_for('static', filename='images/logo-i.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='cyber-theme.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
-    <script src="{{ url_for('static', filename='cyber-tools.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='dashboard.js') }}" defer></script>
+    <!-- 优化后的模块化CSS文件 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/core.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layouts.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+    <!-- 优化后的模块化JavaScript文件 -->
+    <script src="{{ url_for('static', filename='js/core/utils.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/core/notifications.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/core/api.js') }}" defer></script>
+    
+    <!-- 组件文件 -->
+    <script src="{{ url_for('static', filename='js/components/dashboard.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/components/file-upload.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/components/shop-management.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/components/user-management.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/components/keyboard-shortcuts.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/components/modal.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/components/form-validation.js') }}" defer></script>
+    
+    <!-- 主应用文件 -->
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 </head>
 
 <body>
@@ -96,19 +114,19 @@
                     </div>
                     <ul class="submenu">
                         <li class="nav-item">
-                            <a href="#" target="_blank">
+                            <a href="#" data-content="sku-cost-table" class="nav-link">
                                 <i class="fas fa-table"></i>
                                 <span>SKU 成本表</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" target="_blank">
+                            <a href="#" data-content="project-progress-table" class="nav-link">
                                 <i class="fas fa-tasks"></i>
                                 <span>项目进度表</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" target="_blank">
+                            <a href="#" data-content="profit-calculation-table" class="nav-link">
                                 <i class="fas fa-chart-line"></i>
                                 <span>利润测算表</span>
                             </a>
@@ -122,25 +140,25 @@
                     </div>
                     <ul class="submenu">
                         <li class="nav-item">
-                            <a href="#" target="_blank">
+                            <a href="#" data-content="exchange-rate-display" class="nav-link">
                                 <i class="fas fa-exchange-alt"></i>
                                 <span>汇率展示</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" target="_blank">
+                            <a href="#" data-content="amazon-crawler" class="nav-link">
                                 <i class="fas fa-spider"></i>
                                 <span>亚马逊前台采集</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" target="_blank">
+                            <a href="#" data-content="image-resizer" class="nav-link">
                                 <i class="fas fa-image"></i>
                                 <span>图片尺寸调整</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="https://ai.believeboy.com" target="_blank">
+                            <a href="#" data-content="ai-panel" class="nav-link">
                                 <i class="fas fa-rocket"></i>
                                 <span>AI 面板</span>
                             </a>
