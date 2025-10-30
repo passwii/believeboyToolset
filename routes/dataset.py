@@ -29,7 +29,7 @@ def daily_report():
         except Exception as e:
             print(f"读取项目列表失败: {e}")
     
-    return render_template('dataset/daily_report.html', projects=projects)
+    return render_template('data-analysis/daily_report.html', projects=projects)
 
 @dataset_bp.route('/monthly-report')
 @login_required
@@ -51,7 +51,7 @@ def monthly_report():
         except Exception as e:
             print(f"读取项目列表失败: {e}")
     
-    return render_template('dataset/monthly_report.html', projects=projects)
+    return render_template('data-analysis/monthly_report.html', projects=projects)
 
 @dataset_bp.route('/product-analysis')
 @login_required
@@ -73,7 +73,7 @@ def product_analysis():
         except Exception as e:
             print(f"读取项目列表失败: {e}")
     
-    return render_template('dataset/product_analysis.html', projects=projects)
+    return render_template('data-analysis/product_analysis.html', projects=projects)
 
 @dataset_bp.route('/timeline')
 @login_required
@@ -85,7 +85,7 @@ def timeline():
         log_type="user",
         level="info"
     )
-    return render_template('dataset/timeline.html')
+    return render_template('data-analysis/timeline.html')
 
 
 

@@ -46,7 +46,7 @@ def user_management():
         return render_template('admin/users_embed.html', users=users)
     else:
         # 返回完整页面
-        return render_template('admin/users.html', users=users)
+        return render_template('admin/users_embed.html', users=users)
 
 @admin_bp.route('/users/add', methods=['POST'])
 @login_required
@@ -293,7 +293,7 @@ def operations_info():
         return render_template('admin/operations_info_embed.html')
     else:
         # 返回完整页面
-        return render_template('admin/operations_info.html')
+        return render_template('admin/operations_info_embed.html')
 
 @admin_bp.route('/update-log')
 @login_required
@@ -341,7 +341,7 @@ def change_password():
         return render_template('admin/change_password_embed.html')
     else:
         # 返回完整页面
-        return render_template('change_password.html')
+        return render_template('admin/change_password_embed.html')
 
 @admin_bp.route('/shops')
 @login_required

@@ -128,22 +128,37 @@ class Application {
    * 初始化组件
    */
   initializeComponents() {
-    // 初始化模态框组件
-    this.modalComponent = new ModalComponent();
+    // 初始化组件存储对象
+    this.components = this.components || {};
     
-    // 初始化键盘快捷键组件
-    this.keyboardShortcutsComponent = new KeyboardShortcutsComponent({
-      enabled: true,
-      showTooltips: true
-    });
-    
-    // 初始化表单验证组件
-    this.formValidationComponent = new FormValidationComponent({
-      showErrorMessages: true,
-      showSuccessMessages: false,
-      validateOnBlur: true,
-      validateOnInput: false
-    });
+    try {
+      // 初始化键盘快捷键组件
+      if (typeof KeyboardShortcutsComponent !== 'undefined') {
+        this.components.keyboardShortcuts = new KeyboardShortcutsComponent({
+          enabled: true,
+          showTooltips: true
+        });
+      }
+      
+      // 初始化模态框组件
+      if (typeof ModalComponent !== 'undefined') {
+        this.components.modal = new ModalComponent();
+      }
+      
+      // 初始化表单验证组件
+      if (typeof FormValidationComponent !== 'undefined') {
+        this.components.formValidation = new FormValidationComponent({
+          showErrorMessages: true,
+          showSuccessMessages: false,
+          validateOnBlur: true,
+          validateOnInput: false
+        });
+      }
+      
+      console.log('All components initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize components:', error);
+    }
   }
 
   /**
@@ -329,6 +344,7 @@ class Application {
       'daily-report': '/dataset/daily-report',
       'monthly-report': '/dataset/monthly-report',
       'product-analysis': '/dataset/product-analysis',
+      'operations-overview': '/toolset/operations-overview',
       'operations-nav': '/toolset/operations-nav',
       'shop-nav': '/toolset/shop-nav',
       'operations-info': '/admin/operations-info?embed=true',
@@ -343,6 +359,7 @@ class Application {
       'exchange-rate-display': '/toolset/exchange-rate-display?embed=true',
       'amazon-crawler': '/toolset/amazon-crawler?embed=true',
       'image-resizer': '/toolset/image-resizer?embed=true',
+      'research-analysis': '/toolset/research-analysis?embed=true',
       'ai-panel': 'https://ai.believeboy.com'
     };
     
@@ -358,6 +375,7 @@ class Application {
       'daily-report': () => this.initializeDailyReport(),
       'monthly-report': () => this.initializeMonthlyReport(),
       'product-analysis': () => this.initializeProductAnalysis(),
+      'operations-overview': () => this.initializeOperationsOverview(),
       'operations-nav': () => this.initializeOperationsNav(),
       'shop-nav': () => this.initializeShopNav(),
       'operations-info': () => this.initializeOperationsInfo(),
@@ -391,31 +409,7 @@ class Application {
     }
   }
 
-  /**
-   * 初始化所有组件
-   */
-  initializeComponents() {
-    try {
-      // 初始化键盘快捷键组件
-      if (typeof KeyboardShortcutsComponent !== 'undefined') {
-        this.components.keyboardShortcuts = new KeyboardShortcutsComponent();
-      }
-      
-      // 初始化模态框组件
-      if (typeof ModalComponent !== 'undefined') {
-        this.components.modal = new ModalComponent();
-      }
-      
-      // 初始化表单验证组件
-      if (typeof FormValidationComponent !== 'undefined') {
-        this.components.formValidation = new FormValidationComponent();
-      }
-      
-      console.log('All components initialized successfully');
-    } catch (error) {
-      console.error('Failed to initialize components:', error);
-    }
-  }
+// 注意：initializeComponents() 方法已在上面定义，避免重复
 
   /**
    * 设置键盘快捷键
@@ -515,10 +509,181 @@ class Application {
         });
       }
       
+      // 初始化上周按钮
+      this.initializeLastWeekButton();
+      
       console.log('Product analysis page initialized');
     } catch (error) {
       console.error('Failed to initialize product analysis:', error);
     }
+  }
+
+  /**
+   * 初始化上周按钮
+   */
+  initializeLastWeekButton() {
+    // 使用 setTimeout 确保 DOM 元素已经加载
+    setTimeout(() => {
+      const lastWeekBtn = DOM.find('#last-week-btn');
+      console.log('查找上周按钮:', lastWeekBtn);
+      
+      if (lastWeekBtn) {
+        // 清除可能存在的旧事件监听器
+        const newBtn = lastWeekBtn.cloneNode(true);
+        lastWeekBtn.parentNode.replaceChild(newBtn, lastWeekBtn);
+        
+        // 绑定新的事件监听器
+        newBtn.addEventListener('click', () => {
+          console.log('上周按钮被点击');
+          
+          try {
+            // 使用 TimeUtils 计算上周日期范围
+            const lastWeek = TimeUtils.lastWeek();
+            
+            // 设置日期输入框的值
+            const startDateInput = DOM.find('#report_start_date');
+            const endDateInput = DOM.find('#report_end_date');
+            
+            if (startDateInput && endDateInput) {
+              startDateInput.value = lastWeek.start;
+              endDateInput.value = lastWeek.end;
+              console.log('日期已设置:', lastWeek.start, '至', lastWeek.end);
+            } else {
+              console.error('找不到日期输入框');
+            }
+          } catch (error) {
+            console.error('设置日期时出错:', error);
+            notify.error('设置日期失败，请重试');
+          }
+        });
+        
+        console.log('上周按钮事件监听器已绑定');
+      } else {
+        console.error('找不到上周按钮');
+      }
+    }, 100);
+  }
+
+  /**
+   * 初始化运营总览页面
+   */
+  initializeOperationsOverview() {
+    console.log('运营总览页面已加载');
+    
+    // 初始化时间轴交互效果
+    this.initializeTimelineInteractions();
+  }
+
+  /**
+   * 初始化时间轴交互
+   */
+  initializeTimelineInteractions() {
+    // 时间轴标记点击事件
+    const timelineMarkers = DOM.findAll('.timeline-marker');
+    timelineMarkers.forEach(marker => {
+      marker.addEventListener('click', (e) => {
+        this.handleTimelineMarkerClick(e.currentTarget);
+      });
+    });
+    
+    // 任务项点击事件
+    const taskItems = DOM.findAll('.task-item');
+    taskItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        this.handleTaskItemClick(e.currentTarget);
+      });
+    });
+    
+    // 初始化进度条动画
+    this.animateProgressBar();
+  }
+
+  /**
+   * 处理时间轴标记点击
+   */
+  handleTimelineMarkerClick(marker) {
+    // 移除所有标记的活动状态
+    const allMarkers = DOM.findAll('.timeline-marker');
+    allMarkers.forEach(m => m.classList.remove('active'));
+    
+    // 添加活动状态到当前标记
+    marker.classList.add('active');
+    
+    // 获取对应的内容区域
+    const timelineItem = marker.closest('.timeline-item');
+    const timelineSection = timelineItem?.querySelector('.timeline-section');
+    
+    if (timelineSection) {
+      // 高亮显示对应的内容区域
+      DOM.findAll('.timeline-section').forEach(section => {
+        section.classList.remove('highlighted');
+      });
+      timelineSection.classList.add('highlighted');
+      
+      // 滚动到对应区域
+      timelineSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+    
+    // 播放点击音效（如果需要）
+    this.playClickSound();
+  }
+
+  /**
+   * 处理任务项点击
+   */
+  handleTaskItemClick(taskItem) {
+    // 获取任务信息
+    const taskName = taskItem.querySelector('.task-name')?.textContent;
+    const taskStatus = taskItem.querySelector('.task-status')?.textContent;
+    
+    if (taskName && taskStatus) {
+      // 显示任务详情
+      this.showTaskDetails(taskName, taskStatus, taskItem);
+    }
+  }
+
+  /**
+   * 显示任务详情
+   */
+  showTaskDetails(taskName, taskStatus, taskElement) {
+    const taskDescription = taskElement.querySelector('.task-description')?.textContent;
+    const outputBadge = taskElement.querySelector('.output-badge')?.textContent;
+    
+    let message = `任务：${taskName}\n状态：${taskStatus}`;
+    if (taskDescription) {
+      message += `\n说明：${taskDescription}`;
+    }
+    if (outputBadge) {
+      message += `\n输出：${outputBadge}`;
+    }
+    
+    // 显示通知
+    notify.info(message);
+  }
+
+  /**
+   * 动画化进度条
+   */
+  animateProgressBar() {
+    const progressFill = DOM.find('.progress-fill');
+    if (progressFill) {
+      // 模拟进度更新
+      setTimeout(() => {
+        progressFill.style.width = '15%';
+      }, 500);
+    }
+  }
+
+  /**
+   * 播放点击音效
+   */
+  playClickSound() {
+    // 如果需要音效，可以在这里添加
+    // 这里只是示例，实际项目中可能需要音频文件
+    console.log('Timeline marker clicked');
   }
 
   /**

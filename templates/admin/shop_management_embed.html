@@ -91,7 +91,7 @@
                                     {{ shop.shop_type or '自有' }}
                                 </span>
                             </td>
-                            <td class="created-at">{{ shop.created_at | beijing_time if shop.created_at else '-' }}</td>
+                            <td class="created-at">{{ shop.created_at if shop.created_at else '-' }}</td>
                             <td class="actions">
                                 <button class="edit-shop-btn" data-shop-id="{{ shop.id }}"
                                         data-shop-name="{{ shop.shop_name }}"

@@ -292,5 +292,5 @@ def monthly_report():
             flash(f'生成月报时发生错误: {str(e)}', 'error')
             return redirect(url_for('dataset.monthly_report'))
 
-    return render_template('dataset/monthly_report.html')
+    return render_template('data-analysis/monthly_report.html')
 

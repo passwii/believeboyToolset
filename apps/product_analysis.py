@@ -559,4 +559,4 @@ def product_analysis():
             flash(f'处理过程中发生错误: {str(e)}')
             return redirect(url_for('dataset.product_analysis_page'))
 
-    return render_template('dataset/product_analysis.html')
+    return render_template('data-analysis/product_analysis.html')

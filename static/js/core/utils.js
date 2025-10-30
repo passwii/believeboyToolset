@@ -578,3 +578,16 @@ if (typeof module !== 'undefined' && module.exports) {
     copyToClipboard
   };
 }
+
+// 挂载到全局作用域
+if (typeof window !== 'undefined') {
+  window.DOM = DOM;
+  window.StringUtils = StringUtils;
+  window.TimeUtils = TimeUtils;
+  window.Validation = Validation;
+  window.ArrayUtils = ArrayUtils;
+  window.Storage = Storage;
+  window.debounce = debounce;
+  window.throttle = throttle;
+  window.copyToClipboard = copyToClipboard;
+}

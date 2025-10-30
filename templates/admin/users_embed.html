@@ -59,7 +59,7 @@
                     {% endif %}
                 </td>
                 <td>{{ user.chinese_name if user.chinese_name else '未设置' }}</td>
-                <td>{{ user.created_at | beijing_time if user.created_at else '未知' }}</td>
+                <td>{{ user.created_at if user.created_at else '未知' }}</td>
                 <td>
                     <div class="actions">
                         {% if user.username != 'damonrock' %}

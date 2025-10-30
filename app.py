@@ -23,44 +23,7 @@ app.permanent_session_lifetime = timedelta(seconds=SESSION_CONFIG['permanent_ses
 # 注册认证蓝图
 app.register_blueprint(auth_bp)
 
-# 添加自定义模板过滤器
-@app.template_filter('beijing_time')
-def beijing_time_filter(timestamp):
-    """将时间戳转换为北京时间格式"""
-    if not timestamp:
-        return ""
-    
-    # 如果是字符串，尝试解析
-    if isinstance(timestamp, str):
-        try:
-            # 尝试解析SQLite时间格式
-            dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            # 如果解析失败，返回原始字符串
-            return timestamp
-    else:
-        # 如果是datetime对象
-        dt = timestamp
-    
-    # 格式化为更友好的显示（数据库中已经是北京时间，不需要转换）
-    return dt.strftime('%Y-%m-%d %H:%M:%S')
 
-def verify_timezone_setting():
-    """验证时区设置是否正确"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # 检查UTC时间和北京时间
-        cursor.execute("SELECT datetime('now') as utc_time, datetime('now', '+8 hours') as beijing_time")
-        times = cursor.fetchone()
-        
-        conn.close()
-        
-        return True
-    except Exception as e:
-        print(f"时区验证失败: {e}")
-        return False
 
 # 初始化数据库
 init_db()

@@ -35,7 +35,7 @@ u<div class="logs-management-embed">
             <tbody>
                 {% for log in logs %}
                 <tr>
-                    <td class="timestamp">{{ log.timestamp | beijing_time }}</td>
+                    <td class="timestamp">{{ log.timestamp }}</td>
                     <td>{{ log.username or '-' }}</td>
                     <td>{{ log.action }}</td>
                     <td>{{ log.resource or '-' }}</td>
