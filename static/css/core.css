@@ -22,8 +22,8 @@
   --text-muted: #6c757d;
   
   /* 功能色 */
-  --success-color: #00ff88;
-  --success-hover: #45a049;
+  --success-color: #22c55e;
+  --success-hover: #16a34a;
   --warning-color: #ffaa00;
   --error-color: #ff4757;
   --error-hover-bg: rgba(255, 71, 87, 0.1);
@@ -79,10 +79,35 @@ a:hover {
 /* 按钮基础样式 */
 button {
   cursor: pointer;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   outline: none;
   font-family: inherit;
   transition: all var(--transition-normal) ease;
+}
+
+/* 通用快捷按钮样式 */
+.btn-quick {
+  padding: 12px 15px;
+  background: transparent;
+  color: var(--neon-blue);
+  border: 2px solid rgba(0, 212, 255, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: all var(--transition-normal) ease;
+  width: auto;
+  margin-top: 0;
+}
+
+.btn-quick:hover {
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--neon-blue);
+  border-color: var(--neon-blue);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 12px rgba(0, 212, 255, 0.25),
+    0 0 15px rgba(0, 212, 255, 0.1);
+  text-shadow: 0 0 6px rgba(0, 212, 255, 0.3);
 }
 
 button:focus {
