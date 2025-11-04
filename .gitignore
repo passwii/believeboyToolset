@@ -16,3 +16,9 @@ __pycache__/
 # Local project files
 project/
 pdf/
+
+# db files不要同步
+*.db
+
+#claude/
+.claude

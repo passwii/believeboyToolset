@@ -1,7 +1,19 @@
-from flask import Blueprint, render_template, jsonify, session, request
+from flask import Blueprint, render_template, jsonify, session, request, send_file
 from core.auth import login_required
 from core.log_service import LogService
 import os
+import sys
+import uuid
+from datetime import datetime
+import traceback
+
+# 添加apps目录到路径
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'apps'))
+
+try:
+    from research_analysis import ResearchAnalyzer
+except ImportError:
+    ResearchAnalyzer = None
 
 toolset_bp = Blueprint('toolset', __name__)
 
@@ -76,43 +88,199 @@ def research_analysis():
 @toolset_bp.route('/research-analysis/upload', methods=['POST'])
 @login_required
 def upload_research_file():
-    """处理Excel文件上传"""
+    """处理Excel文件上传并进行数据分析"""
+    if ResearchAnalyzer is None:
+        return jsonify({
+            'success': False,
+            'message': '研究分析模块未正确加载'
+        })
+
     try:
         if 'file' not in request.files:
             return jsonify({'success': False, 'message': '没有选择文件'})
-        
+
         file = request.files['file']
         if file.filename == '':
             return jsonify({'success': False, 'message': '没有选择文件'})
-        
+
         if not file.filename.endswith(('.xlsx', '.xls')):
             return jsonify({'success': False, 'message': '只支持Excel文件格式(.xlsx, .xls)'})
-        
+
+        # 获取分析参数
+        analysis_type = request.form.get('analysis_type', 'basic')
+        output_format = request.form.get('output_format', 'excel')
+        notes = request.form.get('notes', '')
+
+        # 创建临时目录
+        temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'temp')
+        os.makedirs(temp_dir, exist_ok=True)
+
         # 保存上传的文件
-        upload_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'uploads')
-        os.makedirs(upload_dir, exist_ok=True)
-        
-        filename = f"research_{file.filename}"
-        filepath = os.path.join(upload_dir, filename)
+        filename = f"research_{uuid.uuid4().hex}_{file.filename}"
+        filepath = os.path.join(temp_dir, filename)
         file.save(filepath)
-        
-        # 记录上传日志
+
+        # 创建分析器实例
+        analyzer = ResearchAnalyzer(filepath)
+
+        # 运行分析
+        if not analyzer.run_all_analysis():
+            # 清理临时文件
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            return jsonify({'success': False, 'message': '数据分析失败，请检查文件格式'})
+
+        # 获取分析结果
+        results = analyzer.get_results()
+
+        # 根据输出格式生成结果
+        if output_format == 'excel':
+            # 生成Excel报告
+            result_filename = f"analysis_{uuid.uuid4().hex}.xlsx"
+            result_filepath = os.path.join(temp_dir, result_filename)
+
+            if analyzer.save_results_to_excel(result_filepath):
+                # 记录上传和分析日志
+                LogService.log(
+                    action="执行调研分析",
+                    resource=f"调研分析: {file.filename}",
+                    log_type="user",
+                    level="info",
+                    details={
+                        'analysis_type': analysis_type,
+                        'output_format': output_format,
+                        'notes': notes,
+                        'filename': result_filename
+                    }
+                )
+
+                return jsonify({
+                    'success': True,
+                    'message': '分析完成',
+                    'filename': result_filename,
+                    'original_filename': file.filename,
+                    'results': results,
+                    'download_url': f'/toolset/research-analysis/download/{result_filename}'
+                })
+            else:
+                # 清理临时文件
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                return jsonify({'success': False, 'message': '生成分析报告失败'})
+
+        elif output_format == 'json':
+            # 返回JSON格式结果
+            result_filename = f"analysis_{uuid.uuid4().hex}.json"
+            result_filepath = os.path.join(temp_dir, result_filename)
+
+            import json
+            with open(result_filepath, 'w', encoding='utf-8') as f:
+                json.dump(results, f, ensure_ascii=False, indent=2, default=str)
+
+            LogService.log(
+                action="执行调研分析",
+                resource=f"调研分析: {file.filename}",
+                log_type="user",
+                level="info",
+                details={
+                    'analysis_type': analysis_type,
+                    'output_format': output_format,
+                    'notes': notes,
+                    'filename': result_filename
+                }
+            )
+
+            return jsonify({
+                'success': True,
+                'message': '分析完成',
+                'filename': result_filename,
+                'original_filename': file.filename,
+                'results': results,
+                'download_url': f'/toolset/research-analysis/download/{result_filename}'
+            })
+
+        else:
+            # 清理临时文件
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            return jsonify({'success': False, 'message': '不支持的输出格式'})
+
+    except Exception as e:
+        print(f"文件上传和分析失败: {e}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'处理失败: {str(e)}'})
+
+
+@toolset_bp.route('/research-analysis/download/<filename>')
+@login_required
+def download_analysis_result(filename):
+    """下载分析结果文件"""
+    try:
+        temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'temp')
+        filepath = os.path.join(temp_dir, filename)
+
+        if not os.path.exists(filepath):
+            return jsonify({'success': False, 'message': '文件不存在或已过期'}), 404
+
+        # 记录下载日志
         LogService.log(
-            action="上传调研文件",
-            resource=f"调研分析: {filename}",
+            action="下载分析结果",
+            resource=f"调研分析结果: {filename}",
             log_type="user",
             level="info"
         )
-        
+
+        return send_file(
+            filepath,
+            as_attachment=True,
+            download_name=filename
+        )
+
+    except Exception as e:
+        print(f"下载文件失败: {e}")
+        return jsonify({'success': False, 'message': f'下载失败: {str(e)}'}), 500
+
+
+@toolset_bp.route('/research-analysis/cleanup', methods=['POST'])
+@login_required
+def cleanup_temp_files():
+    """清理临时文件"""
+    try:
+        temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'temp')
+
+        if not os.path.exists(temp_dir):
+            return jsonify({'success': True, 'message': '没有临时文件需要清理'})
+
+        # 删除24小时前的文件
+        import time
+        current_time = time.time()
+        cutoff_time = current_time - (24 * 60 * 60)  # 24小时前
+
+        cleaned_count = 0
+        for filename in os.listdir(temp_dir):
+            filepath = os.path.join(temp_dir, filename)
+            if os.path.isfile(filepath):
+                file_mtime = os.path.getmtime(filepath)
+                if file_mtime < cutoff_time:
+                    os.remove(filepath)
+                    cleaned_count += 1
+
+        LogService.log(
+            action="清理临时文件",
+            resource="调研分析",
+            log_type="user",
+            level="info",
+            details={'cleaned_files': cleaned_count}
+        )
+
         return jsonify({
             'success': True,
-            'message': '文件上传成功',
-            'filename': filename
+            'message': f'已清理 {cleaned_count} 个临时文件'
         })
-        
+
     except Exception as e:
-        print(f"文件上传失败: {e}")
-        return jsonify({'success': False, 'message': f'文件上传失败: {str(e)}'})
+        print(f"清理临时文件失败: {e}")
+        return jsonify({'success': False, 'message': f'清理失败: {str(e)}'})
 
 @toolset_bp.route('/shops/list')
 @login_required

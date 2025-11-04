@@ -6,60 +6,69 @@
     </div>
     
     <div class="tool-content">
-        <div class="upload-section">
-            <div class="upload-area" id="upload-area">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <p>拖拽Excel文件到这里或点击选择</p>
-                <p class="upload-hint">支持 .xlsx 和 .xls 格式</p>
-                <input type="file" id="file-input" accept=".xlsx,.xls" style="display: none;">
-                <button type="button" class="btn-secondary" onclick="document.getElementById('file-input').click()">
-                    <i class="fas fa-folder-open"></i> 选择文件
-                </button>
-            </div>
-        </div>
-        
-        <div class="file-info-section" id="file-info-section" style="display: none;">
-            <h3>文件信息</h3>
-            <div class="file-details">
-                <div class="detail-item">
-                    <span class="label">文件名:</span>
-                    <span class="value" id="file-name"></span>
+        <div class="main-layout">
+            <!-- 左侧：文件上传区域 -->
+            <div class="left-panel">
+                <div class="upload-section">
+                    <h3><i class="fas fa-cloud-upload-alt"></i> 选择文件</h3>
+                    <div class="upload-area" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>拖拽Excel文件到这里或点击选择</p>
+                        <p class="upload-hint">支持 .xlsx 和 .xls 格式</p>
+                        <input type="file" id="file-input" accept=".xlsx,.xls" style="display: none;">
+                        <button type="button" class="btn-secondary" onclick="document.getElementById('file-input').click()">
+                            <i class="fas fa-folder-open"></i> 选择文件
+                        </button>
+                    </div>
                 </div>
-                <div class="detail-item">
-                    <span class="label">文件大小:</span>
-                    <span class="value" id="file-size"></span>
+
+                <div class="file-info-section" id="file-info-section" style="display: none;">
+                    <h4>文件信息</h4>
+                    <div class="file-details">
+                        <div class="detail-item">
+                            <span class="label">文件名:</span>
+                            <span class="value" id="file-name"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">文件大小:</span>
+                            <span class="value" id="file-size"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">上传时间:</span>
+                            <span class="value" id="upload-time"></span>
+                        </div>
+                    </div>
                 </div>
-                <div class="detail-item">
-                    <span class="label">上传时间:</span>
-                    <span class="value" id="upload-time"></span>
+            </div>
+
+            <!-- 右侧：分析选项区域 -->
+            <div class="right-panel">
+                <div class="analysis-options">
+                    <h3><i class="fas fa-sliders-h"></i> 分析选项</h3>
+                    <div class="form-group">
+                        <label for="analysis-type">分析类型</label>
+                        <select id="analysis-type">
+                            <option value="basic">基础统计</option>
+                            <option value="correlation">相关性分析</option>
+                            <option value="trend">趋势分析</option>
+                            <option value="comparison">对比分析</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="output-format">输出格式</label>
+                        <select id="output-format">
+                            <option value="excel">Excel报告</option>
+                            <option value="pdf">PDF报告</option>
+                            <option value="html">HTML报告</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="analysis-notes">分析备注 (可选)</label>
+                        <textarea id="analysis-notes" rows="4" placeholder="请输入分析备注或说明..."></textarea>
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <div class="analysis-options">
-            <h3>分析选项</h3>
-            <div class="form-group">
-                <label for="analysis-type">分析类型:</label>
-                <select id="analysis-type">
-                    <option value="basic">基础统计</option>
-                    <option value="correlation">相关性分析</option>
-                    <option value="trend">趋势分析</option>
-                    <option value="comparison">对比分析</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="output-format">输出格式:</label>
-                <select id="output-format">
-                    <option value="excel">Excel报告</option>
-                    <option value="pdf">PDF报告</option>
-                    <option value="html">HTML报告</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="analysis-notes">分析备注 (可选):</label>
-                <textarea id="analysis-notes" rows="3" placeholder="请输入分析备注或说明..."></textarea>
             </div>
         </div>
         
@@ -256,17 +265,65 @@ document.addEventListener('DOMContentLoaded', function() {
     // 显示结果
     function displayResult(result) {
         const resultContent = document.getElementById('result-content');
+
+        // 显示分析结果摘要
+        let summaryHtml = '';
+        if (result.results) {
+            summaryHtml = '<div class="result-summary"><h4>分析结果摘要</h4>';
+
+            // 价格分析结果
+            if (result.results.price_analysis) {
+                summaryHtml += '<div class="analysis-item"><h5>价格与销量占比</h5><p>已完成价格区间分析，共发现多个价格段</p></div>';
+            }
+
+            // 品牌分析结果
+            if (result.results.brand_analysis) {
+                summaryHtml += '<div class="analysis-item"><h5>品牌与销量占比</h5><p>已完成品牌分析，统计销量前20品牌</p></div>';
+            }
+
+            // 上架时间分析结果
+            if (result.results.listing_days_analysis) {
+                summaryHtml += '<div class="analysis-item"><h5>上架时间与销量占比</h5><p>已完成上架天数分析</p></div>';
+            }
+
+            // 评价数量分析结果
+            if (result.results.review_count_analysis) {
+                summaryHtml += '<div class="analysis-item"><h5>评价数量与销量占比</h5><p>已完成评价数量区间分析</p></div>';
+            }
+
+            // 卖家属性分析结果
+            if (result.results.seller_type_analysis) {
+                summaryHtml += '<div class="analysis-item"><h5>卖家属性与销量占比</h5><p>已完成BBX卖家属性分析</p></div>';
+            }
+
+            // 配送方式分析结果
+            if (result.results.delivery_method_analysis) {
+                summaryHtml += '<div class="analysis-item"><h5>配送方式与销量占比</h5><p>已完成物流方式分析</p></div>';
+            }
+
+            // 卖家国籍分析结果
+            if (result.results.seller_country_analysis) {
+                summaryHtml += '<div class="analysis-item"><h5>卖家国籍与销量占比</h5><p>已完成国籍/地区分析</p></div>';
+            }
+
+            summaryHtml += '</div>';
+        }
+
         resultContent.innerHTML = `
             <div class="success-message">
                 <i class="fas fa-check-circle"></i>
                 <h4>分析完成</h4>
-                <p>文件 "${result.filename}" 已成功上传并处理。</p>
+                <p>文件 "${result.original_filename}" 已成功上传并处理。</p>
+                ${summaryHtml}
                 <div class="result-actions">
                     <button type="button" class="btn-primary" onclick="downloadResult('${result.filename}')">
-                        <i class="fas fa-download"></i> 下载结果
+                        <i class="fas fa-download"></i> 下载分析报告
                     </button>
                     <button type="button" class="btn-secondary" onclick="viewDetails()">
                         <i class="fas fa-eye"></i> 查看详情
+                    </button>
+                    <button type="button" class="btn-tertiary" onclick="cleanupTempFiles()">
+                        <i class="fas fa-trash"></i> 清理临时文件
                     </button>
                 </div>
             </div>
@@ -288,14 +345,41 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadArea.classList.remove('drag-over');
     }
     
-    // 下载结果 (示例函数)
+    // 下载结果
     window.downloadResult = function(filename) {
-        notify.info('下载功能开发中...');
+        // 创建下载链接
+        const link = document.createElement('a');
+        link.href = `/toolset/research-analysis/download/${filename}`;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        notify.success('开始下载分析报告');
     };
-    
+
     // 查看详情 (示例函数)
     window.viewDetails = function() {
         notify.info('详情查看功能开发中...');
+    };
+
+    // 清理临时文件
+    window.cleanupTempFiles = async function() {
+        try {
+            const response = await fetch('/toolset/research-analysis/cleanup', {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                notify.success(result.message);
+            } else {
+                notify.error(result.message);
+            }
+        } catch (error) {
+            console.error('Cleanup error:', error);
+            notify.error('清理临时文件失败');
+        }
     };
 });
 </script>
@@ -319,6 +403,28 @@ document.addEventListener('DOMContentLoaded', function() {
     color: #00ff88;
     margin-bottom: 10px;
     font-size: 1.8rem;
+}
+
+/* 主要布局 - 左右两列 */
+.main-layout {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.left-panel,
+.right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 上传区域样式 */
+.upload-section h3 {
+    color: #00ff88;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
 }
 
 .upload-area {
@@ -354,24 +460,31 @@ document.addEventListener('DOMContentLoaded', function() {
     color: rgba(255, 255, 255, 0.6);
 }
 
+/* 文件信息区域 */
 .file-info-section {
     background: rgba(0, 255, 136, 0.1);
     border: 1px solid rgba(0, 255, 136, 0.3);
     border-radius: 8px;
-    padding: 20px;
-    margin: 20px 0;
+    padding: 15px;
+}
+
+.file-info-section h4 {
+    color: #00ff88;
+    margin-bottom: 12px;
+    font-size: 1rem;
 }
 
 .file-details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .detail-item {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
+    padding: 6px 0;
+    font-size: 0.9rem;
 }
 
 .detail-item .label {
@@ -384,13 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
     font-weight: 600;
 }
 
-.analysis-options {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 20px;
-    margin: 20px 0;
-}
-
+/* 分析选项样式 */
 .analysis-options h3 {
     color: #00ff88;
     margin-bottom: 15px;
@@ -398,14 +505,15 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
+    font-size: 0.9rem;
 }
 
 .form-group input,
@@ -473,6 +581,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-tertiary {
+    background: rgba(255, 100, 100, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 100, 100, 0.4);
+}
+
+.btn-tertiary:hover {
+    background: rgba(255, 100, 100, 0.3);
+}
+
+/* 结果摘要样式 */
+.result-summary {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.result-summary h4 {
+    color: #00ff88;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.analysis-item {
+    background: rgba(0, 0, 0, 0.2);
+    border-left: 3px solid #00ff88;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.analysis-item h5 {
+    color: #00ff88;
+    margin-bottom: 5px;
+    font-size: 1rem;
+}
+
+.analysis-item p {
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    font-size: 0.9rem;
 }
 
 .progress-section {
@@ -544,17 +697,28 @@ document.addEventListener('DOMContentLoaded', function() {
     justify-content: center;
 }
 
+/* 响应式设计 */
+@media (max-width: 992px) {
+    .main-layout {
+        flex-direction: column;
+    }
+}
+
 @media (max-width: 768px) {
     .action-buttons {
         flex-direction: column;
     }
-    
+
     .result-actions {
         flex-direction: column;
     }
-    
-    .file-details {
-        grid-template-columns: 1fr;
+
+    .upload-area {
+        padding: 30px 15px;
+    }
+
+    .upload-area i {
+        font-size: 2rem;
     }
 }
 </style>
