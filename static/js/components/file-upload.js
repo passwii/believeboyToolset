@@ -271,8 +271,9 @@ class FileUploadComponent {
       nameSpan.innerHTML = `${this.getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
       progressSpan.textContent = '上传中...';
     } else if (status === 'uploaded') {
-      nameSpan.innerHTML = `${this.getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
-      progressSpan.textContent = '✓ 已上传';
+      // 上传成功时只显示文件名，移除类型前缀和状态文字
+      nameSpan.innerHTML = `${fileName}${fileSize}${helpIconHTML}`;
+      progressSpan.textContent = '';
     } else if (status === 'error') {
       nameSpan.innerHTML = `${this.getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
       progressSpan.textContent = `✗ 上传失败: ${errorMessage}`;
@@ -281,13 +282,46 @@ class FileUploadComponent {
       progressSpan.textContent = '未上传';
     }
 
-    // 添加或更新删除按钮
+    // 添加或更新删除按钮 - 固定样式和位置
     let removeBtn = fileItem.querySelector('.remove-file');
     if (status === 'uploaded') {
       if (!removeBtn) {
         removeBtn = DOM.create('button', {
-          className: 'remove-file'
+          className: 'remove-file fixed-remove-btn'
         }, '×');
+        
+        // 设置固定样式
+        removeBtn.style.cssText = `
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: var(--error-color);
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 24px;
+          height: 24px;
+          font-size: 14px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          z-index: 10;
+        `;
+        
+        // 添加悬停效果
+        removeBtn.addEventListener('mouseenter', () => {
+          removeBtn.style.background = '#cc0055';
+          removeBtn.style.transform = 'translateY(-50%) scale(1.1)';
+        });
+        
+        removeBtn.addEventListener('mouseleave', () => {
+          removeBtn.style.background = 'var(--error-color)';
+          removeBtn.style.transform = 'translateY(-50%) scale(1)';
+        });
+        
         removeBtn.addEventListener('click', () => this.removeFile(fileType));
         fileItem.appendChild(removeBtn);
       }
@@ -363,6 +397,11 @@ class FileUploadComponent {
     if (this.submitBtn) {
       this.submitBtn.disabled = true;
     }
+
+    // 清空文件时移除completed状态
+    if (this.dropArea) {
+      this.dropArea.classList.remove('completed');
+    }
   }
 
   /**
@@ -381,6 +420,13 @@ class FileUploadComponent {
       } else {
         this.submitBtn.textContent = '请等待所有文件上传完成';
       }
+    }
+
+    // 如果所有文件都已上传，设置拖拽区域为completed状态
+    if (allUploaded && this.dropArea) {
+      this.dropArea.classList.add('completed');
+    } else if (this.dropArea) {
+      this.dropArea.classList.remove('completed');
     }
   }
 

@@ -267,8 +267,10 @@ const TimeUtils = {
    * @returns {string}
    */
   yesterday(format = 'YYYY-MM-DD') {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
+    // 获取用户浏览器本地时间的当前日期
+    const now = new Date();
+    // 直接创建昨天的日期对象
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
     return StringUtils.formatDate(yesterday, format);
   },
 

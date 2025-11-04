@@ -186,6 +186,22 @@ class NotificationManager {
   }
 
   /**
+   * 更新通知位置，支持垂直堆叠
+   */
+  updateNotificationPositions() {
+    const visibleNotifications = Array.from(this.container.children).filter(
+      el => el.classList.contains('show')
+    );
+    
+    visibleNotifications.forEach((notification, index) => {
+      const translateY = index * 85; // 每个通知向下偏移85px
+      const translateX = 400 - (index * 20); // 新通知向左偏移20px
+      notification.style.transform = `translate(${translateX}px, ${translateY}px)`;
+      notification.style.zIndex = 10000 + index;
+    });
+  }
+
+  /**
    * 显示通知
    * @param {string} message - 消息内容
    * @param {string} type - 类型：info, success, warning, error
@@ -218,10 +234,13 @@ class NotificationManager {
 
     this.container.appendChild(notification);
     
+    // 更新通知位置
+    this.updateNotificationPositions();
+    
     // 添加入场动画
     setTimeout(() => {
       notification.classList.add('show');
-    }, 10);
+    }, 50);
 
     // 添加关闭事件
     if (closable) {
@@ -306,6 +325,8 @@ class NotificationManager {
         element.parentNode.removeChild(element);
       }
       this.notifications.delete(id);
+      // 重新排列剩余通知
+      this.updateNotificationPositions();
     }, 300);
   }
 
@@ -482,6 +503,7 @@ class NotificationManager {
         btn.addEventListener('mouseenter', () => {
           btn.style.transform = 'translateY(-1px)';
         });
+
         btn.addEventListener('mouseleave', () => {
           btn.style.transform = 'translateY(0)';
         });

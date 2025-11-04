@@ -854,7 +854,11 @@ class Application {
         
         if (response.ok) {
           const blob = await response.blob();
-          const filename = `${reportType.toLowerCase()}_${StringUtils.formatDate(new Date(), 'YYYY-MM-DD')}.xlsx`;
+          // 获取表单中的日期，而不是使用当前时间
+          const reportDate = formData.get('report_date');
+          const filename = reportDate ? 
+            `${reportType.toLowerCase()}_${reportDate}.xlsx` : 
+            `${reportType.toLowerCase()}_${StringUtils.formatDate(new Date(), 'YYYY-MM-DD')}.xlsx`;
           
           await downloadFile(blob, filename);
           
