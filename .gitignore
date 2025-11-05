@@ -19,6 +19,7 @@ pdf/
 
 # db files不要同步
 *.db
+user.db
 
 #claude/
 .claude
