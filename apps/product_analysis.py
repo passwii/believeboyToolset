@@ -361,7 +361,7 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     summary_row['总成本占比'] = summary_row['总成本'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
     summary_row['利润率'] = summary_row['利润'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
     summary_row['退款率'] = summary_row['实际退款额'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
-    summary_row['平均售价'] = summary_row['实际销售额'] / summary_row['实际销售量'] if summary_row['实际销售量'] != 0 else 0
+    summary_row['平均售价'] = round(summary_row['实际销售额'] / summary_row['实际销售量'], 2) if summary_row['实际销售量'] != 0 else 0
     
     # 将汇总行添加到df_overview
     summary_df = pd.DataFrame([summary_row])
