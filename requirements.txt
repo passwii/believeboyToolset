@@ -27,6 +27,11 @@ Flask-SQLAlchemy==3.0.5
 # 文件上传和处理
 Flask-Uploads==0.2.1
 
+# PDF处理相关
+pdfplumber==0.9.0
+PyPDF2==3.0.1
+reportlab==4.0.7
+
 # 安全相关
 cryptography==41.0.7
 

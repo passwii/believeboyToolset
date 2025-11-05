@@ -15,6 +15,16 @@ try:
 except ImportError:
     ResearchAnalyzer = None
 
+try:
+    from product_label_processor import quick_process_pdf
+except ImportError:
+    quick_process_pdf = None
+
+try:
+    from pricing_calculator import PricingCalculator
+except ImportError:
+    PricingCalculator = None
+
 toolset_bp = Blueprint('toolset', __name__)
 
 @toolset_bp.route('/operations-overview')
@@ -295,3 +305,227 @@ def list_shops():
     except Exception as e:
         print(f"获取店铺列表失败: {e}")
         return jsonify({'success': False, 'message': '获取店铺列表失败'})
+
+
+@toolset_bp.route('/product-label')
+@login_required
+def product_label():
+    """产品标签处理页面"""
+    LogService.log(
+        action="访问产品标签处理",
+        resource="产品标签处理",
+        log_type="user",
+        level="info"
+    )
+    return render_template('tools/product-label.html')
+
+@toolset_bp.route('/package-label')
+@login_required
+def package_label():
+    """外箱标签处理页面"""
+    LogService.log(
+        action="访问外箱标签处理",
+        resource="外箱标签处理",
+        log_type="user",
+        level="info"
+    )
+    return render_template('tools/package-label.html')
+
+
+@toolset_bp.route('/product-label/process', methods=['POST'])
+@login_required
+def process_product_label():
+    """处理PDF文件上传和文字替换"""
+    if quick_process_pdf is None:
+        return jsonify({
+            'success': False,
+            'message': '产品标签处理模块未正确加载'
+        })
+
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'message': '没有选择文件'})
+
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'message': '没有选择文件'})
+
+        if not file.filename.endswith('.pdf'):
+            return jsonify({'success': False, 'message': '只支持PDF文件格式'})
+
+        # 获取处理参数
+        case_sensitive = request.form.get('case_sensitive', 'true').lower() == 'true'
+        whole_word = request.form.get('whole_word', 'true').lower() == 'true'
+
+        # 创建临时目录
+        temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'temp')
+        os.makedirs(temp_dir, exist_ok=True)
+
+        # 保存上传的文件
+        input_filename = f"label_{uuid.uuid4().hex}_{file.filename}"
+        input_filepath = os.path.join(temp_dir, input_filename)
+        file.save(input_filepath)
+
+        try:
+            # 使用简化的PDF处理 - 固定替换"新品"为"NEW"
+            result = quick_process_pdf(input_filepath)
+
+            if result['success']:
+                # 获取输出文件名
+                output_filename = os.path.basename(result['output_path'])
+
+                # 记录处理日志
+                LogService.log(
+                    action="处理产品标签PDF",
+                    resource=f"产品标签处理: {file.filename}",
+                    log_type="user",
+                    level="info",
+                    details={
+                        'replacement_count': result['replacement_count'],
+                        'output_filename': output_filename,
+                        'processing_type': '新品->NEW 简化替换'
+                    }
+                )
+
+                return jsonify({
+                    'success': True,
+                    'message': result['message'],
+                    'filename': output_filename,
+                    'original_filename': file.filename,
+                    'replacement_count': result['replacement_count'],
+                    'download_url': f'/toolset/product-label/download/{output_filename}'
+                })
+            else:
+                return jsonify({
+                    'success': False, 
+                    'message': result.get('error', 'PDF处理失败')
+                })
+
+        finally:
+            # 清理输入文件
+            if os.path.exists(input_filepath):
+                os.remove(input_filepath)
+
+    except Exception as e:
+        print(f"PDF处理失败: {e}")
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'处理失败: {str(e)}'})
+
+
+@toolset_bp.route('/product-label/download/<filename>')
+@login_required
+def download_processed_pdf(filename):
+    """下载处理后的PDF文件"""
+    try:
+        temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'temp')
+        filepath = os.path.join(temp_dir, filename)
+
+        if not os.path.exists(filepath):
+            return jsonify({'success': False, 'message': '文件不存在或已过期'}), 404
+
+        # 记录下载日志
+        LogService.log(
+            action="下载处理后PDF",
+            resource=f"产品标签处理结果: {filename}",
+            log_type="user",
+            level="info"
+        )
+
+        return send_file(
+            filepath,
+            as_attachment=True,
+            download_name=filename
+        )
+
+    except Exception as e:
+        print(f"下载PDF失败: {e}")
+        return jsonify({'success': False, 'message': f'下载失败: {str(e)}'}), 500
+
+
+@toolset_bp.route('/product-label/cleanup', methods=['POST'])
+@login_required
+def cleanup_pdf_temp_files():
+    """清理临时PDF文件"""
+    try:
+        temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'temp')
+
+        if not os.path.exists(temp_dir):
+            return jsonify({'success': True, 'message': '没有临时文件需要清理'})
+
+        # 删除24小时前的文件
+        import time
+        current_time = time.time()
+        cutoff_time = current_time - (24 * 60 * 60)  # 24小时前
+
+        cleaned_count = 0
+        for filename in os.listdir(temp_dir):
+            filepath = os.path.join(temp_dir, filename)
+            if os.path.isfile(filepath) and (filename.startswith('processed_') or filename.startswith('label_')):
+                file_mtime = os.path.getmtime(filepath)
+                if file_mtime < cutoff_time:
+                    os.remove(filepath)
+                    cleaned_count += 1
+
+        LogService.log(
+            action="清理PDF临时文件",
+            resource="产品标签处理",
+            log_type="user",
+            level="info",
+            details={'cleaned_files': cleaned_count}
+        )
+
+        return jsonify({
+            'success': True,
+            'message': f'已清理 {cleaned_count} 个临时文件'
+        })
+
+    except Exception as e:
+        print(f"清理临时文件失败: {e}")
+        return jsonify({'success': False, 'message': f'清理失败: {str(e)}'})
+
+
+@toolset_bp.route('/pricing-calculator')
+@login_required
+def pricing_calculator():
+    """定价测算页面"""
+    LogService.log(
+        action="访问定价测算",
+        resource="定价测算",
+        log_type="user",
+        level="info"
+    )
+    return render_template('tools/pricing-calculator.html')
+
+
+@toolset_bp.route('/pricing-calculator/calculate', methods=['POST'])
+@login_required
+def calculate_pricing():
+    """计算定价"""
+    if PricingCalculator is None:
+        return jsonify({
+            'success': False,
+            'message': '定价计算模块未正确加载'
+        })
+
+    try:
+        # 获取表单数据
+        data = request.get_json()
+        
+        # 创建计算器实例
+        calculator = PricingCalculator()
+        
+        # 执行计算
+        result = calculator.calculate_all(data)
+        
+        return jsonify({
+            'success': True,
+            'result': result
+        })
+        
+    except Exception as e:
+        print(f"定价计算失败: {e}")
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'message': f'计算失败: {str(e)}'
+        })

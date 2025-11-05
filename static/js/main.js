@@ -360,6 +360,9 @@ class Application {
       'amazon-crawler': '/toolset/amazon-crawler?embed=true',
       'image-resizer': '/toolset/image-resizer?embed=true',
       'research-analysis': '/toolset/research-analysis?embed=true',
+      'product-label': '/toolset/product-label?embed=true',
+      'package-label': '/toolset/package-label?embed=true',
+      'pricing-calculator': '/toolset/pricing-calculator?embed=true',
       'ai-panel': 'https://ai.believeboy.com'
     };
     
@@ -370,26 +373,34 @@ class Application {
    * 初始化页面内容
    */
   initializePageContent(contentType) {
-    // 根据内容类型调用相应的初始化函数
-    const initFunctions = {
-      'daily-report': () => this.initializeDailyReport(),
-      'monthly-report': () => this.initializeMonthlyReport(),
-      'product-analysis': () => this.initializeProductAnalysis(),
-      'operations-overview': () => this.initializeOperationsOverview(),
-      'operations-nav': () => this.initializeOperationsNav(),
-      'shop-nav': () => this.initializeShopNav(),
-      'operations-info': () => this.initializeOperationsInfo(),
-      'user-management': () => this.initializeUserManagement(),
-      'log-management': () => this.initializeLogManagement(),
-      'update-log': () => this.initializeUpdateLog(),
-      'shop-management': () => this.initializeShopManagement(),
-      'change-password': () => this.initializeChangePassword()
-    };
-    
-    const initFunction = initFunctions[contentType];
-    if (initFunction && typeof initFunction === 'function') {
-      initFunction();
-    }
+    // 延迟初始化，等待DOM和组件完全加载
+    setTimeout(() => {
+      // 根据内容类型调用相应的初始化函数
+      const initFunctions = {
+        'daily-report': () => this.initializeDailyReport(),
+        'monthly-report': () => this.initializeMonthlyReport(),
+        'product-analysis': () => this.initializeProductAnalysis(),
+        'operations-overview': () => this.initializeOperationsOverview(),
+        'operations-nav': () => this.initializeOperationsNav(),
+        'shop-nav': () => this.initializeShopNav(),
+        'operations-info': () => this.initializeOperationsInfo(),
+        'user-management': () => this.initializeUserManagement(),
+        'log-management': () => this.initializeLogManagement(),
+        'update-log': () => this.initializeUpdateLog(),
+        'shop-management': () => this.initializeShopManagement(),
+        'change-password': () => this.initializeChangePassword(),
+        'research-analysis': () => this.initializeResearchAnalysis(),
+        'product-label': () => this.initializeProductLabel(),
+        'package-label': () => this.initializePackageLabel(),
+        'pricing-calculator': () => this.initializePricingCalculator()
+      };
+      
+      const initFunction = initFunctions[contentType];
+      if (initFunction && typeof initFunction === 'function') {
+        console.log(`初始化页面: ${contentType}`);
+        initFunction();
+      }
+    }, 100);
   }
 
   /**
@@ -499,18 +510,22 @@ class Application {
    */
   initializeProductAnalysis() {
     try {
-      // 初始化文件上传组件
-      if (typeof FileUploadComponent !== 'undefined') {
-        this.components.fileUpload = new FileUploadComponent({
-          containerSelector: '#drop-area',
-          inputSelector: '#file-input',
-          listSelector: '#file-list',
-          submitSelector: '#submit-btn'
-        });
-      }
-      
-      // 初始化上周按钮
-      this.initializeLastWeekButton();
+      // 延迟初始化，等待DOM完全加载
+      setTimeout(() => {
+        // 初始化文件上传组件
+        if (typeof FileUploadComponent !== 'undefined') {
+          this.components.fileUpload = new FileUploadComponent({
+            containerSelector: '#drop-area',
+            inputSelector: '#file-input',
+            listSelector: '#file-list',
+            submitSelector: '#submit-btn',
+            uploadEndpoint: '/dataset/product-analysis/upload-file'
+          });
+        }
+        
+        // 初始化上周按钮
+        this.initializeLastWeekButton();
+      }, 100);
       
       console.log('Product analysis page initialized');
     } catch (error) {
@@ -572,6 +587,12 @@ class Application {
     
     // 初始化时间轴交互效果
     this.initializeTimelineInteractions();
+    
+    // 初始化进度条
+    this.initializeProgressBar();
+    
+    // 初始化统计数字动画
+    this.initializeStatsAnimation();
   }
 
   /**
@@ -665,16 +686,65 @@ class Application {
   }
 
   /**
-   * 动画化进度条
+   * 初始化进度条
    */
-  animateProgressBar() {
+  initializeProgressBar() {
     const progressFill = DOM.find('.progress-fill');
     if (progressFill) {
-      // 模拟进度更新
+      // 计算当前进度（基于当前日期）
+      const currentDate = new Date();
+      const startDate = new Date('2025-10-30');
+      const endDate = new Date('2025-12-15');
+      
+      // 计算进度百分比
+      const totalTime = endDate - startDate;
+      const elapsedTime = currentDate - startDate;
+      let progressPercentage = Math.round((elapsedTime / totalTime) * 100);
+      
+      // 确保进度在0-100之间
+      progressPercentage = Math.max(0, Math.min(100, progressPercentage));
+      
+      // 延迟设置进度，创建动画效果
       setTimeout(() => {
-        progressFill.style.width = '15%';
+        progressFill.style.width = progressPercentage + '%';
+        
+        // 更新统计面板中的进度数字
+        const progressStat = DOM.find('.stat-card:last-child .stat-number');
+        if (progressStat) {
+          progressStat.textContent = progressPercentage + '%';
+        }
       }, 500);
     }
+  }
+  
+  /**
+   * 初始化统计数字动画
+   */
+  initializeStatsAnimation() {
+    // 为统计数字添加动画效果
+    const statNumbers = DOM.findAll('.stat-number');
+    statNumbers.forEach(statElement => {
+      const finalValue = statElement.textContent;
+      
+      // 如果是百分比，跳过动画
+      if (finalValue.includes('%')) return;
+      
+      const numericValue = parseInt(finalValue);
+      if (isNaN(numericValue)) return;
+      
+      // 创建计数动画
+      let currentValue = 0;
+      const increment = Math.ceil(numericValue / 30); // 30步完成动画
+      
+      const counter = setInterval(() => {
+        currentValue += increment;
+        if (currentValue >= numericValue) {
+          currentValue = numericValue;
+          clearInterval(counter);
+        }
+        statElement.textContent = currentValue;
+      }, 50);
+    });
   }
 
   /**
@@ -822,6 +892,90 @@ class Application {
         }
       });
     }
+  }
+
+  /**
+   * 初始化调研分析页面
+   */
+  initializeResearchAnalysis() {
+    console.log('调研分析页面已加载');
+    
+    // 检查上传组件是否已加载
+    if (typeof FileUploadComponent === 'undefined') {
+      console.warn('FileUploadComponent 未加载');
+      return;
+    }
+    
+    // 初始化页面特定功能
+    this.waitForContainer('research-file-upload-container', () => {
+      console.log('调研分析上传容器已找到');
+    });
+  }
+
+  /**
+   * 初始化产品标签页面
+   */
+  initializeProductLabel() {
+    console.log('产品标签页面已加载');
+    
+    // 检查是否有简化文件上传组件
+    if (typeof SimpleFileUpload !== 'undefined') {
+      console.log('使用SimpleFileUpload组件');
+      this.waitForContainer('simple-file-upload-container', () => {
+        console.log('简化文件上传容器已找到');
+      });
+    } else if (typeof FileUploadComponent !== 'undefined') {
+      console.log('使用FileUploadComponent组件');
+      this.waitForContainer('product-file-upload-container', () => {
+        console.log('产品标签上传容器已找到');
+      });
+    } else {
+      console.warn('没有可用的文件上传组件');
+    }
+  }
+
+  /**
+   * 初始化外箱标签页面
+   */
+  initializePackageLabel() {
+    console.log('外箱标签页面已加载');
+    
+    // 外箱标签页面现在直接在页面中处理拖拽事件，不需要组件初始化
+    console.log('外箱标签页面使用内联拖拽处理');
+  }
+
+  /**
+   * 初始化定价测算页面
+   */
+  initializePricingCalculator() {
+    console.log('定价测算页面已加载');
+    // 页面脚本已在模板中定义，无需额外初始化
+  }
+
+  /**
+   * 等待容器元素加载完成
+   */
+  waitForContainer(containerId, callback, timeout = 5000) {
+    const startTime = Date.now();
+    
+    const checkContainer = () => {
+      const container = DOM.find(`#${containerId}`);
+      
+      if (container) {
+        console.log(`容器 ${containerId} 找到，开始初始化组件`);
+        callback();
+        return;
+      }
+      
+      if (Date.now() - startTime > timeout) {
+        console.error(`等待容器 ${containerId} 超时`);
+        return;
+      }
+      
+      setTimeout(checkContainer, 100);
+    };
+    
+    checkContainer();
   }
 
   /**

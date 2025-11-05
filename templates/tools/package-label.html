@@ -1,0 +1,699 @@
+<!-- 外箱标签处理工具 - 简化版 -->
+<div class="container">
+    <div class="tool-header">
+        <h2><i class="fas fa-box-open"></i> 外箱标签处理</h2>
+        <p>处理外箱标签PDF文件，替换发货人信息并添加"Made In China"</p>
+    </div>
+    
+    <div class="main-layout">
+        <!-- 左侧：文件上传区域 -->
+        <div class="left-section">
+            <div class="upload-section">
+                <h3><i class="fas fa-upload"></i> 上传PDF文件</h3>
+                <div class="upload-area" id="upload-pdf-area">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>拖拽文件到这里或点击选择</p>
+                    <input type="file" id="pdf-file-input" accept=".pdf" style="display: none;">
+                    <button type="button" class="btn-select" onclick="document.getElementById('pdf-file-input').click()">
+                        选择PDF文件
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧：文字替换设置 -->
+        <div class="right-section">
+            <div class="replacement-section">
+                <h3><i class="fas fa-edit"></i> 文字替换设置</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">替换原文</label>
+                    <textarea id="original-text" class="form-control" placeholder="请输入需要替换的原文"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">替换为</label>
+                    <textarea id="replacement-text" class="form-control" placeholder="请输入替换后的内容"></textarea>
+                </div>
+                
+                <div class="settings-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="add-made-in-china" checked>
+                        <span class="checkmark"></span>
+                        添加"Made In China"
+                    </label>
+                    
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="case-sensitive">
+                        <span class="checkmark"></span>
+                        区分大小写
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 底部操作按钮 -->
+    <div class="bottom-actions">
+        <button type="button" id="process-btn" class="btn btn-primary" disabled>
+            <i class="fas fa-cogs"></i>
+            开始处理
+        </button>
+        <button type="button" id="clear-btn" class="btn btn-secondary">
+            <i class="fas fa-trash"></i>
+            清除
+        </button>
+    </div>
+    
+    <!-- 进度显示 -->
+    <div class="progress-section" id="progress-section" style="display: none;">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text" id="progress-text">处理中...</div>
+    </div>
+    
+    <!-- 结果显示 -->
+    <div class="result-section" id="result-section" style="display: none;">
+        <div class="result-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h4>处理完成</h4>
+            <div class="result-details">
+                <span>原文件名: <span id="original-filename">-</span></span>
+                <span>替换次数: <span id="replacement-count">0</span></span>
+            </div>
+            <button type="button" id="download-btn" class="btn btn-primary">
+                <i class="fas fa-download"></i>
+                下载文件
+            </button>
+        </div>
+    </div>
+    
+    <!-- 错误显示 -->
+    <div class="error-section" id="error-section" style="display: none;">
+        <div class="error-content">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h4>处理失败</h4>
+            <p id="error-message">-</p>
+            <button type="button" id="retry-btn" class="btn btn-primary">
+                <i class="fas fa-redo"></i>
+                重新处理
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// 外箱标签处理脚本
+(function() {
+    // 确保DOM完全加载后再初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        initializePackageLabel();
+    });
+    
+    function initializePackageLabel() {
+        const elements = {
+            fileInput: document.getElementById('pdf-file-input'),
+            uploadArea: document.getElementById('upload-pdf-area'),
+            processBtn: document.getElementById('process-btn'),
+            clearBtn: document.getElementById('clear-btn'),
+            progressSection: document.getElementById('progress-section'),
+            resultSection: document.getElementById('result-section'),
+            errorSection: document.getElementById('error-section'),
+            originalText: document.getElementById('original-text'),
+            replacementText: document.getElementById('replacement-text'),
+            addMadeInChina: document.getElementById('add-made-in-china'),
+            caseSensitive: document.getElementById('case-sensitive')
+        };
+        
+        // 检查所有必要元素是否存在
+        const allElements = Object.values(elements);
+        if (!allElements.every(el => el)) {
+            console.error('某些必要元素未找到');
+            return;
+        }
+        
+        console.log('所有元素已找到，开始初始化事件处理');
+        
+        let selectedFile = null;
+        let processedResult = null;
+        
+        // 文件选择
+        elements.fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                updateUploadArea(selectedFile.name);
+                elements.processBtn.disabled = false;
+                hideAllSections();
+            }
+        });
+        
+        // 拖拽上传
+        elements.uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            elements.uploadArea.classList.add('dragover');
+        });
+        
+        elements.uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            elements.uploadArea.classList.remove('dragover');
+        });
+        
+        elements.uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            elements.uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                selectedFile = files[0];
+                elements.fileInput.files = files;
+                updateUploadArea(selectedFile.name);
+                elements.processBtn.disabled = false;
+                hideAllSections();
+            } else {
+                showError('请选择有效的PDF文件');
+            }
+        });
+        
+        // 为整个容器添加拖拽事件，以防止拖拽到子元素时事件丢失
+        const container = elements.uploadArea.parentElement;
+        container.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        
+        container.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            // 检查是否拖拽到上传区域内
+            if (e.target === elements.uploadArea || elements.uploadArea.contains(e.target)) {
+                elements.uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type === 'application/pdf') {
+                    selectedFile = files[0];
+                    elements.fileInput.files = files;
+                    updateUploadArea(selectedFile.name);
+                    elements.processBtn.disabled = false;
+                    hideAllSections();
+                } else {
+                    showError('请选择有效的PDF文件');
+                }
+            }
+        });
+        
+        // 点击上传区域选择文件
+        elements.uploadArea.addEventListener('click', function() {
+            elements.fileInput.click();
+        });
+        
+        // 处理按钮
+        elements.processBtn.addEventListener('click', function() {
+            if (selectedFile) {
+                processPDF();
+            }
+        });
+        
+        // 清除按钮
+        elements.clearBtn.addEventListener('click', function() {
+            clearAll();
+        });
+        
+        // 下载按钮
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'download-btn' && processedResult) {
+                downloadFile(processedResult.filename);
+            }
+        });
+        
+        // 重试按钮
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'retry-btn') {
+                hideErrorSection();
+                if (selectedFile) {
+                    processPDF();
+                }
+            }
+        });
+        
+        function updateUploadArea(filename) {
+            elements.uploadArea.innerHTML = `
+                <i class="fas fa-file-pdf"></i>
+                <p>已选择: ${filename}</p>
+                <button type="button" class="btn-select" onclick="document.getElementById('pdf-file-input').click()">
+                    重新选择
+                </button>
+            `;
+        }
+        
+        function processPDF() {
+            showProgress('正在处理PDF文件...');
+            elements.processBtn.disabled = true;
+            
+            // 构建请求数据
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('original_text', elements.originalText.value);
+            formData.append('replacement_text', elements.replacementText.value);
+            formData.append('add_made_in_china', elements.addMadeInChina.checked);
+            formData.append('case_sensitive', elements.caseSensitive.checked);
+            
+            // 模拟API调用
+            setTimeout(() => {
+                if (Math.random() > 0.1) { // 90%成功率
+                    processedResult = {
+                        success: true,
+                        original_filename: selectedFile.name,
+                        filename: 'processed_' + selectedFile.name,
+                        replacement_count: elements.originalText.value ? 1 : 0
+                    };
+                    showResult(processedResult);
+                } else {
+                    showError('处理失败：PDF文件格式不支持或文件损坏');
+                }
+                elements.processBtn.disabled = false;
+                hideProgress();
+            }, 3000);
+        }
+        
+        function showProgress(message) {
+            elements.progressSection.style.display = 'block';
+            document.getElementById('progress-text').textContent = message;
+            
+            // 进度条动画
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress > 90) progress = 90;
+                document.getElementById('progress-fill').style.width = progress + '%';
+            }, 300);
+        }
+        
+        function hideProgress() {
+            elements.progressSection.style.display = 'none';
+            document.getElementById('progress-fill').style.width = '0%';
+        }
+        
+        function showResult(data) {
+            document.getElementById('original-filename').textContent = data.original_filename || '-';
+            document.getElementById('replacement-count').textContent = data.replacement_count || '0';
+            elements.resultSection.style.display = 'block';
+            elements.resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            elements.errorSection.style.display = 'block';
+            elements.errorSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function hideErrorSection() {
+            elements.errorSection.style.display = 'none';
+        }
+        
+        function hideAllSections() {
+            elements.progressSection.style.display = 'none';
+            elements.resultSection.style.display = 'none';
+            elements.errorSection.style.display = 'none';
+        }
+        
+        function clearAll() {
+            selectedFile = null;
+            processedResult = null;
+            elements.fileInput.value = '';
+            elements.originalText.value = '';
+            elements.replacementText.value = '';
+            
+            elements.uploadArea.innerHTML = `
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>拖拽文件到这里或点击选择</p>
+                <button type="button" class="btn-select" onclick="document.getElementById('pdf-file-input').click()">
+                    选择PDF文件
+                </button>
+            `;
+            
+            elements.processBtn.disabled = true;
+            hideAllSections();
+        }
+        
+        function downloadFile(filename) {
+            alert('下载功能：' + filename);
+        }
+    }
+})();
+</script>
+
+<style>
+/* 简化版外箱标签处理页面样式 */
+:root {
+    --primary-color: #00d4ff;
+    --secondary-color: #6c5ce7;
+    --success-color: #00ff88;
+    --error-color: #ff4757;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --bg-secondary: rgba(255, 255, 255, 0.05);
+    --border-color: rgba(0, 212, 255, 0.2);
+    --transition: all 0.3s ease;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.tool-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.tool-header h2 {
+    color: var(--primary-color);
+    font-size: 24px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.tool-header p {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* 主布局 - 左右结构 */
+.main-layout {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+    min-height: 400px;
+}
+
+.left-section,
+.right-section {
+    flex: 1;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+/* 左侧上传区域 */
+.upload-section h3,
+.replacement-section h3 {
+    color: var(--primary-color);
+    font-size: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+    border-color: var(--primary-color);
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.upload-area i {
+    font-size: 32px;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.upload-area p {
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+/* 右侧表单区域 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: var(--transition);
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+}
+
+.form-control::placeholder {
+    color: var(--text-secondary);
+}
+
+/* 设置选项 */
+.settings-group {
+    margin-top: 20px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 12px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+/* 按钮样式 */
+.btn-select {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 13px;
+}
+
+.btn-select:hover {
+    border-color: var(--primary-color);
+    background: rgba(0, 212, 255, 0.1);
+}
+
+.bottom-actions {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 10px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--text-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-color);
+}
+
+/* 进度条 */
+.progress-section {
+    margin-bottom: 30px;
+    text-align: center;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* 结果和错误区域 */
+.result-section,
+.error-section {
+    padding: 30px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.result-content,
+.error-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.success-icon,
+.error-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.success-icon {
+    color: var(--success-color);
+}
+
+.error-icon {
+    color: var(--error-color);
+}
+
+.result-content h4,
+.error-content h4 {
+    color: var(--text-primary);
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.result-details {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.result-details span {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.error-content p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+    
+    .tool-header h2 {
+        font-size: 20px;
+    }
+    
+    .bottom-actions {
+        padding: 15px;
+    }
+    
+    .btn {
+        margin: 5px;
+        padding: 10px 20px;
+    }
+    
+    .result-details {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .left-section,
+    .right-section {
+        padding: 15px;
+    }
+    
+    .upload-area {
+        padding: 30px 15px;
+    }
+}
+</style>

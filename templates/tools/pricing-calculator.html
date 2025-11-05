@@ -1,0 +1,909 @@
+<!-- 定价测算工具 -->
+<div class="container">
+    <div class="tool-header">
+        <h2><i class="fas fa-calculator"></i> 亚马逊定价测算</h2>
+        <p>计算产品成本、费用和利润，帮助制定合理的定价策略</p>
+    </div>
+    
+    <div class="main-layout">
+        <!-- 左侧：成本和费用 -->
+        <div class="left-section">
+            <!-- 成本部分 -->
+            <div class="cost-section">
+                <h3><i class="fas fa-box"></i> 成本</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">产品包装规格 (cm)</label>
+                        <div class="input-group">
+                            <input type="number" id="length" class="form-control" placeholder="长" step="0.1" min="0">
+                            <input type="number" id="width" class="form-control" placeholder="宽" step="0.1" min="0">
+                            <input type="number" id="height" class="form-control" placeholder="高" step="0.1" min="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">重量 (kg)</label>
+                        <input type="number" id="actual_weight" class="form-control" placeholder="实际重量" step="0.1" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">商品成本 (CNY)</label>
+                        <div class="currency-input">
+                            <input type="number" id="product_cost_cny" class="form-control" placeholder="0.00" step="0.01" min="0">
+                            <span class="currency-display" id="product_cost_usd_display">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">运输成本 (CNY)</label>
+                        <div class="currency-input">
+                            <input type="text" id="shipping_cost_cny" class="form-control" readonly placeholder="自动计算">
+                            <span class="currency-display" id="shipping_cost_usd_display">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 费用部分 -->
+            <div class="fee-section">
+                <h3><i class="fas fa-coins"></i> 费用</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">平台费用 (USD) - 15%售价</label>
+                        <div class="currency-input">
+                            <input type="text" id="platform_fee_usd" class="form-control" readonly placeholder="自动计算">
+                            <span class="currency-display" id="platform_fee_cny_display">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">派送费用 (USD)</label>
+                        <div class="currency-input">
+                            <input type="text" id="delivery_fee_usd" class="form-control" readonly placeholder="暂未实现">
+                            <span class="currency-display" id="delivery_fee_cny_display">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">广告费用 (USD) - 15%售价</label>
+                        <div class="currency-input">
+                            <input type="text" id="advertising_fee_usd" class="form-control" readonly placeholder="自动计算">
+                            <span class="currency-display" id="advertising_fee_cny_display">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">仓储费用 (USD) - 3%售价</label>
+                        <div class="currency-input">
+                            <input type="text" id="storage_fee_usd" class="form-control" readonly placeholder="自动计算">
+                            <span class="currency-display" id="storage_fee_cny_display">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">其他费用 (USD) - 3%售价</label>
+                        <div class="currency-input">
+                            <input type="text" id="other_fee_usd" class="form-control" readonly placeholder="自动计算">
+                            <span class="currency-display" id="other_fee_cny_display">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧：定价核算 -->
+        <div class="right-section">
+            <div class="pricing-section">
+                <h3><i class="fas fa-chart-line"></i> 定价核算</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">商品售价 (USD)</label>
+                        <div class="currency-input">
+                            <input type="number" id="selling_price_usd" class="form-control" placeholder="0.00" step="0.01" min="0">
+                            <span class="currency-display" id="selling_price_cny_display">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">折扣促销 (USD)</label>
+                        <div class="currency-input">
+                            <input type="number" id="discount_usd" class="form-control" placeholder="0.00" step="0.01" min="0">
+                            <span class="currency-display" id="discount_cny_display">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">总支出 (USD) = 成本 + 费用</label>
+                        <div class="currency-input">
+                            <input type="text" id="total_expense_usd" class="form-control" readonly placeholder="自动计算">
+                            <span class="currency-display" id="total_expense_cny_display">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">成本小计 (USD)</label>
+                        <div class="currency-input">
+                            <input type="text" id="cost_subtotal_usd" class="form-control" readonly placeholder="自动计算">
+                            <span class="currency-display" id="cost_subtotal_cny_display">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">费用小计 (USD)</label>
+                        <div class="currency-input">
+                            <input type="text" id="fee_subtotal_usd" class="form-control" readonly placeholder="自动计算">
+                            <span class="currency-display" id="fee_subtotal_cny_display">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">毛利润 (USD) = 商品售价 - 折扣促销 - 总支出</label>
+                        <div class="currency-input">
+                            <input type="text" id="gross_profit_usd" class="form-control" readonly placeholder="自动计算">
+                            <span class="currency-display" id="gross_profit_cny_display">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">毛利率</label>
+                        <div class="margin-display">
+                            <input type="text" id="profit_margin" class="form-control" readonly placeholder="0.00%">
+                            <div class="margin-indicator" id="margin_indicator">
+                                <div class="margin-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 底部操作按钮 -->
+    <div class="bottom-actions">
+        <button type="button" id="calculate-btn" class="btn btn-primary">
+            <i class="fas fa-calculator"></i>
+            重新计算
+        </button>
+        <button type="button" id="reset-btn" class="btn btn-secondary">
+            <i class="fas fa-refresh"></i>
+            重置
+        </button>
+    </div>
+</div>
+
+<!-- 引入汇率组件 -->
+<script src="/static/js/components/exchange-rate.js"></script>
+
+<script>
+// 定价测算页面脚本 - 集成汇率组件
+(function() {
+    let calculator = null;
+    let exchangeRateComponent = null;
+    
+    // 定价计算器类 - 集成汇率组件
+    class FrontendPricingCalculator {
+        constructor(exchangeRateManager) {
+            this.exchangeRateManager = exchangeRateManager;
+        }
+        
+        // 计算运输成本
+        calculateShippingCost(length, width, height, actualWeight) {
+            // 计算抛重
+            const dimensionalWeight = (length * width * height) / 6000;
+            
+            // 取实际重量和抛重的较大值
+            const chargeableWeight = Math.max(actualWeight, dimensionalWeight);
+            
+            // 运输成本 = 计费重量 × 7 CNY
+            const shippingCostCny = chargeableWeight * 7;
+            
+            return {
+                dimensionalWeight: this.round(dimensionalWeight, 2),
+                chargeableWeight: this.round(chargeableWeight, 2),
+                shippingCostCny: this.round(shippingCostCny, 2),
+                shippingCostUsd: this.round(this.exchangeRateManager.convertCNYtoUSD(shippingCostCny), 2)
+            };
+        }
+        
+        // 计算派送费用
+        calculateDeliveryFee() {
+            // 预留接口，后续扩展
+            return {
+                deliveryFeeUsd: 0,
+                deliveryFeeCny: 0
+            };
+        }
+        
+        // 计算平台费用 (15%售价)
+        calculatePlatformFees(sellingPriceUsd) {
+            const platformFeeUsd = sellingPriceUsd * 0.15;
+            return {
+                platformFeeUsd: this.round(platformFeeUsd, 2),
+                platformFeeCny: this.round(this.exchangeRateManager.convertUSDtoCNY(platformFeeUsd), 2)
+            };
+        }
+        
+        // 计算广告费用 (15%售价)
+        calculateAdvertisingFee(sellingPriceUsd) {
+            const advertisingFeeUsd = sellingPriceUsd * 0.15;
+            return {
+                advertisingFeeUsd: this.round(advertisingFeeUsd, 2),
+                advertisingFeeCny: this.round(this.exchangeRateManager.convertUSDtoCNY(advertisingFeeUsd), 2)
+            };
+        }
+        
+        // 计算仓储费用 (3%售价)
+        calculateStorageFee(sellingPriceUsd) {
+            const storageFeeUsd = sellingPriceUsd * 0.03;
+            return {
+                storageFeeUsd: this.round(storageFeeUsd, 2),
+                storageFeeCny: this.round(this.exchangeRateManager.convertUSDtoCNY(storageFeeUsd), 2)
+            };
+        }
+        
+        // 计算其他费用 (3%售价)
+        calculateOtherFees(sellingPriceUsd) {
+            const otherFeeUsd = sellingPriceUsd * 0.03;
+            return {
+                otherFeeUsd: this.round(otherFeeUsd, 2),
+                otherFeeCny: this.round(this.exchangeRateManager.convertUSDtoCNY(otherFeeUsd), 2)
+            };
+        }
+        
+        // 计算总支出
+        calculateTotalCosts(productCostCny, shippingCostCny, platformFeeUsd,
+                           deliveryFeeUsd, advertisingFeeUsd, storageFeeUsd, otherFeeUsd) {
+            // 成本小计 (CNY)
+            const costSubtotalCny = productCostCny + shippingCostCny;
+            const costSubtotalUsd = this.exchangeRateManager.convertCNYtoUSD(costSubtotalCny);
+            
+            // 费用小计 (USD)
+            const feeSubtotalUsd = platformFeeUsd + deliveryFeeUsd + advertisingFeeUsd + storageFeeUsd + otherFeeUsd;
+            const feeSubtotalCny = this.exchangeRateManager.convertUSDtoCNY(feeSubtotalUsd);
+            
+            // 总支出
+            const totalExpenseUsd = costSubtotalUsd + feeSubtotalUsd;
+            const totalExpenseCny = this.exchangeRateManager.convertUSDtoCNY(totalExpenseUsd);
+            
+            return {
+                costSubtotalUsd: this.round(costSubtotalUsd, 2),
+                costSubtotalCny: this.round(costSubtotalCny, 2),
+                feeSubtotalUsd: this.round(feeSubtotalUsd, 2),
+                feeSubtotalCny: this.round(feeSubtotalCny, 2),
+                totalExpenseUsd: this.round(totalExpenseUsd, 2),
+                totalExpenseCny: this.round(totalExpenseCny, 2)
+            };
+        }
+        
+        // 计算毛利润和毛利率
+        calculateProfit(sellingPriceUsd, discountUsd, totalExpenseUsd) {
+            const grossProfitUsd = sellingPriceUsd - discountUsd - totalExpenseUsd;
+            const grossProfitCny = this.exchangeRateManager.convertUSDtoCNY(grossProfitUsd);
+            
+            // 计算毛利率
+            let profitMargin = 0;
+            if (sellingPriceUsd > 0) {
+                profitMargin = (grossProfitUsd / sellingPriceUsd) * 100;
+            }
+            
+            return {
+                grossProfitUsd: this.round(grossProfitUsd, 2),
+                grossProfitCny: this.round(grossProfitCny, 2),
+                profitMargin: this.round(profitMargin, 2)
+            };
+        }
+        
+        // 计算所有费用和利润
+        calculateAll(data) {
+            // 提取输入参数
+            const length = parseFloat(data.get('length', 0));
+            const width = parseFloat(data.get('width', 0));
+            const height = parseFloat(data.get('height', 0));
+            const actualWeight = parseFloat(data.get('actual_weight', 0));
+            const productCostCny = parseFloat(data.get('product_cost_cny', 0));
+            const sellingPriceUsd = parseFloat(data.get('selling_price_usd', 0));
+            const discountUsd = parseFloat(data.get('discount_usd', 0));
+            
+            // 计算各项费用
+            const shippingResult = this.calculateShippingCost(length, width, height, actualWeight);
+            const deliveryResult = this.calculateDeliveryFee();
+            const platformResult = this.calculatePlatformFees(sellingPriceUsd);
+            const advertisingResult = this.calculateAdvertisingFee(sellingPriceUsd);
+            const storageResult = this.calculateStorageFee(sellingPriceUsd);
+            const otherResult = this.calculateOtherFees(sellingPriceUsd);
+            
+            // 计算总支出
+            const totalCostsResult = this.calculateTotalCosts(
+                productCostCny,
+                shippingResult.shippingCostCny,
+                platformResult.platformFeeUsd,
+                deliveryResult.deliveryFeeUsd,
+                advertisingResult.advertisingFeeUsd,
+                storageResult.storageFeeUsd,
+                otherResult.otherFeeUsd
+            );
+            
+            // 计算利润
+            const profitResult = this.calculateProfit(
+                sellingPriceUsd,
+                discountUsd,
+                totalCostsResult.totalExpenseUsd
+            );
+            
+            // 返回完整结果
+            return {
+                shipping: shippingResult,
+                delivery: deliveryResult,
+                platform: platformResult,
+                advertising: advertisingResult,
+                storage: storageResult,
+                other: otherResult,
+                total_costs: totalCostsResult,
+                profit: profitResult,
+                exchange_rate: this.exchangeRateManager.currentRate
+            };
+        }
+        
+        // 四舍五入辅助函数
+        round(value, decimals) {
+            return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+        }
+    }
+    
+    // 初始化页面
+    function initPage() {
+        // 初始化汇率组件
+        initExchangeRateComponent();
+        
+        bindEvents();
+        setupRealTimeCalculation();
+        setupCurrencyConversion();
+    }
+    
+    // 初始化汇率组件
+    function initExchangeRateComponent() {
+        // 确保汇率管理器已加载
+        if (typeof exchangeRateManager !== 'undefined') {
+            exchangeRateComponent = exchangeRateManager;
+            
+            // 监听汇率更新事件
+            document.addEventListener('exchangeRateUpdate', function(event) {
+                const { oldRate, newRate } = event.detail;
+                console.log(`汇率已更新: ${oldRate} → ${newRate}`);
+                
+                // 重新计算所有数据
+                if (calculator) {
+                    performCalculation();
+                }
+            });
+            
+            // 显示当前汇率信息
+            updateExchangeRateDisplay();
+        } else {
+            console.error('汇率管理器未加载');
+        }
+    }
+    
+    // 更新汇率显示
+    function updateExchangeRateDisplay() {
+        if (!exchangeRateComponent) return;
+        
+        const rateInfo = exchangeRateComponent.getRateInfo();
+        const rateDisplay = document.getElementById('exchange-rate-display');
+        
+        if (rateDisplay) {
+            rateDisplay.textContent = `汇率: 1 USD = ${rateInfo.rate.toFixed(4)} CNY`;
+        }
+        
+        // 如果没有汇率显示元素，创建一个
+        if (!rateDisplay) {
+            const rateInfo = exchangeRateComponent.getRateInfo();
+            const container = document.querySelector('.tool-header');
+            if (container) {
+                const rateElement = DOM.create('div', {
+                    id: 'exchange-rate-display',
+                    className: 'exchange-rate-info',
+                    style: 'font-size: 14px; color: #a0a0a0; margin-top: 5px;'
+                });
+                rateElement.textContent = `汇率: 1 USD = ${rateInfo.rate.toFixed(4)} CNY`;
+                container.appendChild(rateElement);
+            }
+        }
+    }
+    
+    // 绑定事件
+    function bindEvents() {
+        const calculateBtn = document.getElementById('calculate-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        
+        // 计算按钮
+        calculateBtn.addEventListener('click', function() {
+            performCalculation();
+        });
+        
+        // 重置按钮
+        resetBtn.addEventListener('click', function() {
+            resetForm();
+        });
+    }
+    
+    // 设置实时计算
+    function setupRealTimeCalculation() {
+        // 监听所有输入框变化
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                // 延迟计算，避免频繁计算
+                clearTimeout(calculator);
+                calculator = setTimeout(performCalculation, 300);
+            });
+        });
+    }
+    
+    // 设置货币转换
+    function setupCurrencyConversion() {
+        if (!exchangeRateComponent) {
+            console.error('汇率组件未初始化');
+            return;
+        }
+        
+        // 使用汇率组件增强输入框
+        const currencyConfigs = [
+            {
+                inputElement: '#product_cost_cny',
+                options: {
+                    sourceCurrency: 'CNY',
+                    targetDisplayId: 'product_cost_usd_display',
+                    onChange: (cnyValue, usdValue) => {
+                        // 当输入变化时，触发重新计算
+                        clearTimeout(calculator);
+                        calculator = setTimeout(performCalculation, 300);
+                    }
+                }
+            },
+            {
+                inputElement: '#selling_price_usd',
+                options: {
+                    sourceCurrency: 'USD',
+                    targetDisplayId: 'selling_price_cny_display',
+                    onChange: (usdValue, cnyValue) => {
+                        // 当输入变化时，触发重新计算
+                        clearTimeout(calculator);
+                        calculator = setTimeout(performCalculation, 300);
+                    }
+                }
+            },
+            {
+                inputElement: '#discount_usd',
+                options: {
+                    sourceCurrency: 'USD',
+                    targetDisplayId: 'discount_cny_display',
+                    onChange: (usdValue, cnyValue) => {
+                        // 当输入变化时，触发重新计算
+                        clearTimeout(calculator);
+                        calculator = setTimeout(performCalculation, 300);
+                    }
+                }
+            }
+        ];
+        
+        // 批量增强输入框
+        exchangeRateComponent.enhanceMultipleInputs(currencyConfigs);
+    }
+    
+    // 执行计算 - 集成汇率组件
+    function performCalculation() {
+        try {
+            // 确保汇率组件已初始化
+            if (!exchangeRateComponent) {
+                console.error('汇率组件未初始化');
+                return;
+            }
+            
+            // 创建计算器实例
+            calculator = new FrontendPricingCalculator(exchangeRateComponent);
+            
+            // 收集表单数据
+            const formData = new Map();
+            formData.set('length', parseFloat(document.getElementById('length').value) || 0);
+            formData.set('width', parseFloat(document.getElementById('width').value) || 0);
+            formData.set('height', parseFloat(document.getElementById('height').value) || 0);
+            formData.set('actual_weight', parseFloat(document.getElementById('actual_weight').value) || 0);
+            formData.set('product_cost_cny', parseFloat(document.getElementById('product_cost_cny').value) || 0);
+            formData.set('selling_price_usd', parseFloat(document.getElementById('selling_price_usd').value) || 0);
+            formData.set('discount_usd', parseFloat(document.getElementById('discount_usd').value) || 0);
+            
+            // 执行计算
+            const result = calculator.calculateAll(formData);
+            
+            // 更新UI
+            updateUI(result);
+            
+        } catch (error) {
+            console.error('计算错误:', error);
+            notify.error('计算错误，请检查输入');
+        }
+    }
+    
+    // 更新UI
+    function updateUI(result) {
+        // 更新运输成本
+        document.getElementById('shipping_cost_cny').value = result.shipping.shippingCostCny.toFixed(2);
+        document.getElementById('shipping_cost_usd_display').textContent = `$${result.shipping.shippingCostUsd.toFixed(2)}`;
+        
+        // 更新各项费用
+        document.getElementById('platform_fee_usd').value = result.platform.platformFeeUsd.toFixed(2);
+        document.getElementById('platform_fee_cny_display').textContent = `¥${result.platform.platformFeeCny.toFixed(2)}`;
+        
+        document.getElementById('delivery_fee_usd').value = result.delivery.deliveryFeeUsd.toFixed(2);
+        document.getElementById('delivery_fee_cny_display').textContent = `¥${result.delivery.deliveryFeeCny.toFixed(2)}`;
+        
+        document.getElementById('advertising_fee_usd').value = result.advertising.advertisingFeeUsd.toFixed(2);
+        document.getElementById('advertising_fee_cny_display').textContent = `¥${result.advertising.advertisingFeeCny.toFixed(2)}`;
+        
+        document.getElementById('storage_fee_usd').value = result.storage.storageFeeUsd.toFixed(2);
+        document.getElementById('storage_fee_cny_display').textContent = `¥${result.storage.storageFeeCny.toFixed(2)}`;
+        
+        document.getElementById('other_fee_usd').value = result.other.otherFeeUsd.toFixed(2);
+        document.getElementById('other_fee_cny_display').textContent = `¥${result.other.otherFeeCny.toFixed(2)}`;
+        
+        // 更新总支出和小计
+        document.getElementById('total_expense_usd').value = result.total_costs.totalExpenseUsd.toFixed(2);
+        document.getElementById('total_expense_cny_display').textContent = `¥${result.total_costs.totalExpenseCny.toFixed(2)}`;
+        
+        document.getElementById('cost_subtotal_usd').value = result.total_costs.costSubtotalUsd.toFixed(2);
+        document.getElementById('cost_subtotal_cny_display').textContent = `¥${result.total_costs.costSubtotalCny.toFixed(2)}`;
+        
+        document.getElementById('fee_subtotal_usd').value = result.total_costs.feeSubtotalUsd.toFixed(2);
+        document.getElementById('fee_subtotal_cny_display').textContent = `¥${result.total_costs.feeSubtotalCny.toFixed(2)}`;
+        
+        // 更新利润
+        document.getElementById('gross_profit_usd').value = result.profit.grossProfitUsd.toFixed(2);
+        document.getElementById('gross_profit_cny_display').textContent = `¥${result.profit.grossProfitCny.toFixed(2)}`;
+        
+        document.getElementById('profit_margin').value = `${result.profit.profitMargin.toFixed(2)}%`;
+        
+        // 更新毛利率指示器
+        updateMarginIndicator(result.profit.profitMargin);
+    }
+    
+    // 更新毛利率指示器
+    function updateMarginIndicator(margin) {
+        const indicator = document.getElementById('margin_indicator');
+        const bar = indicator.querySelector('.margin-bar');
+        
+        // 设置宽度
+        bar.style.width = `${Math.min(Math.max(margin, 0), 100)}%`;
+        
+        // 设置颜色
+        if (margin < 0) {
+            bar.style.backgroundColor = '#ff4757'; // 红色
+        } else if (margin < 10) {
+            bar.style.backgroundColor = '#ffa502'; // 橙色
+        } else if (margin < 20) {
+            bar.style.backgroundColor = '#ffdd59'; // 黄色
+        } else {
+            bar.style.backgroundColor = '#00ff88'; // 绿色
+        }
+    }
+    
+    // 重置表单
+    function resetForm() {
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            if (input.type === 'number') {
+                input.value = '';
+            } else if (input.type === 'text' && input.hasAttribute('readonly')) {
+                input.value = '';
+            }
+        });
+        
+        // 重置显示
+        const displays = document.querySelectorAll('.currency-display');
+        displays.forEach(display => {
+            if (display.textContent.includes('$')) {
+                display.textContent = '$0.00';
+            } else if (display.textContent.includes('¥')) {
+                display.textContent = '¥0.00';
+            }
+        });
+        
+        document.getElementById('profit_margin').value = '0.00%';
+        updateMarginIndicator(0);
+    }
+    
+    // 显示通知 - 使用全局通知系统
+    function showNotification(message, type = 'info') {
+        if (typeof notify !== 'undefined') {
+            notify[type](message);
+        } else {
+            // 降级方案
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', initPage);
+})();
+</script>
+
+<style>
+/* 定价测算页面样式 - 简化版，提高性能 */
+.container {
+    max-width: 1600px !important;
+    margin: 0 auto;
+    padding: 20px !important;
+    width: 95% !important;
+}
+
+.tool-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.tool-header h2 {
+    color: #00d4ff;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.tool-header p {
+    color: #a0a0a0;
+    font-size: 14px;
+}
+
+.main-layout {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.left-section,
+.right-section {
+    flex: 1;
+}
+
+.left-section {
+    gap: 20px;
+}
+
+.cost-section,
+.fee-section,
+.pricing-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.cost-section h3,
+.fee-section h3,
+.pricing-section h3 {
+    color: #00d4ff;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.form-row {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #00d4ff;
+}
+
+.form-control[readonly] {
+    background: rgba(255, 255, 255, 0.02);
+    cursor: not-allowed;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.input-group .form-control {
+    flex: 1;
+}
+
+.currency-input {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.currency-input .form-control {
+    flex: 1;
+}
+
+.currency-display {
+    min-width: 80px;
+    text-align: right;
+    font-weight: 600;
+    color: #00ff88;
+}
+
+.margin-display {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.margin-display .form-control {
+    flex: 0 0 100px;
+}
+
+.margin-indicator {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.margin-bar {
+    height: 100%;
+    width: 0%;
+    background: #00ff88;
+}
+
+.divider {
+    height: 1px;
+    background: rgba(0, 212, 255, 0.2);
+    margin: 20px 0;
+}
+
+.bottom-actions {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 10px;
+}
+
+.btn-primary {
+    background: #00d4ff;
+    color: #ffffff;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+/* 通知 */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    max-width: 300px;
+}
+
+.notification-error {
+    background: rgba(255, 71, 87, 0.9);
+}
+
+.notification-info {
+    background: rgba(0, 212, 255, 0.9);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .container {
+        max-width: 100%;
+        padding: 0 15px;
+    }
+    
+    .main-layout {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .input-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .currency-input,
+    .margin-display {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .currency-display {
+        min-width: auto;
+        text-align: left;
+    }
+    
+    .margin-display .form-control {
+        flex: 1;
+    }
+    
+    .btn {
+        margin: 5px;
+        padding: 10px 20px;
+    }
+    
+    .notification {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+}
+</style>

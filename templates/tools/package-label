@@ -1,0 +1,555 @@
+<!-- 外箱标签处理工具 - 使用通用组件版本 -->
+<div class="container">
+    <div class="tool-header">
+        <h2><i class="fas fa-box-open"></i> 外箱标签处理</h2>
+        <p>处理外箱标签PDF文件，替换发货人信息并添加"Made In China"</p>
+    </div>
+    
+    <div class="main-layout">
+        <!-- 左侧：文件上传区域 -->
+        <div class="left-section">
+            <div id="file-upload-container"></div>
+        </div>
+        
+        <!-- 右侧：文字替换设置 -->
+        <div class="right-section">
+            <div class="replacement-section">
+                <h3><i class="fas fa-edit"></i> 文字替换设置</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">替换原文</label>
+                    <textarea id="original-text" class="form-control" placeholder="请输入需要替换的原文"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">替换为</label>
+                    <textarea id="replacement-text" class="form-control" placeholder="请输入替换后的内容"></textarea>
+                </div>
+                
+                <div class="settings-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="add-made-in-china" checked>
+                        <span class="checkmark"></span>
+                        添加"Made In China"
+                    </label>
+                    
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="case-sensitive">
+                        <span class="checkmark"></span>
+                        区分大小写
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 底部操作按钮 -->
+    <div class="bottom-actions">
+        <button type="button" id="process-btn" class="btn btn-primary" disabled>
+            <i class="fas fa-cogs"></i>
+            开始处理
+        </button>
+        <button type="button" id="clear-btn" class="btn btn-secondary">
+            <i class="fas fa-trash"></i>
+            清除
+        </button>
+    </div>
+    
+    <!-- 进度显示 -->
+    <div class="progress-section" id="progress-section" style="display: none;">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text" id="progress-text">处理中...</div>
+    </div>
+    
+    <!-- 结果显示 -->
+    <div class="result-section" id="result-section" style="display: none;">
+        <div class="result-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h4>处理完成</h4>
+            <div class="result-details">
+                <span>原文件名: <span id="original-filename">-</span></span>
+                <span>替换次数: <span id="replacement-count">0</span></span>
+            </div>
+            <button type="button" id="download-btn" class="btn btn-primary">
+                <i class="fas fa-download"></i>
+                下载文件
+            </button>
+        </div>
+    </div>
+    
+    <!-- 错误显示 -->
+    <div class="error-section" id="error-section" style="display: none;">
+        <div class="error-content">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h4>处理失败</h4>
+            <p id="error-message">-</p>
+            <button type="button" id="retry-btn" class="btn btn-primary">
+                <i class="fas fa-redo"></i>
+                重新处理
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// 外箱标签处理脚本 - 使用通用组件版本
+(function() {
+    let uploadComponent = null;
+    let selectedFile = null;
+    let processedResult = null;
+
+    // 等待页面加载完成
+    function waitForElements(callback, timeout = 5000) {
+        const start = Date.now();
+        function check() {
+            if (typeof FileUploadComponent !== 'undefined') {
+                callback();
+                return;
+            }
+            
+            if (Date.now() - start > timeout) {
+                console.error('等待组件加载超时');
+                return;
+            }
+            
+            setTimeout(check, 100);
+        }
+        check();
+    }
+    
+    // 初始化页面
+    function initPage() {
+        const elements = {
+            processBtn: document.getElementById('process-btn'),
+            clearBtn: document.getElementById('clear-btn'),
+            progressSection: document.getElementById('progress-section'),
+            resultSection: document.getElementById('result-section'),
+            errorSection: document.getElementById('error-section'),
+            originalText: document.getElementById('original-text'),
+            replacementText: document.getElementById('replacement-text'),
+            addMadeInChina: document.getElementById('add-made-in-china'),
+            caseSensitive: document.getElementById('case-sensitive')
+        };
+
+        // 初始化通用上传组件
+        uploadComponent = initFileUpload('file-upload-container', {
+            accept: '.pdf',
+            maxSize: 20, // PDF文件通常较大
+            multiple: false,
+            title: 'PDF文件上传',
+            description: '拖拽外箱标签PDF文件到这里或点击选择',
+            icon: 'fas fa-file-pdf',
+            buttonText: '选择PDF文件',
+            onFileSelect: handleFileSelect,
+            onUpload: handleFileUpload
+        });
+
+        // 绑定事件
+        bindEvents(elements);
+    }
+
+    function handleFileSelect(files) {
+        selectedFile = files[0] || null;
+        
+        // 启用或禁用处理按钮
+        const processBtn = document.getElementById('process-btn');
+        processBtn.disabled = !selectedFile;
+        
+        // 隐藏其他区域
+        hideAllSections();
+    }
+
+    function handleFileUpload(files) {
+        // 这里可以处理文件上传逻辑
+        // 返回一个 Promise
+        return new Promise((resolve, reject) => {
+            // 模拟上传过程
+            setTimeout(() => {
+                if (Math.random() > 0.1) {
+                    resolve({ success: true, filename: 'uploaded_' + files[0].name });
+                } else {
+                    reject(new Error('上传失败'));
+                }
+            }, 1000);
+        });
+    }
+
+    function bindEvents(elements) {
+        const {
+            processBtn,
+            clearBtn,
+            progressSection,
+            resultSection,
+            errorSection,
+            originalText,
+            replacementText,
+            addMadeInChina,
+            caseSensitive
+        } = elements;
+
+        // 处理按钮
+        processBtn.addEventListener('click', function() {
+            if (selectedFile) {
+                processPDF();
+            }
+        });
+
+        // 清除按钮
+        clearBtn.addEventListener('click', function() {
+            clearAll();
+        });
+        
+        // 下载按钮
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'download-btn' && processedResult) {
+                downloadFile(processedResult.filename);
+            }
+        });
+
+        // 重试按钮
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'retry-btn') {
+                hideErrorSection();
+                if (selectedFile) {
+                    processPDF();
+                }
+            }
+        });
+    }
+
+    function processPDF() {
+        showProgress('正在处理PDF文件...');
+        const processBtn = document.getElementById('process-btn');
+        processBtn.disabled = true;
+        
+        // 构建请求数据
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        
+        const originalText = document.getElementById('original-text').value;
+        const replacementText = document.getElementById('replacement-text').value;
+        const addMadeInChina = document.getElementById('add-made-in-china').checked;
+        const caseSensitive = document.getElementById('case-sensitive').checked;
+        
+        formData.append('original_text', originalText);
+        formData.append('replacement_text', replacementText);
+        formData.append('add_made_in_china', addMadeInChina);
+        formData.append('case_sensitive', caseSensitive);
+        
+        // 模拟API调用
+        setTimeout(() => {
+            if (Math.random() > 0.1) { // 90%成功率
+                processedResult = {
+                    success: true,
+                    original_filename: selectedFile.name,
+                    filename: 'processed_' + selectedFile.name,
+                    replacement_count: originalText ? 1 : 0
+                };
+                showResult(processedResult);
+            } else {
+                showError('处理失败：PDF文件格式不支持或文件损坏');
+            }
+            processBtn.disabled = false;
+            hideProgress();
+        }, 3000);
+    }
+    
+    function showProgress(message) {
+        progressSection.style.display = 'block';
+        document.getElementById('progress-text').textContent = message;
+        
+        // 进度条动画
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 20;
+            if (progress > 90) progress = 90;
+            document.getElementById('progress-fill').style.width = progress + '%';
+        }, 300);
+    }
+
+    function hideProgress() {
+        progressSection.style.display = 'none';
+        document.getElementById('progress-fill').style.width = '0%';
+    }
+
+    function showResult(data) {
+        document.getElementById('original-filename').textContent = data.original_filename || '-';
+        document.getElementById('replacement-count').textContent = data.replacement_count || '0';
+        resultSection.style.display = 'block';
+        resultSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showError(message) {
+        document.getElementById('error-message').textContent = message;
+        errorSection.style.display = 'block';
+        errorSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function hideErrorSection() {
+        errorSection.style.display = 'none';
+    }
+
+    function hideAllSections() {
+        progressSection.style.display = 'none';
+        resultSection.style.display = 'none';
+        errorSection.style.display = 'none';
+    }
+
+    function clearAll() {
+        selectedFile = null;
+        processedResult = null;
+        
+        // 清除上传组件中的文件
+        if (uploadComponent) {
+            uploadComponent.clearFiles();
+        }
+        
+        // 清除表单
+        document.getElementById('original-text').value = '';
+        document.getElementById('replacement-text').value = '';
+        document.getElementById('add-made-in-china').checked = true;
+        document.getElementById('case-sensitive').checked = false;
+        
+        // 禁用处理按钮
+        document.getElementById('process-btn').disabled = true;
+        
+        hideAllSections();
+    }
+
+    function downloadFile(filename) {
+        alert('下载功能：' + filename);
+    }
+
+    // 等待组件加载完成后初始化
+    waitForElements(initPage);
+})();
+</script>
+
+<style>
+/* 外箱标签处理页面样式 - 与通用组件协调 */
+.main-layout {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+    min-height: 400px;
+}
+
+.left-section,
+.right-section {
+    flex: 1;
+}
+
+.right-section {
+    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border-color, rgba(0, 212, 255, 0.2));
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.replacement-section h3 {
+    color: var(--primary-color, #00d4ff);
+    font-size: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    color: var(--text-primary, #ffffff);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color, rgba(0, 212, 255, 0.2));
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary, #ffffff);
+    font-size: 14px;
+    transition: var(--transition, all 0.3s ease);
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color, #00d4ff);
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+}
+
+.form-control::placeholder {
+    color: var(--text-secondary, #a0a0a0);
+}
+
+.settings-group {
+    margin-top: 20px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary, #ffffff);
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 12px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color, #00d4ff);
+}
+
+.bottom-actions {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+    border-radius: 12px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: var(--transition, all 0.3s ease);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 10px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color, #00d4ff), var(--secondary-color, #6c5ce7));
+    color: var(--text-primary, #ffffff);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: var(--bg-secondary, rgba(255, 255, 255, 0.1));
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.2));
+    color: var(--text-primary, #ffffff);
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-color, #00d4ff);
+}
+
+/* 结果和错误区域 - 复用通用样式 */
+.result-section,
+.error-section {
+    padding: 30px;
+    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.result-content,
+.error-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.success-icon,
+.error-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.success-icon {
+    color: var(--success-color, #00ff88);
+}
+
+.error-icon {
+    color: var(--error-color, #ff4757);
+}
+
+.result-content h4,
+.error-content h4 {
+    color: var(--text-primary, #ffffff);
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.result-details {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--text-secondary, #a0a0a0);
+}
+
+.result-details span {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.error-content p {
+    color: var(--text-secondary, #a0a0a0);
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+/* 进度条区域 */
+.progress-section {
+    margin-bottom: 30px;
+    text-align: center;
+    padding: 20px;
+    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+    border-radius: 12px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .bottom-actions {
+        padding: 15px;
+    }
+    
+    .btn {
+        margin: 5px;
+        padding: 10px 20px;
+    }
+    
+    .result-details {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+</style>
