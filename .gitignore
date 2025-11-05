@@ -17,9 +17,10 @@ __pycache__/
 project/
 pdf/
 
-# db files不要同步
+# Database files - 不要同步到Git
 *.db
-user.db
+*.sqlite
+*.sqlite3
 
-#claude/
+# Claude AI
 .claude
