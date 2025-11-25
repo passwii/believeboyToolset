@@ -28,13 +28,13 @@
         <!-- 文件列表显示 -->
         <div class="file-list" id="file-list">
             <div class="file-item empty" id="file-sales_report">
-                <span>所有订单：等待上传（.txt格式，以"or"开头）
+                <span>所有订单：等待上传（.txt格式，内容包含"amazon-order-id"）
                     <a href="{{ url_for('help.orders_report_help') }}" target="_blank" class="help-icon">?</a>
                 </span>
                 <span class="upload-progress">未上传</span>
             </div>
             <div class="file-item empty" id="file-fba_report">
-                <span>FBA库存：等待上传（.txt格式，包含"fba"）
+                <span>FBA库存：等待上传（.txt格式，内容包含"snapshot-date"）
                     <a href="{{ url_for('help.fba_inventory_help') }}" target="_blank" class="help-icon">?</a>
                 </span>
                 <span class="upload-progress">未上传</span>
@@ -166,6 +166,11 @@
     .file-item.error {
         background: rgba(255, 0, 110, 0.1);
         border-left: 4px solid var(--error-color);
+    }
+    
+    .file-item.analyzing {
+        background: rgba(0, 150, 255, 0.1);
+        border-left: 4px solid #0096ff;
     }
     
     .file-item span:first-child {
