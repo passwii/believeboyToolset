@@ -11,7 +11,7 @@ dataset_bp = Blueprint('dataset', __name__)
 
 @dataset_bp.route('/daily-report')
 @login_required
-def daily_report():
+def daily_report_page():
     # 记录访问日报页面日志
     LogService.log(
         action="访问日报页面",

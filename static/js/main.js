@@ -854,12 +854,26 @@ class Application {
         
         if (response.ok) {
           const blob = await response.blob();
-          // 获取表单中的日期，而不是使用当前时间
-          const reportDate = formData.get('report_date');
-          const filename = reportDate ? 
-            `${reportType.toLowerCase()}_${reportDate}.xlsx` : 
-            `${reportType.toLowerCase()}_${StringUtils.formatDate(new Date(), 'YYYY-MM-DD')}.xlsx`;
           
+          // 从响应头获取文件名
+          const contentDisposition = response.headers.get('Content-Disposition');
+          let filename = `${reportType.toLowerCase()}_${StringUtils.formatDate(new Date(), 'YYYY-MM-DD')}.xlsx`;
+          
+          if (contentDisposition) {
+            // 尝试从Content-Disposition头中提取文件名
+            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (filenameMatch && filenameMatch[1]) {
+              filename = filenameMatch[1].replace(/['"]/g, '');
+            }
+            
+            // 处理UTF-8编码的文件名 (filename*=UTF-8''...)
+            const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/);
+            if (utf8Match && utf8Match[1]) {
+              filename = decodeURIComponent(utf8Match[1]);
+            }
+          }
+          
+          console.log('下载文件名:', filename);
           await downloadFile(blob, filename);
           
           notify.success(`${reportType}生成成功`);

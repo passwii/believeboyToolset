@@ -108,7 +108,7 @@ def process_daily_report(project_name, report_date, sales_report, ad_report, fba
     # 模板文件路径
     template_file = os.path.join('apps', 'model_file', 'daily_template.xlsx')
     # 日报文件路径
-    project_daily_file_path = os.path.join(project_folder_path, f'{project_name}_{report_date}_daily_{current_time}.xlsx')
+    project_daily_file_path = os.path.join(project_folder_path, f'{project_name}_{report_date}_日报.xlsx')
     # 加载模板文件
     workbook = load_workbook(template_file)
     ws = workbook.active
@@ -123,7 +123,7 @@ def process_daily_report(project_name, report_date, sales_report, ad_report, fba
     with open(project_daily_file_path, 'rb') as f:
         file_content = f.read()
 
-    return file_content, f'{project_name}_{report_date}_daily.xlsx'
+    return file_content, f'{project_name}_{report_date}_日报.xlsx'
 
 @daily_report_bp.route('/daily-report', methods=['GET', 'POST'])
 def daily_report():
@@ -136,12 +136,12 @@ def daily_report():
 
         if not (project_name and report_date and sales_report and ad_report and fba_report):
             flash('请填写所有字段并上传所有文件')
-            return redirect(url_for('dataset.daily_report'))
+            return redirect(url_for('dataset.daily_report_page'))
 
         if not (allowed_file(sales_report.filename) and allowed_file(ad_report.filename) and allowed_file(
                 fba_report.filename)):
             flash('文件格式不正确')
-            return redirect(url_for('dataset.daily_report'))
+            return redirect(url_for('dataset.daily_report_page'))
 
         try:
             file_content, filename = process_daily_report(project_name, report_date, sales_report, ad_report, fba_report)
@@ -155,12 +155,18 @@ def daily_report():
                 level="info"
             )
             
-            return send_file(
-                io.BytesIO(file_content),
-                as_attachment=True,
-                download_name=filename,
-                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
+            # 手动创建响应以避免Flask send_file的中文文件名问题
+            from flask import make_response
+            import urllib.parse
+            
+            response = make_response(file_content)
+            response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            
+            # 只使用filename*参数，不使用filename参数，避免浏览器选择截断的文件名
+            encoded_filename = urllib.parse.quote(filename)
+            response.headers['Content-Disposition'] = f"attachment; filename*=UTF-8''{encoded_filename}"
+            
+            return response
         except Exception as e:
             # 记录生成日报失败日志
             LogService.log(
@@ -171,6 +177,6 @@ def daily_report():
                 level="error"
             )
             flash(f'生成日报时发生错误: {str(e)}', 'error')
-            return redirect(url_for('dataset.daily_report'))
+            return redirect(url_for('dataset.daily_report_page'))
     
     return render_template('data-analysis/daily_report.html')
