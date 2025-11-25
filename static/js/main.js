@@ -473,16 +473,40 @@ class Application {
    * 初始化日报页面
    */
   initializeDailyReport() {
-    const yesterdayBtn = DOM.find('#yesterday-btn');
-    if (yesterdayBtn) {
-      yesterdayBtn.addEventListener('click', () => {
-        const yesterday = TimeUtils.yesterday('YYYY-MM-DD');
-        const reportDateInput = DOM.find('#report_date');
-        if (reportDateInput) {
-          reportDateInput.value = yesterday;
-        }
-      });
-    }
+    // 昨天按钮使用延时和clone确保事件绑定，避免重复绑定问题
+    setTimeout(() => {
+      const yesterdayBtn = DOM.find('#yesterday-btn');
+      console.log('查找昨天按钮:', yesterdayBtn);
+      
+      if (yesterdayBtn) {
+        // 清除可能存在的旧事件监听器
+        const newBtn = yesterdayBtn.cloneNode(true);
+        yesterdayBtn.parentNode.replaceChild(newBtn, yesterdayBtn);
+        
+        // 绑定新的事件监听器
+        newBtn.addEventListener('click', () => {
+          console.log('昨天按钮被点击');
+          
+          try {
+            const yesterday = TimeUtils.yesterday('YYYY-MM-DD');
+            const reportDateInput = DOM.find('#report_date');
+            
+            if (reportDateInput) {
+              reportDateInput.value = yesterday;
+              console.log('日期已设置为昨天:', yesterday);
+            } else {
+              console.error('找不到日期输入框');
+            }
+          } catch (error) {
+            console.error('设置日期时出错:', error);
+          }
+        });
+        
+        console.log('昨天按钮事件监听器已绑定');
+      } else {
+        console.error('找不到昨天按钮');
+      }
+    }, 100);
     
     this.setupFormSubmission('daily-report-form', '日报');
   }
@@ -511,6 +535,9 @@ class Application {
       
       // 初始化上周按钮
       this.initializeLastWeekButton();
+      
+      // 设置表单提交处理
+      this.setupFormSubmission('analysis-form', '产品分析');
       
       console.log('Product analysis page initialized');
     } catch (error) {
@@ -888,9 +915,12 @@ class Application {
         formContainer.innerHTML = originalContent;
         
         // 重新初始化页面
-        const initFunction = this[`initialize${reportType.replace(/^\w/, c => c.toUpperCase())}Report`];
-        if (initFunction) {
-          initFunction.call(this);
+        if (formId === 'daily-report-form') {
+          this.initializeDailyReport();
+        } else if (formId === 'monthly-report-form') {
+          this.initializeMonthlyReport();
+        } else if (formId === 'analysis-form') {
+          this.initializeProductAnalysis();
         }
       }
     });
