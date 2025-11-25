@@ -33,6 +33,9 @@ class Application {
     if (this.isInitialized) return;
     
     try {
+      // 增加DOM准备检查，特别是在embed模式下
+      await this.waitForDOMReady();
+      
       this.cacheElements();
       this.setupUserDropdown();
       this.setupMenuToggle();
@@ -47,6 +50,34 @@ class Application {
       console.error('Failed to initialize application:', error);
       notify.error('应用初始化失败');
     }
+  }
+
+  /**
+   * 等待DOM准备就绪
+   */
+  waitForDOMReady() {
+    return new Promise((resolve) => {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', resolve);
+      } else {
+        // 如果DOM已经加载完成，检查关键元素是否存在
+        const checkElements = () => {
+          const dynamicSection = DOM.find('.dynamic-section');
+          const navItems = DOM.findAll('.nav-item');
+          const groupTitles = DOM.findAll('.group-title');
+          
+          if (dynamicSection && (navItems.length > 0 || groupTitles.length > 0)) {
+            console.log('DOM元素已准备就绪');
+            resolve();
+          } else {
+            console.log('等待DOM元素加载...');
+            setTimeout(checkElements, 100);
+          }
+        };
+        
+        checkElements();
+      }
+    });
   }
 
   /**
@@ -318,10 +349,16 @@ class Application {
       const html = await response.text();
       this.dynamicSection.innerHTML = html;
       
-      // 初始化页面功能
-      this.initializePageContent(contentType);
-      
-      this.currentSection = contentType;
+      // 增加延时确保DOM完全渲染后再初始化
+      setTimeout(() => {
+        try {
+          this.initializePageContent(contentType);
+          this.currentSection = contentType;
+          console.log(`页面内容已加载并初始化: ${contentType}`);
+        } catch (error) {
+          console.error('页面内容初始化失败:', error);
+        }
+      }, 100); // 给DOM渲染时间
       
     } catch (error) {
       console.error('加载内容失败:', error);
@@ -473,8 +510,11 @@ class Application {
    * 初始化日报页面
    */
   initializeDailyReport() {
-    // 昨天按钮使用延时和clone确保事件绑定，避免重复绑定问题
+    // 增加延时确保DOM完全加载，特别是在embed模式下
     setTimeout(() => {
+      console.log('开始初始化日报页面');
+      
+      // 昨天按钮使用延时和clone确保事件绑定，避免重复绑定问题
       const yesterdayBtn = DOM.find('#yesterday-btn');
       console.log('查找昨天按钮:', yesterdayBtn);
       
@@ -506,9 +546,91 @@ class Application {
       } else {
         console.error('找不到昨天按钮');
       }
-    }, 100);
+      
+      // 初始化文件上传组件 - 增加更多检查和重试机制
+      this.initializeDailyReportFileUpload();
+      
+      this.setupFormSubmission('daily-report-form', '日报');
+    }, 200); // 增加延时时间
+  }
+
+  /**
+   * 初始化日报文件上传组件 - 专门处理embed模式下的初始化问题
+   */
+  initializeDailyReportFileUpload() {
+    const maxRetries = 3;
+    let retryCount = 0;
     
-    this.setupFormSubmission('daily-report-form', '日报');
+    const tryInit = () => {
+      retryCount++;
+      console.log(`尝试初始化文件上传组件 (第${retryCount}次)`);
+      
+      try {
+        // 检查必要的DOM元素是否存在
+        const dropArea = DOM.find('#drop-area');
+        const fileInput = DOM.find('#file-input');
+        const fileList = DOM.find('#file-list');
+        const submitBtn = DOM.find('#submit-btn');
+        
+        console.log('DOM元素检查:', {
+          dropArea: !!dropArea,
+          fileInput: !!fileInput,
+          fileList: !!fileList,
+          submitBtn: !!submitBtn
+        });
+        
+        if (!dropArea || !fileInput || !fileList || !submitBtn) {
+          if (retryCount < maxRetries) {
+            console.log('DOM元素未完全加载，1秒后重试...');
+            setTimeout(tryInit, 1000);
+          } else {
+            console.error('DOM元素加载失败，已达到最大重试次数');
+          }
+          return;
+        }
+        
+        // 检查FileUploadComponent是否可用
+        if (typeof FileUploadComponent === 'undefined') {
+          console.error('FileUploadComponent未定义');
+          return;
+        }
+        
+        // 初始化文件上传组件
+        this.components.fileUpload = new FileUploadComponent({
+          containerSelector: '#drop-area',
+          inputSelector: '#file-input',
+          listSelector: '#file-list',
+          submitSelector: '#submit-btn',
+          uploadEndpoint: '/dataset/daily-report/upload-file',
+          allowedTypes: ['txt', 'xlsx'],
+          isDailyReport: true
+        });
+        
+        console.log('日报文件上传组件已初始化');
+        
+        // 验证组件是否正确初始化
+        if (this.components.fileUpload && this.components.fileUpload.options) {
+          console.log('文件上传组件配置:', this.components.fileUpload.options);
+        }
+        
+      } catch (error) {
+        console.error('文件上传组件初始化失败:', error);
+        
+        if (retryCount < maxRetries) {
+          console.log('初始化失败，1秒后重试...');
+          setTimeout(tryInit, 1000);
+        } else {
+          console.error('文件上传组件初始化失败，已达到最大重试次数');
+          // 显示用户友好的错误提示
+          if (typeof notify !== 'undefined') {
+            notify.error('文件上传功能初始化失败，请刷新页面重试');
+          }
+        }
+      }
+    };
+    
+    // 开始初始化
+    tryInit();
   }
 
   /**

@@ -16,20 +16,308 @@
             <button type="button" id="yesterday-btn">昨天</button>
         </div>
 
-        <label for="sales_report">所有订单:
-            <a href="{{ url_for('help.orders_report_help') }}" target="_blank" class="help-icon">?</a>
-        </label>
-        <input type="file" name="sales_report" accept=".txt" required>
-        <label for="ad_report">广告报表:
-            <a href="{{ url_for('help.ad_product_report') }}" target="_blank" class="help-icon">?</a>
-        </label>
-        <input type="file" name="ad_report" accept=".xlsx" required>
+        <!-- 拖拽文件上传区域 -->
+        <div class="drop-area" id="drop-area">
+            <h3>拖拽文件到此处</h3>
+            <p>或点击选择文件</p>
+            <p class="file-types">支持文件类型：.txt, .xlsx</p>
+            <p class="upload-hint">可以分次上传，每次上传1个或多个文件</p>
+            <input type="file" id="file-input" name="files" multiple accept=".txt,.xlsx" style="display: none;">
+        </div>
 
-        <label for="fba_report">FBA库存:
-            <a href="{{ url_for('help.fba_inventory_help') }}" target="_blank" class="help-icon">?</a>
-        </label>
-        <input type="file" name="fba_report" accept=".txt" required>
+        <!-- 文件列表显示 -->
+        <div class="file-list" id="file-list">
+            <div class="file-item empty" id="file-sales_report">
+                <span>所有订单：等待上传（.txt格式，以"or"开头）
+                    <a href="{{ url_for('help.orders_report_help') }}" target="_blank" class="help-icon">?</a>
+                </span>
+                <span class="upload-progress">未上传</span>
+            </div>
+            <div class="file-item empty" id="file-fba_report">
+                <span>FBA库存：等待上传（.txt格式，包含"fba"）
+                    <a href="{{ url_for('help.fba_inventory_help') }}" target="_blank" class="help-icon">?</a>
+                </span>
+                <span class="upload-progress">未上传</span>
+            </div>
+            <div class="file-item empty" id="file-ad_report">
+                <span>广告报表：等待上传（.xlsx格式）
+                    <a href="{{ url_for('help.ad_product_report') }}" target="_blank" class="help-icon">?</a>
+                </span>
+                <span class="upload-progress">未上传</span>
+            </div>
+        </div>
 
-        <button type="submit">生成日报</button>
+        <!-- 隐藏的文件路径输入框 -->
+        <div class="hidden-inputs">
+            <input type="hidden" name="sales_report_path" id="sales_report_path">
+            <input type="hidden" name="fba_report_path" id="fba_report_path">
+            <input type="hidden" name="ad_report_path" id="ad_report_path">
+        </div>
+
+        <button type="submit" id="submit-btn" disabled>生成日报</button>
     </form>
 </div>
+
+<style>
+    .drop-area {
+        border: 2px dashed rgba(0, 212, 255, 0.3);
+        border-radius: 10px;
+        padding: 30px;
+        text-align: center;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.05);
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .drop-area:hover, .drop-area.dragover {
+        border-color: var(--neon-blue);
+        background: rgba(0, 212, 255, 0.1);
+    }
+    
+    .drop-area.uploading {
+        background: rgba(0, 255, 136, 0.1);
+        border-color: var(--success-color);
+    }
+    
+    /* 上传完成的样式 - 保留绿色底框，隐藏文字 */
+    .drop-area.completed {
+        background: rgba(0, 255, 136, 0.15);
+        border-color: var(--success-color);
+        border-style: solid;
+    }
+    
+    .drop-area.completed::after {
+        content: "✓ 上传完成";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--success-color);
+        font-size: 18px;
+        font-weight: 600;
+        text-align: center;
+        pointer-events: none;
+    }
+    
+    .drop-area.completed h3,
+    .drop-area.completed p {
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    .drop-area h3 {
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+    
+    .drop-area p {
+        margin: 10px 0;
+        color: var(--text-secondary);
+    }
+    
+    .file-types {
+        font-size: 0.9em;
+        color: var(--text-muted);
+        margin-top: 5px;
+    }
+    
+    .upload-hint {
+        font-size: 0.85em;
+        color: var(--text-muted);
+        margin-top: 10px;
+        font-style: italic;
+    }
+    
+    .file-list {
+        margin-top: 20px;
+    }
+    
+    .file-item {
+        padding: 12px;
+        margin: 8px 0;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid rgba(0, 212, 255, 0.1);
+        position: relative;
+    }
+    
+    .file-item.empty {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px dashed rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+        font-style: italic;
+    }
+    
+    .file-item.uploaded {
+        background: rgba(0, 255, 136, 0.1);
+        border-left: 4px solid var(--success-color);
+    }
+    
+    .file-item.uploading {
+        background: rgba(255, 170, 0, 0.1);
+        border-left: 4px solid var(--warning-color);
+    }
+    
+    .file-item.error {
+        background: rgba(255, 0, 110, 0.1);
+        border-left: 4px solid var(--error-color);
+    }
+    
+    .file-item span:first-child {
+        color: var(--text-primary);
+    }
+    
+    .upload-progress {
+        font-size: 0.8em;
+        color: var(--text-secondary);
+    }
+    
+    .remove-file {
+        background: var(--error-color);
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 2px 6px;
+        cursor: pointer;
+        font-size: 0.8em;
+        margin-left: 10px;
+    }
+    
+    .remove-file:hover {
+        background: #cc0055;
+    }
+    
+    /* 固定样式的删除按钮 */
+    .fixed-remove-btn {
+        position: absolute !important;
+        right: 12px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        background: var(--error-color) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 50% !important;
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 14px !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s ease !important;
+        z-index: 10 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .fixed-remove-btn:hover {
+        background: #cc0055 !important;
+        transform: translateY(-50%) scale(1.1) !important;
+    }
+    
+    .hidden-inputs {
+        display: none;
+    }
+    
+    .date-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 8px;
+    }
+    
+    .date-container input[type="date"] {
+        flex: 1;
+    }
+    
+    .date-container button {
+        flex-shrink: 0;
+    }
+    
+    /* 文件类型选择对话框样式 */
+    .file-type-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    
+    .file-type-dialog {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 20px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .file-type-dialog h3 {
+        margin-bottom: 15px;
+        color: var(--text-primary);
+    }
+    
+    .file-info {
+        margin-bottom: 20px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 5px;
+    }
+    
+    .file-info p {
+        margin: 5px 0;
+        color: var(--text-secondary);
+    }
+    
+    .file-type-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+    
+    .file-type-btn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .file-type-btn.sales {
+        background: var(--neon-blue);
+        color: white;
+    }
+    
+    .file-type-btn.fba {
+        background: var(--success-color);
+        color: white;
+    }
+    
+    .file-type-btn.ad {
+        background: var(--warning-color);
+        color: white;
+    }
+    
+    .file-type-btn.cancel {
+        background: var(--error-color);
+        color: white;
+    }
+    
+    .file-type-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    </style>

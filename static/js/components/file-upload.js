@@ -11,17 +11,76 @@ class FileUploadComponent {
       listSelector: '#file-list',
       submitSelector: '#submit-btn',
       uploadEndpoint: '/dataset/product-analysis/upload-file',
-      allowedTypes: ['csv', 'xlsx'],
+      allowedTypes: ['csv', 'xlsx', 'txt'],
       maxFileSize: 50 * 1024 * 1024, // 50MB
       allowMultiple: true,
+      // 自定义文件分类规则
+      rules: [
+        {
+          type: 'business_report',
+          test: (filename, ext) => ext === 'csv' && (filename.includes('business') || filename.includes('业务'))
+        },
+        {
+          type: 'payment_report',
+          test: (filename, ext) => ext === 'csv' && (filename.includes('transaction') || filename.includes('付款') || filename.includes('payment'))
+        },
+        {
+          type: 'ad_product_report',
+          test: (filename, ext) => ext === 'xlsx' && (filename.includes('ad') || filename.includes('广告') || filename.includes('advertising'))
+        }
+      ],
+      // 日报文件分类规则
+      dailyRules: [
+        {
+          type: 'sales_report',
+          test: (filename, ext) => ext === 'txt' && filename.startsWith('or')
+        },
+        {
+          type: 'fba_report',
+          test: (filename, ext) => ext === 'txt' && filename.includes('fba')
+        },
+        {
+          type: 'ad_report',
+          test: (filename, ext) => ext === 'xlsx'
+        }
+      ],
+      // 文件类型显示名称
+      fileNames: {
+        'business_report': '业务报告',
+        'payment_report': '付款报告',
+        'ad_product_report': '广告报表',
+        'sales_report': '所有订单',
+        'fba_report': 'FBA库存',
+        'ad_report': '广告报表'
+      },
+      // 文件类型提示
+      fileTypeHints: {
+        'business_report': '.csv格式',
+        'payment_report': '.csv格式',
+        'ad_product_report': '.xlsx格式',
+        'sales_report': '.txt格式，包含"order"',
+        'fba_report': '.txt格式，包含"fba"',
+        'ad_report': '.xlsx格式'
+      },
+      // 是否为日报模式
+      isDailyReport: false,
       ...options
     };
     
-    this.uploadedFiles = {
-      business_report: null,
-      payment_report: null,
-      ad_product_report: null
-    };
+    // 根据模式初始化文件存储对象
+    if (this.options.isDailyReport) {
+      this.uploadedFiles = {
+        sales_report: null,
+        fba_report: null,
+        ad_report: null
+      };
+    } else {
+      this.uploadedFiles = {
+        business_report: null,
+        payment_report: null,
+        ad_product_report: null
+      };
+    }
     
     this.init();
   }
@@ -122,7 +181,7 @@ class FileUploadComponent {
   /**
    * 处理文件列表
    */
-  handleFiles(files) {
+  async handleFiles(files) {
     if (files.length === 0) return;
 
     // 检查文件类型和大小
@@ -147,56 +206,145 @@ class FileUploadComponent {
     if (validFiles.length === 0) return;
 
     // 为每个文件确定类型并上传
-    validFiles.forEach(file => {
-      const fileType = this.determineFileType(file);
+    for (const file of validFiles) {
+      const fileType = await this.determineFileType(file);
       if (fileType) {
         this.uploadFile(file, fileType);
       } else {
         notify.warning(`无法确定文件 "${file.name}" 的类型`);
       }
-    });
+    }
   }
 
   /**
    * 根据文件名和内容确定文件类型
    */
-  determineFileType(file) {
+  async determineFileType(file) {
     const filename = file.name.toLowerCase();
-    
-    // 根据文件名关键词判断
-    if (filename.includes('business') || filename.includes('业务')) {
-      return 'business_report';
-    }
-    if (filename.includes('transaction') || filename.includes('付款') || filename.includes('payment')) {
-      return 'payment_report';
-    }
-    if (filename.includes('ad') || filename.includes('广告') || filename.includes('advertising')) {
-      return 'ad_product_report';
-    }
-    
-    // 根据文件扩展名和上传状态判断
     const ext = filename.split('.').pop().toLowerCase();
     
-    if (ext === 'csv' && !this.uploadedFiles.business_report) {
-      return 'business_report';
-    }
-    if (ext === 'csv' && !this.uploadedFiles.payment_report) {
-      return 'payment_report';
-    }
-    if (ext === 'xlsx' && !this.uploadedFiles.ad_product_report) {
-      return 'ad_product_report';
+    // 选择对应的规则集
+    const rules = this.options.isDailyReport ? this.options.dailyRules : this.options.rules;
+    
+    // 尝试自动识别文件类型
+    for (const rule of rules) {
+      if (rule.test(filename, ext)) {
+        // 检查该类型文件是否已上传
+        if (!this.uploadedFiles[rule.type]) {
+          return rule.type;
+        }
+        // 如果已上传，询问是否替换
+        const shouldReplace = await this.confirmReplace(file, rule.type);
+        if (shouldReplace) {
+          return rule.type;
+        }
+      }
     }
     
-    // 如果都已上传，让用户选择替换哪个
-    if (ext === 'csv' && this.uploadedFiles.business_report && !this.uploadedFiles.payment_report) {
-      return 'payment_report';
-    }
-    if (ext === 'csv' && this.uploadedFiles.business_report && this.uploadedFiles.payment_report) {
-      return notify.confirm(`文件 "${file.name}" 可能是业务报告或付款报告，是否替换业务报告？`)
-        .then(confirm => confirm ? 'business_report' : 'payment_report');
+    // 自动识别失败，显示手动选择对话框
+    if (this.options.isDailyReport) {
+      return await this.showFileTypeSelectionDialog(file);
     }
     
     return null;
+  }
+
+  /**
+   * 确认是否替换已上传的文件
+   */
+  async confirmReplace(file, fileType) {
+    const typeName = this.options.fileNames[fileType];
+    return await notify.confirm(`文件 "${file.name}" 将替换已上传的${typeName}，是否继续？`);
+  }
+
+  /**
+   * 显示文件类型选择对话框
+   */
+  async showFileTypeSelectionDialog(file) {
+    return new Promise((resolve) => {
+      // 创建模态对话框
+      const modal = DOM.create('div', {
+        className: 'file-type-modal'
+      });
+      
+      const dialog = DOM.create('div', {
+        className: 'file-type-dialog'
+      });
+      
+      // 文件信息
+      const fileInfo = DOM.create('div', {
+        className: 'file-info'
+      });
+      fileInfo.innerHTML = `
+        <p><strong>文件名：</strong>${file.name}</p>
+        <p><strong>文件大小：</strong>${StringUtils.formatFileSize(file.size)}</p>
+        <p><strong>文件类型：</strong>无法自动识别，请手动选择</p>
+      `;
+      
+      // 按钮容器
+      const buttonContainer = DOM.create('div', {
+        className: 'file-type-buttons'
+      });
+      
+      // 创建选择按钮
+      const salesBtn = DOM.create('button', {
+        className: 'file-type-btn sales'
+      }, '所有订单');
+      
+      const fbaBtn = DOM.create('button', {
+        className: 'file-type-btn fba'
+      }, 'FBA库存');
+      
+      const adBtn = DOM.create('button', {
+        className: 'file-type-btn ad'
+      }, '广告报表');
+      
+      const cancelBtn = DOM.create('button', {
+        className: 'file-type-btn cancel'
+      }, '取消');
+      
+      // 绑定事件
+      salesBtn.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        resolve('sales_report');
+      });
+      
+      fbaBtn.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        resolve('fba_report');
+      });
+      
+      adBtn.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        resolve('ad_report');
+      });
+      
+      cancelBtn.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        resolve(null);
+      });
+      
+      // 点击背景关闭
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          document.body.removeChild(modal);
+          resolve(null);
+        }
+      });
+      
+      // 组装对话框
+      buttonContainer.appendChild(salesBtn);
+      buttonContainer.appendChild(fbaBtn);
+      buttonContainer.appendChild(adBtn);
+      buttonContainer.appendChild(cancelBtn);
+      
+      dialog.appendChild(DOM.create('h3', {}, '请选择文件类型'));
+      dialog.appendChild(fileInfo);
+      dialog.appendChild(buttonContainer);
+      
+      modal.appendChild(dialog);
+      document.body.appendChild(modal);
+    });
   }
 
   /**
@@ -278,7 +426,8 @@ class FileUploadComponent {
       nameSpan.innerHTML = `${this.getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
       progressSpan.textContent = `✗ 上传失败: ${errorMessage}`;
     } else if (status === 'empty') {
-      nameSpan.innerHTML = `${this.getFileTypeName(fileType)}：等待上传（${fileType.includes('ad') ? '.xlsx' : '.csv'}格式）${helpIconHTML}`;
+      const hint = this.options.fileTypeHints[fileType] || '';
+      nameSpan.innerHTML = `${this.getFileTypeName(fileType)}：等待上传（${hint}）${helpIconHTML}`;
       progressSpan.textContent = '未上传';
     }
 
@@ -344,12 +493,7 @@ class FileUploadComponent {
    * 获取文件类型名称
    */
   getFileTypeName(fileType) {
-    const names = {
-      'business_report': '业务报告',
-      'payment_report': '付款报告',
-      'ad_product_report': '广告报表'
-    };
-    return names[fileType] || fileType;
+    return this.options.fileNames[fileType] || fileType;
   }
 
   /**
@@ -408,15 +552,14 @@ class FileUploadComponent {
    * 检查所有文件是否已上传
    */
   checkAllFilesUploaded() {
-    const allUploaded = this.uploadedFiles.business_report &&
-                        this.uploadedFiles.payment_report &&
-                        this.uploadedFiles.ad_product_report;
+    const fileKeys = Object.keys(this.uploadedFiles);
+    const allUploaded = fileKeys.every(key => this.uploadedFiles[key]);
 
     if (this.submitBtn) {
       this.submitBtn.disabled = !allUploaded;
 
       if (allUploaded) {
-        this.submitBtn.textContent = '生成产品分析';
+        this.submitBtn.textContent = this.options.isDailyReport ? '生成日报' : '生成产品分析';
       } else {
         this.submitBtn.textContent = '请等待所有文件上传完成';
       }
