@@ -90,6 +90,6 @@ def timeline():
 
 
 # 注册子蓝图
-dataset_bp.register_blueprint(daily_report_bp)
-dataset_bp.register_blueprint(monthly_report_bp)
+dataset_bp.register_blueprint(daily_report_bp, url_prefix='/daily-report')
+dataset_bp.register_blueprint(monthly_report_bp, url_prefix='/monthly-report')
 dataset_bp.register_blueprint(product_analysis_bp, url_prefix='/product-analysis')
