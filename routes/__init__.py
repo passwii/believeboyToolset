@@ -4,6 +4,7 @@ from .toolset import toolset_bp
 from .dataset import dataset_bp
 from .help import help_bp
 from .admin import admin_bp
+from .inventory_analysis import inventory_analysis_bp
 from core.auth import login_required
 from core.log_service import LogService
 from core.statistics_service import StatisticsService
@@ -62,3 +63,4 @@ def init_app(app):
     app.register_blueprint(dataset_bp, url_prefix='/dataset')
     app.register_blueprint(help_bp, url_prefix='/help')
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(inventory_analysis_bp, url_prefix='/data-analysis')

@@ -381,6 +381,7 @@ class Application {
       'daily-report': '/dataset/daily-report',
       'monthly-report': '/dataset/monthly-report',
       'product-analysis': '/dataset/product-analysis',
+      'inventory-analysis': '/data-analysis/',
       'operations-overview': '/toolset/operations-overview',
       'operations-nav': '/toolset/operations-nav',
       'shop-nav': '/toolset/shop-nav',
@@ -929,6 +930,7 @@ class Application {
           checkNameEndpoint: '/admin/shops/check-name',
           listEndpoint: '/admin/shops/list'
         });
+
       }
       
       console.log('店铺管理页面已加载');
