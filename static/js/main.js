@@ -381,7 +381,6 @@ class Application {
       'daily-report': '/dataset/daily-report',
       'monthly-report': '/dataset/monthly-report',
       'product-analysis': '/dataset/product-analysis',
-      'inventory-analysis': '/data-analysis/',
       'operations-overview': '/toolset/operations-overview',
       'operations-nav': '/toolset/operations-nav',
       'shop-nav': '/toolset/shop-nav',
