@@ -651,7 +651,10 @@ class Application {
           containerSelector: '#drop-area',
           inputSelector: '#file-input',
           listSelector: '#file-list',
-          submitSelector: '#submit-btn'
+          submitSelector: '#submit-btn',
+          uploadEndpoint: '/dataset/product-analysis/upload-file',
+          allowedTypes: ['csv', 'xlsx'],
+          isDailyReport: false
         });
       }
       

@@ -17,7 +17,7 @@ product_analysis_bp = Blueprint('product_analysis', __name__)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv', 'xlsx'}
 
-def process_product_analysis(project_name, report_start_date, report_end_date, business_report_path, payment_report_path, ad_product_report_path):
+def process_product_analysis(project_name, report_start_date, report_end_date, business_report_path, payment_report_path, ad_product_report_path, inventory_report_path=None):
     current_time = datetime.datetime.now().strftime('%H-%M-%S')
     source_folder = os.getcwd()
     os.chdir(source_folder)
@@ -50,6 +50,10 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
         (payment_report_path, f'{tmp_folder_path}/{project_name}_Payment_Report_{report_date}_{current_time}.csv'),
         (ad_product_report_path, f'{tmp_folder_path}/{project_name}_AD_Product_{report_date}_{current_time}.xlsx')
     ]
+
+    if inventory_report_path and os.path.exists(inventory_report_path):
+        tmp_inv_path = f'{tmp_folder_path}/{project_name}_Inventory_Report_{report_date}_{current_time}.csv'
+        files_to_copy.append((inventory_report_path, tmp_inv_path))
 
     for src, dst in files_to_copy:
         shutil.copy(src, dst)
@@ -401,7 +405,68 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
 
     # 保存项目概览工作簿到指定路径
     wb.save(product_analysis_file_path)
-    
+
+    # 如果有库存文件，添加库存详情sheet
+    if inventory_report_path and os.path.exists(inventory_report_path):
+        wb = load_workbook(product_analysis_file_path)
+        ws_inv = wb.create_sheet("库存详情")
+
+        # 读取库存CSV
+        inv_df = pd.read_csv(inventory_report_path, encoding='utf-8-sig')
+
+        # 保留指定列
+        keep_cols = [
+            'sku', 'asin', 'available',
+            'inv-age-0-to-90-days', 'inv-age-91-to-180-days', 'inv-age-181-to-270-days',
+            'inv-age-271-to-365-days', 'inv-age-365-plus-days', 'recommended-action'
+        ]
+        inv_df = inv_df[[col for col in keep_cols if col in inv_df.columns]].copy()
+
+        # 重命名列
+        rename_dict = {
+            'sku': 'SKU',
+            'asin': 'ASIN',
+            'available': '可售库存',
+            'inv-age-0-to-90-days': '0-90天',
+            'inv-age-91-to-180-days': '91-180天',
+            'inv-age-181-to-270-days': '181-270天',
+            'inv-age-271-to-365-days': '271-365天',
+            'inv-age-365-plus-days': '365+天',
+            'recommended-action': '库存建议'
+        }
+        inv_df.rename(columns=rename_dict, inplace=True)
+
+        # 从概览sheet合并本周销量（总销量）
+        # 读取概览数据用于合并（假设概览sheet是第一个）
+        ws_overview = wb.active
+        df_overview_from_excel = pd.read_excel(product_analysis_file_path, sheet_name=0, engine='openpyxl')
+        sales_df = df_overview_from_excel[df_overview_from_excel['SKU'] != '汇总'][['SKU', '总销量']].copy()
+        sales_df.rename(columns={'总销量': '本周销量'}, inplace=True)
+        sales_df['本周销量'] = pd.to_numeric(sales_df['本周销量'], errors='coerce').fillna(0)
+
+        # 合并到库存df
+        inv_df = pd.merge(inv_df, sales_df, on='SKU', how='left')
+        inv_df['本周销量'] = inv_df['本周销量'].fillna(0)
+
+        # 写入新sheet，应用样式
+        center_alignment = Alignment(horizontal='center', vertical='center')
+        thin_border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+
+        for r_idx, row in enumerate(dataframe_to_rows(inv_df, index=False, header=True), 1):
+            for c_idx, value in enumerate(row, 1):
+                cell = ws_inv.cell(row=r_idx, column=c_idx, value=value)
+                cell.alignment = center_alignment
+                cell.border = thin_border
+                if r_idx == len(inv_df) + 1:  # 汇总行加粗（如果有）
+                    cell.font = Font(bold=True)
+
+        wb.save(product_analysis_file_path)
+
     with open(product_analysis_file_path, 'rb') as f:
         file_content = f.read()
 
@@ -421,7 +486,7 @@ def upload_file():
         if not project_name:
             return {'success': False, 'error': '项目名称不能为空'}, 400
         
-        if not file_type or file_type not in ['business_report', 'payment_report', 'ad_product_report']:
+        if not file_type or file_type not in ['business_report', 'payment_report', 'ad_product_report', 'inventory_report']:
             return {'success': False, 'error': '文件类型无效'}, 400
         
         if file and allowed_file(file.filename):
@@ -441,6 +506,8 @@ def upload_file():
                 new_filename = f"{project_name}_Payment_Report_{timestamp}{file_ext}"
             elif file_type == 'ad_product_report':
                 new_filename = f"{project_name}_AD_Product_{timestamp}{file_ext}"
+            elif file_type == 'inventory_report':
+                new_filename = f"{project_name}_Inventory_Report_{timestamp}{file_ext}"
             
             file_path = os.path.join(upload_folder, new_filename)
             file.save(file_path)
@@ -505,6 +572,8 @@ def product_analysis():
             business_report_path = request.form.get('business_report_path')
             payment_report_path = request.form.get('payment_report_path')
             ad_product_report_path = request.form.get('ad_product_report_path')
+            inventory_report_path = request.form.get('inventory_report_path')
+            inventory_report_path = request.form.get('inventory_report_path')
             
             # 验证所有必需的文件都已上传
             if not all([business_report_path, payment_report_path, ad_product_report_path]):
@@ -525,7 +594,8 @@ def product_analysis():
                 report_end_date,
                 business_report_path,
                 payment_report_path,
-                ad_product_report_path
+                ad_product_report_path,
+                inventory_report_path
             )
             
             # 记录生成产品分析报告成功日志

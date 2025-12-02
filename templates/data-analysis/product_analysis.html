@@ -48,6 +48,12 @@
                 </span>
                 <span class="upload-progress">未上传</span>
             </div>
+            <div class="file-item empty" id="file-inventory_report">
+                <span>库存报告：等待上传（.csv格式，名称含inv） <span style="color: var(--success-color);">可选</span>
+                    <a href="{{ url_for('help.fba_inventory_help') }}" target="_blank" class="help-icon">?</a>
+                </span>
+                <span class="upload-progress">未上传</span>
+            </div>
         </div>
 
         <!-- 隐藏的文件路径输入框 -->
@@ -55,6 +61,7 @@
             <input type="hidden" name="business_report_path" id="business_report_path">
             <input type="hidden" name="payment_report_path" id="payment_report_path">
             <input type="hidden" name="ad_product_report_path" id="ad_product_report_path">
+            <input type="hidden" name="inventory_report_path" id="inventory_report_path">
         </div>
 
         <button type="submit" id="submit-btn" disabled>生成产品分析</button>
@@ -240,6 +247,87 @@
     
     .date-range-container span {
         color: var(--text-primary);
+    }
+
+    /* 文件类型选择对话框样式 */
+    .file-type-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    
+    .file-type-dialog {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 20px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .file-type-dialog h3 {
+        margin-bottom: 15px;
+        color: var(--text-primary);
+    }
+    
+    .file-info {
+        margin-bottom: 20px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 5px;
+    }
+    
+    .file-info p {
+        margin: 5px 0;
+        color: var(--text-secondary);
+    }
+    
+    .file-type-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+    
+    .file-type-btn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .file-type-btn.sales {
+        background: var(--neon-blue);
+        color: white;
+    }
+    
+    .file-type-btn.fba {
+        background: var(--success-color);
+        color: white;
+    }
+    
+    .file-type-btn.ad {
+        background: var(--warning-color);
+        color: white;
+    }
+    
+    .file-type-btn.cancel {
+        background: var(--error-color);
+        color: white;
+    }
+    
+    .file-type-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
     
     </style>

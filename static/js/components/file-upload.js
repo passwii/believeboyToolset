@@ -27,6 +27,10 @@ class FileUploadComponent {
         {
           type: 'ad_product_report',
           test: (filename, ext) => ext === 'xlsx' && (filename.includes('ad') || filename.includes('广告') || filename.includes('advertising') || filename.includes('推广'))
+        },
+        {
+          type: 'inventory_report',
+          test: (filename, ext) => ext === 'csv' && filename.includes('inv')
         }
       ],
       // 日报文件分类规则（基于文件内容）
@@ -62,6 +66,7 @@ class FileUploadComponent {
         'business_report': '业务报告',
         'payment_report': '付款报告',
         'ad_product_report': '广告报表',
+        'inventory_report': '库存报告',
         'sales_report': '所有订单',
         'fba_report': 'FBA库存',
         'ad_report': '广告报表'
@@ -71,6 +76,7 @@ class FileUploadComponent {
         'business_report': '.csv格式',
         'payment_report': '.csv格式',
         'ad_product_report': '.xlsx格式',
+        'inventory_report': '.csv格式，名称含inv',
         'sales_report': '.txt格式，内容包含"amazon-order-id"',
         'fba_report': '.txt格式，内容包含"snapshot-date"',
         'ad_report': '.xlsx格式'
@@ -91,7 +97,8 @@ class FileUploadComponent {
       this.uploadedFiles = {
         business_report: null,
         payment_report: null,
-        ad_product_report: null
+        ad_product_report: null,
+        inventory_report: null
       };
     }
     
@@ -764,21 +771,20 @@ class FileUploadComponent {
    * 检查所有文件是否已上传
    */
   checkAllFilesUploaded() {
-    const fileKeys = Object.keys(this.uploadedFiles);
-    const allUploaded = fileKeys.every(key => this.uploadedFiles[key]);
+    const allRequiredUploaded = this.requiredFileTypes.every(key => this.uploadedFiles[key]);
 
     if (this.submitBtn) {
-      this.submitBtn.disabled = !allUploaded;
+      this.submitBtn.disabled = !allRequiredUploaded;
 
-      if (allUploaded) {
+      if (allRequiredUploaded) {
         this.submitBtn.textContent = this.options.isDailyReport ? '生成日报' : '生成产品分析';
       } else {
-        this.submitBtn.textContent = '请等待所有文件上传完成';
+        this.submitBtn.textContent = '请等待必填文件上传完成';
       }
     }
 
-    // 如果所有文件都已上传，设置拖拽区域为completed状态
-    if (allUploaded && this.dropArea) {
+    // 如果必填文件都已上传，设置拖拽区域为completed状态
+    if (allRequiredUploaded && this.dropArea) {
       this.dropArea.classList.add('completed');
     } else if (this.dropArea) {
       this.dropArea.classList.remove('completed');
