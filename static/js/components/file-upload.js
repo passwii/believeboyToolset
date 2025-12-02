@@ -26,7 +26,7 @@ class FileUploadComponent {
         },
         {
           type: 'ad_product_report',
-          test: (filename, ext) => ext === 'xlsx' && (filename.includes('ad') || filename.includes('广告') || filename.includes('advertising'))
+          test: (filename, ext) => ext === 'xlsx' && (filename.includes('ad') || filename.includes('广告') || filename.includes('advertising') || filename.includes('推广'))
         }
       ],
       // 日报文件分类规则（基于文件内容）
