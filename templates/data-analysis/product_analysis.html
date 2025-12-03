@@ -48,11 +48,11 @@
                 </span>
                 <span class="upload-progress">未上传</span>
             </div>
-            <div class="file-item empty" id="file-inventory_report">
+            <div class="file-item" id="file-inventory_report">
                 <span>库存报告：等待上传（.csv格式，名称含inv） <span style="color: var(--success-color);">可选</span>
                     <a href="{{ url_for('help.fba_inventory_help') }}" target="_blank" class="help-icon">?</a>
                 </span>
-                <span class="upload-progress">未上传</span>
+                <span class="upload-progress">未上传（可选）</span>
             </div>
         </div>
 
@@ -303,6 +303,21 @@
         cursor: pointer;
         font-weight: 600;
         transition: all 0.3s ease;
+    }
+
+    .file-type-btn.business {
+        background: var(--neon-blue);
+        color: white;
+    }
+
+    .file-type-btn.payment {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .file-type-btn.inventory {
+        background: #6c757d;
+        color: white;
     }
     
     .file-type-btn.sales {

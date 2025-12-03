@@ -76,7 +76,7 @@ class FileUploadComponent {
         'business_report': '.csv格式',
         'payment_report': '.csv格式',
         'ad_product_report': '.xlsx格式',
-        'inventory_report': '.csv格式，名称含inv',
+        'inventory_report': '.csv格式，名称含inv（可选）',
         'sales_report': '.txt格式，内容包含"amazon-order-id"',
         'fba_report': '.txt格式，内容包含"snapshot-date"',
         'ad_report': '.xlsx格式'
@@ -102,6 +102,8 @@ class FileUploadComponent {
       };
     }
     
+    // 设置必填文件类型（库存报告为可选）
+    this.requiredFileTypes = this.options.requiredFileTypes || Object.keys(this.uploadedFiles).filter(type => type !== 'inventory_report');
     this.init();
   }
 
@@ -324,11 +326,7 @@ class FileUploadComponent {
     }
     
     // 自动识别失败，显示手动选择对话框
-    if (this.options.isDailyReport) {
-      return await this.showFileTypeSelectionDialog(file);
-    }
-    
-    return null;
+    return await this.showFileTypeSelectionDialog(file);
   }
 
   /**
@@ -343,6 +341,19 @@ class FileUploadComponent {
    * 显示文件类型选择对话框
    */
   async showFileTypeSelectionDialog(file) {
+    const buttonConfigs = {
+      'sales_report': {text: '所有订单', className: 'sales', color: 'var(--neon-blue, #00d4ff)'},
+      'fba_report': {text: 'FBA库存', className: 'fba', color: 'var(--success-color, #00ff88)'},
+      'ad_report': {text: '广告报表', className: 'ad', color: 'var(--warning-color, #ffaa00)'},
+      'business_report': {text: '业务报告', className: 'business', color: 'var(--neon-blue, #00d4ff)'},
+      'payment_report': {text: '付款报告', className: 'payment', color: 'var(--success-color, #00ff88)'},
+      'ad_product_report': {text: '广告报表', className: 'ad', color: 'var(--warning-color, #ffaa00)'},
+      'inventory_report': {text: '库存报告 (可选)', className: 'inventory', color: '#6c757d'}
+    };
+
+    const availableTypes = Object.keys(this.uploadedFiles);
+    const titleText = this.options.isDailyReport ? '请选择日报文件类型' : '请选择产品分析文件类型';
+
     return new Promise((resolve) => {
       // 创建模态对话框
       const modal = DOM.create('div', {
@@ -353,7 +364,7 @@ class FileUploadComponent {
         className: 'file-type-dialog'
       });
       
-      // 设置更清晰的样式
+      // 主题兼容样式
       modal.style.cssText = `
         position: fixed;
         top: 0;
@@ -368,14 +379,14 @@ class FileUploadComponent {
       `;
       
       dialog.style.cssText = `
-        background: #ffffff;
-        border: 2px solid #e0e0e0;
+        background: var(--bg-primary, #1a1a1a);
+        border: 2px solid var(--border-color, #333);
         border-radius: 12px;
         padding: 30px;
         max-width: 500px;
         width: 90%;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        color: #333333;
+        color: var(--text-primary, #ffffff);
       `;
       
       // 文件信息
@@ -385,14 +396,14 @@ class FileUploadComponent {
       fileInfo.style.cssText = `
         margin-bottom: 25px;
         padding: 20px;
-        background: #f8f9fa;
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 8px;
-        border: 1px solid #e9ecef;
+        border: 1px solid var(--border-color, #444);
       `;
       fileInfo.innerHTML = `
-        <p style="margin: 8px 0; color: #333333;"><strong>文件名：</strong>${file.name}</p>
-        <p style="margin: 8px 0; color: #333333;"><strong>文件大小：</strong>${StringUtils.formatFileSize(file.size)}</p>
-        <p style="margin: 8px 0; color: #666666;"><strong>文件类型：</strong>无法自动识别，请手动选择</p>
+        <p style="margin: 8px 0; color: var(--text-primary, #ffffff);"><strong>文件名：</strong>${file.name}</p>
+        <p style="margin: 8px 0; color: var(--text-primary, #ffffff);"><strong>文件大小：</strong>${StringUtils.formatFileSize(file.size)}</p>
+        <p style="margin: 8px 0; color: var(--text-secondary, #aaa);"><strong>文件类型：</strong>无法自动识别，请手动选择</p>
       `;
       
       // 按钮容器
@@ -401,56 +412,47 @@ class FileUploadComponent {
       });
       buttonContainer.style.cssText = `
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 12px;
         margin-top: 20px;
       `;
       
-      // 创建选择按钮
-      const salesBtn = DOM.create('button', {
-        className: 'file-type-btn sales'
-      }, '所有订单');
-      salesBtn.style.cssText = `
-        padding: 15px 20px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        background: var(--neon-blue);
-        color: white;
-      `;
+      // 动态创建按钮，只显示未上传的文件类型
+      const availableTypes = Object.keys(this.uploadedFiles).filter(type => !this.uploadedFiles[type]);
       
-      const fbaBtn = DOM.create('button', {
-        className: 'file-type-btn fba'
-      }, 'FBA库存');
-      fbaBtn.style.cssText = `
-        padding: 15px 20px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        background: var(--success-color);
-        color: white;
-      `;
+      availableTypes.forEach(type => {
+        const config = buttonConfigs[type];
+        if (config) {
+          const btn = DOM.create('button', {
+            className: `file-type-btn ${config.className}`
+          }, config.text);
+          btn.style.cssText = `
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: ${config.color};
+            color: white;
+          `;
+          btn.addEventListener('mouseenter', () => {
+            btn.style.transform = 'translateY(-2px)';
+            btn.style.boxShadow = `0 6px 20px ${config.color}20`;
+          });
+          btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'translateY(0)';
+            btn.style.boxShadow = 'none';
+          });
+          btn.addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(type);
+          });
+          buttonContainer.appendChild(btn);
+        }
+      });
       
-      const adBtn = DOM.create('button', {
-        className: 'file-type-btn ad'
-      }, '广告报表');
-      adBtn.style.cssText = `
-        padding: 15px 20px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        background: var(--warning-color);
-        color: white;
-      `;
       
       const cancelBtn = DOM.create('button', {
         className: 'file-type-btn cancel'
@@ -466,38 +468,8 @@ class FileUploadComponent {
         background: var(--error-color);
         color: white;
         grid-column: 1 / -1;
+        margin-top: 10px;
       `;
-      
-      // 添加按钮悬停效果
-      salesBtn.addEventListener('mouseenter', () => {
-        salesBtn.style.transform = 'translateY(-2px)';
-        salesBtn.style.boxShadow = '0 6px 20px rgba(0, 212, 255, 0.4)';
-      });
-      
-      salesBtn.addEventListener('mouseleave', () => {
-        salesBtn.style.transform = 'translateY(0)';
-        salesBtn.style.boxShadow = 'none';
-      });
-      
-      fbaBtn.addEventListener('mouseenter', () => {
-        fbaBtn.style.transform = 'translateY(-2px)';
-        fbaBtn.style.boxShadow = '0 6px 20px rgba(0, 255, 136, 0.4)';
-      });
-      
-      fbaBtn.addEventListener('mouseleave', () => {
-        fbaBtn.style.transform = 'translateY(0)';
-        fbaBtn.style.boxShadow = 'none';
-      });
-      
-      adBtn.addEventListener('mouseenter', () => {
-        adBtn.style.transform = 'translateY(-2px)';
-        adBtn.style.boxShadow = '0 6px 20px rgba(255, 170, 0, 0.4)';
-      });
-      
-      adBtn.addEventListener('mouseleave', () => {
-        adBtn.style.transform = 'translateY(0)';
-        adBtn.style.boxShadow = 'none';
-      });
       
       cancelBtn.addEventListener('mouseenter', () => {
         cancelBtn.style.transform = 'translateY(-2px)';
@@ -507,22 +479,6 @@ class FileUploadComponent {
       cancelBtn.addEventListener('mouseleave', () => {
         cancelBtn.style.transform = 'translateY(0)';
         cancelBtn.style.boxShadow = 'none';
-      });
-      
-      // 绑定事件
-      salesBtn.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        resolve('sales_report');
-      });
-      
-      fbaBtn.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        resolve('fba_report');
-      });
-      
-      adBtn.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        resolve('ad_report');
       });
       
       cancelBtn.addEventListener('click', () => {
@@ -539,19 +495,16 @@ class FileUploadComponent {
       });
       
       // 创建标题
-      const title = DOM.create('h3', {}, '请选择文件类型');
+      const title = DOM.create('h3', {}, titleText);
       title.style.cssText = `
         margin-bottom: 20px;
-        color: #333333;
+        color: var(--text-primary, #ffffff);
         text-align: center;
         font-size: 18px;
         font-weight: 600;
       `;
       
       // 组装对话框
-      buttonContainer.appendChild(salesBtn);
-      buttonContainer.appendChild(fbaBtn);
-      buttonContainer.appendChild(adBtn);
       buttonContainer.appendChild(cancelBtn);
       
       dialog.appendChild(title);
@@ -648,6 +601,10 @@ class FileUploadComponent {
       const hint = this.options.fileTypeHints[fileType] || '';
       nameSpan.innerHTML = `${this.getFileTypeName(fileType)}：等待上传（${hint}）${helpIconHTML}`;
       progressSpan.textContent = '未上传';
+    } else if (status === 'optional') {
+      const hint = this.options.fileTypeHints[fileType] || '';
+      nameSpan.innerHTML = `${this.getFileTypeName(fileType)}：等待上传（${hint}）${helpIconHTML}`;
+      progressSpan.textContent = '未上传（可选）';
     }
 
     // 添加或更新删除按钮 - 固定样式和位置
@@ -704,7 +661,12 @@ class FileUploadComponent {
   setupFileTypes() {
     // 初始化所有文件项为空状态
     Object.keys(this.uploadedFiles).forEach(fileType => {
-      this.updateFileItemUI(null, fileType, 'empty');
+      // 库存报告为可选，不显示为empty状态
+      if (fileType === 'inventory_report') {
+        this.updateFileItemUI(null, fileType, 'optional');
+      } else {
+        this.updateFileItemUI(null, fileType, 'empty');
+      }
     });
   }
 

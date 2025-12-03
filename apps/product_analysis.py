@@ -573,17 +573,22 @@ def product_analysis():
             payment_report_path = request.form.get('payment_report_path')
             ad_product_report_path = request.form.get('ad_product_report_path')
             inventory_report_path = request.form.get('inventory_report_path')
-            inventory_report_path = request.form.get('inventory_report_path')
             
             # 验证所有必需的文件都已上传
             if not all([business_report_path, payment_report_path, ad_product_report_path]):
-                flash('请确保所有文件都已上传完成')
+                flash('请确保所有必需文件都已上传完成')
                 return redirect(url_for('dataset.product_analysis_page'))
             
-            # 验证文件是否存在
-            if not all([os.path.exists(path) for path in [business_report_path, payment_report_path, ad_product_report_path]]):
-                flash('文件不存在，请重新上传')
+            # 验证必需文件是否存在
+            required_files = [business_report_path, payment_report_path, ad_product_report_path]
+            if not all([os.path.exists(path) for path in required_files]):
+                flash('必需文件不存在，请重新上传')
                 return redirect(url_for('dataset.product_analysis_page'))
+            
+            # 验证可选的库存报告文件是否存在（如果提供了路径）
+            if inventory_report_path and not os.path.exists(inventory_report_path):
+                flash('库存报告文件不存在，将不包含库存分析')
+                inventory_report_path = None
             
             print(f"使用已上传的文件: Business={business_report_path}, Payment={payment_report_path}, AD={ad_product_report_path}")
             
