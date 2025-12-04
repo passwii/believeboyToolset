@@ -437,7 +437,6 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
         inv_df.rename(columns=rename_dict, inplace=True)
 
         # 从概览sheet合并本周销量（总销量）
-        # 读取概览数据用于合并（假设概览sheet是第一个）
         ws_overview = wb.active
         df_overview_from_excel = pd.read_excel(product_analysis_file_path, sheet_name=0, engine='openpyxl')
         sales_df = df_overview_from_excel[df_overview_from_excel['SKU'] != '汇总'][['SKU', '总销量']].copy()
@@ -448,6 +447,31 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
         inv_df = pd.merge(inv_df, sales_df, on='SKU', how='left')
         inv_df['本周销量'] = inv_df['本周销量'].fillna(0)
 
+        # 调整列顺序
+        new_column_order = [
+            'SKU', 'ASIN', '本周销量', '可售库存', '0-90天', '91-180天',
+            '181-270天', '271-365天', '365+天', '库存建议'
+        ]
+        # 过滤掉不存在于inv_df中的列
+        new_column_order = [col for col in new_column_order if col in inv_df.columns]
+        inv_df = inv_df[new_column_order]
+
+        # 添加汇总行
+        summary_data = {
+            'SKU': '汇总行',
+            'ASIN': '',
+            '本周销量': inv_df['本周销量'].sum(),
+            '可售库存': inv_df['可售库存'].sum(),
+            '0-90天': inv_df['0-90天'].sum(),
+            '91-180天': inv_df['91-180天'].sum(),
+            '181-270天': inv_df['181-270天'].sum(),
+            '271-365天': inv_df['271-365天'].sum(),
+            '365+天': inv_df['365+天'].sum(),
+            '库存建议': ''
+        }
+        summary_df = pd.DataFrame([summary_data])
+        inv_df = pd.concat([inv_df, summary_df], ignore_index=True)
+
         # 写入新sheet，应用样式
         center_alignment = Alignment(horizontal='center', vertical='center')
         thin_border = Border(
@@ -456,14 +480,32 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
             top=Side(style='thin'),
             bottom=Side(style='thin')
         )
+        bold_font = Font(bold=True)
 
         for r_idx, row in enumerate(dataframe_to_rows(inv_df, index=False, header=True), 1):
             for c_idx, value in enumerate(row, 1):
                 cell = ws_inv.cell(row=r_idx, column=c_idx, value=value)
                 cell.alignment = center_alignment
                 cell.border = thin_border
-                if r_idx == len(inv_df) + 1:  # 汇总行加粗（如果有）
-                    cell.font = Font(bold=True)
+                # 加粗标题行
+                if r_idx == 1:
+                    cell.font = bold_font
+                # 加粗最后一行（汇总行）
+                if r_idx == len(inv_df) + 1:
+                    cell.font = bold_font
+        
+        # 自动调整列宽
+        for col in ws_inv.columns:
+            max_length = 0
+            column = col[0].column_letter  # 获取列字母
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = (max_length + 2)
+            ws_inv.column_dimensions[column].width = adjusted_width
 
         wb.save(product_analysis_file_path)
 
