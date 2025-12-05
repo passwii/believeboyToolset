@@ -23,9 +23,9 @@
         <div class="drop-area" id="drop-area">
             <h3>拖拽文件到此处</h3>
             <p>或点击选择文件</p>
-            <p class="file-types">支持文件类型：.csv, .xlsx</p>
+            <p class="file-types">支持文件类型：.csv, .xlsx, .txt</p>
             <p class="upload-hint">可以分次上传，每次上传1个或多个文件</p>
-            <input type="file" id="file-input" name="files" multiple accept=".csv,.xlsx" style="display: none;">
+            <input type="file" id="file-input" name="files" multiple accept=".csv,.xlsx,.txt" style="display: none;">
         </div>
 
         <!-- 文件列表显示 -->
@@ -48,11 +48,11 @@
                 </span>
                 <span class="upload-progress">未上传</span>
             </div>
-            <div class="file-item" id="file-inventory_report">
-                <span>库存报告：等待上传（.csv格式，名称含inv） <span style="color: var(--success-color);">可选</span>
+            <div class="file-item empty" id="file-inventory_report">
+                <span>FBA库存：等待上传（.txt格式，内容包含"snapshot-date"）
                     <a href="{{ url_for('help.fba_inventory_help') }}" target="_blank" class="help-icon">?</a>
                 </span>
-                <span class="upload-progress">未上传（可选）</span>
+                <span class="upload-progress">未上传</span>
             </div>
         </div>
 

@@ -653,7 +653,7 @@ class Application {
           listSelector: '#file-list',
           submitSelector: '#submit-btn',
           uploadEndpoint: '/dataset/product-analysis/upload-file',
-          allowedTypes: ['csv', 'xlsx'],
+          allowedTypes: ['csv', 'xlsx', 'txt'],
           isDailyReport: false
         });
       }

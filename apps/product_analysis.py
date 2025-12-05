@@ -15,7 +15,7 @@ from core.log_service import LogService
 product_analysis_bp = Blueprint('product_analysis', __name__)
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv', 'xlsx'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv', 'xlsx', 'txt'}
 
 def process_product_analysis(project_name, report_start_date, report_end_date, business_report_path, payment_report_path, ad_product_report_path, inventory_report_path=None):
     current_time = datetime.datetime.now().strftime('%H-%M-%S')
@@ -412,7 +412,7 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
         ws_inv = wb.create_sheet("库存详情")
 
         # 读取库存CSV
-        inv_df = pd.read_csv(inventory_report_path, encoding='utf-8-sig')
+        inv_df = pd.read_csv(inventory_report_path, sep='\t', encoding='utf-8')
 
         # 保留指定列
         keep_cols = [
