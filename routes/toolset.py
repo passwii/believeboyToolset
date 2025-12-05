@@ -1,19 +1,25 @@
 from flask import Blueprint, render_template, jsonify, session, request, send_file
+from werkzeug.utils import secure_filename
 from core.auth import login_required
 from core.log_service import LogService
 import os
 import sys
 import uuid
+import io
 from datetime import datetime
 import traceback
 
 # 添加apps目录到路径
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'apps'))
 
+# 导入应用逻辑
 try:
     from research_analysis import ResearchAnalyzer
-except ImportError:
+    from excel_formula_remover import process_excel_file_stream
+except ImportError as e:
+    print(f"Warning: Could not import app logic: {e}")
     ResearchAnalyzer = None
+    process_excel_file_stream = None
 
 toolset_bp = Blueprint('toolset', __name__)
 
@@ -116,7 +122,7 @@ def upload_research_file():
         os.makedirs(temp_dir, exist_ok=True)
 
         # 保存上传的文件
-        filename = f"research_{uuid.uuid4().hex}_{file.filename}"
+        filename = f"research_{uuid.uuid4().hex}_{secure_filename(file.filename)}"
         filepath = os.path.join(temp_dir, filename)
         file.save(filepath)
 
@@ -295,3 +301,69 @@ def list_shops():
     except Exception as e:
         print(f"获取店铺列表失败: {e}")
         return jsonify({'success': False, 'message': '获取店铺列表失败'})
+
+
+@toolset_bp.route('/excel-formula-remover', methods=['GET', 'POST'])
+@login_required
+def excel_formula_remover():
+    """
+    Handles GET requests for the upload page and POST requests for processing an Excel file
+    to remove formulas.
+    """
+    if request.method == 'POST':
+        # Check if the process_excel_file_stream function is available
+        if process_excel_file_stream is None:
+            return "Excel processing module not loaded.", 500
+
+        # Basic file validation
+        if 'file' not in request.files:
+            return "No file part in the request.", 400
+        file = request.files['file']
+        if file.filename == '':
+            return "No file selected.", 400
+
+        # Ensure the file is a .xlsx file
+        if file and file.filename.endswith('.xlsx'):
+            try:
+                filename = secure_filename(file.filename)
+                
+                # Read file into a memory stream
+                input_stream = io.BytesIO(file.read())
+                
+                # Call the external processing function
+                output_stream = process_excel_file_stream(input_stream)
+                
+                LogService.log(
+                    action="执行Excel去公式",
+                    resource=f"Excel去公式: {filename}",
+                    log_type="user",
+                    level="info"
+                )
+                
+                # Send the processed file back to the user
+                return send_file(
+                    output_stream,
+                    as_attachment=True,
+                    download_name=f"processed_{filename}",
+                    mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
+            except Exception as e:
+                LogService.log(
+                    action="Excel去公式失败",
+                    resource=f"Excel去公式: {getattr(file, 'filename', 'unknown')}",
+                    log_type="system",
+                    level="error",
+                    details=str(e)
+                )
+                return f"An error occurred during file processing: {e}", 500
+        else:
+            return "Invalid file type. Please upload a .xlsx file.", 400
+            
+    # For GET requests, render the upload page
+    LogService.log(
+        action="访问Excel去公式页面",
+        resource="Excel去公式",
+        log_type="user",
+        level="info"
+    )
+    return render_template('tools/excel_formula_remover.html')

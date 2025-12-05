@@ -1,0 +1,31 @@
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-file-excel"></i> Excel 公式移除工具</h2>
+        <p class="card-description">上传您的 Excel 文件 (.xlsx)，此工具将移除所有单元格中的公式，并用其计算出的值替换，同时保留所有原始样式。处理完成后，您将可以直接下载文件。</p>
+    </div>
+    <div class="card-content">
+        <form id="excel-form" action="{{ url_for('toolset.excel_formula_remover') }}" method="post" enctype="multipart/form-data" class="form-upload">
+            <div class="form-group">
+                <label for="file-upload" class="form-label">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>选择或拖放 Excel 文件</span>
+                </label>
+                <input type="file" id="file-upload" name="file" accept=".xlsx" required class="form-control">
+                <span id="file-name" class="file-name"></span>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-cogs"></i>
+                    <span>处理并下载</span>
+                </button>
+            </div>
+        </form>
+    </div>
+    <script>
+        // Simple script to display the name of the selected file
+        document.getElementById('file-upload').addEventListener('change', function() {
+            var fileName = this.files[0] ? this.files[0].name : '未选择文件';
+            document.getElementById('file-name').textContent = '已选择: ' + fileName;
+        });
+    </script>
+</div>

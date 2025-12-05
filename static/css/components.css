@@ -105,7 +105,6 @@
 .card:hover {
   border-color: var(--neon-blue);
   box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
-  transform: translateY(-5px);
 }
 
 .card:hover::before {

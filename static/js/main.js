@@ -397,6 +397,7 @@ class Application {
       'amazon-crawler': '/toolset/amazon-crawler?embed=true',
       'image-resizer': '/toolset/image-resizer?embed=true',
       'research-analysis': '/toolset/research-analysis?embed=true',
+      'excel-formula-remover': '/toolset/excel-formula-remover',
       'ai-panel': 'https://ai.believeboy.com'
     };
     
