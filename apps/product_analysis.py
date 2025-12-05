@@ -381,6 +381,8 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     wb = load_workbook(template_file_path)
     # 获取当前活动的工作表，准备对其进行操作
     ws = wb.active
+    # 设置第一个sheet的名称为"产品分析"
+    ws.title = "产品分析"
     
     # 定义边框样式
     center_alignment = Alignment(horizontal='center', vertical='center')
