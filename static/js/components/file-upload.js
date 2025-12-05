@@ -30,7 +30,12 @@ class FileUploadComponent {
         },
         {
           type: 'inventory_report',
-          test: (filename, ext) => ext === 'csv' && filename.includes('inv')
+          contentTest: async (file, content) => {
+            if (!file.name.toLowerCase().endsWith('.txt')) return false;
+            const firstLine = content.split('\n')[0];
+            return firstLine && firstLine.includes('snapshot-date');
+          },
+          test: (filename, ext) => ext === 'txt' && (filename.includes('inv') || filename.includes('fba'))
         }
       ],
       // 日报文件分类规则（基于文件内容）
@@ -66,7 +71,7 @@ class FileUploadComponent {
         'business_report': '业务报告',
         'payment_report': '付款报告',
         'ad_product_report': '广告报表',
-        'inventory_report': '库存报告',
+        'inventory_report': 'FBA库存',
         'sales_report': '所有订单',
         'fba_report': 'FBA库存',
         'ad_report': '广告报表'
@@ -76,7 +81,7 @@ class FileUploadComponent {
         'business_report': '.csv格式',
         'payment_report': '.csv格式',
         'ad_product_report': '.xlsx格式',
-        'inventory_report': '.csv格式，名称含inv（可选）',
+        'inventory_report': '.txt格式，内容包含"snapshot-date"',
         'sales_report': '.txt格式，内容包含"amazon-order-id"',
         'fba_report': '.txt格式，内容包含"snapshot-date"',
         'ad_report': '.xlsx格式'
@@ -272,60 +277,41 @@ class FileUploadComponent {
     const filename = file.name.toLowerCase();
     const ext = filename.split('.').pop().toLowerCase();
     
-    // 选择对应的规则集
     const rules = this.options.isDailyReport ? this.options.dailyRules : this.options.rules;
-    
-    // 对于日报模式，首先尝试基于内容的检测
-    if (this.options.isDailyReport) {
-      for (const rule of rules) {
+
+    for (const rule of rules) {
+      // Flag to see if we should proceed to fallback test
+      let continueToFallback = true;
+
+      // 1. Prioritize content-based detection if it exists
+      if (rule.contentTest) {
         try {
-          // 显示检测状态
           this.updateFileItemUI(file, rule.type, 'analyzing');
-          
           const content = await this.readFileContent(file);
-          if (rule.contentTest && await rule.contentTest(file, content)) {
-            // 检查该类型文件是否已上传
-            if (!this.uploadedFiles[rule.type]) {
-              return rule.type;
+          if (await rule.contentTest(file, content)) {
+            if (!this.uploadedFiles[rule.type] || await this.confirmReplace(file, rule.type)) {
+              return rule.type; // Success, exit function
             }
-            // 如果已上传，询问是否替换
-            const shouldReplace = await this.confirmReplace(file, rule.type);
-            if (shouldReplace) {
-              return rule.type;
-            }
+            // If user cancels replace, we shouldn't try the fallback test for this file type
+            continueToFallback = false; 
           }
         } catch (error) {
-          console.warn('内容检测失败，尝试文件名检测:', error);
-          // 内容检测失败时，回退到文件名检测
-          if (rule.fallbackTest && rule.fallbackTest(filename, ext)) {
-            if (!this.uploadedFiles[rule.type]) {
-              return rule.type;
-            }
-            const shouldReplace = await this.confirmReplace(file, rule.type);
-            if (shouldReplace) {
-              return rule.type;
-            }
-          }
+          console.warn(`Content test for ${rule.type} failed, will try fallback. Error: ${error}`);
         }
       }
-    } else {
-      // 非日报模式，使用原有的文件名检测
-      for (const rule of rules) {
-        if (rule.test(filename, ext)) {
-          // 检查该类型文件是否已上传
-          if (!this.uploadedFiles[rule.type]) {
-            return rule.type;
-          }
-          // 如果已上传，询问是否替换
-          const shouldReplace = await this.confirmReplace(file, rule.type);
-          if (shouldReplace) {
-            return rule.type;
-          }
+
+      // 2. If content test was not performed, or failed, try filename-based fallback
+      if (continueToFallback) {
+        const fallbackTest = rule.fallbackTest || rule.test;
+        if (fallbackTest && fallbackTest(filename, ext)) {
+           if (!this.uploadedFiles[rule.type] || await this.confirmReplace(file, rule.type)) {
+              return rule.type; // Success, exit function
+           }
         }
       }
     }
     
-    // 自动识别失败，显示手动选择对话框
+    // If no rule matched, show the manual selection dialog
     return await this.showFileTypeSelectionDialog(file);
   }
 
