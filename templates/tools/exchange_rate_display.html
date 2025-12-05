@@ -1,0 +1,177 @@
+<!-- 汇率展示工具 -->
+<div class="tool-container">
+    <div class="tool-header">
+        <h2><i class="fas fa-exchange-alt"></i> 汇率展示工具</h2>
+        <p>查看当前和历史汇率数据</p>
+    </div>
+    
+    <div class="tool-content">
+        <div class="exchange-rate-container">
+            <div class="rate-image-section">
+                <div class="currency-images">
+                    <!-- 图片将通过JS动态加载 -->
+                </div>
+            </div>
+            <div class="rate-number-section">
+                <div class="current-rate-display">
+                    <span class="rate-value">7.1494</span>
+                    <span class="rate-currency">CNY/USD</span>
+                </div>
+                <div class="rate-history">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>月份</th>
+                                <th>原始中行折算价 (CNY/USD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>2025年7月</strong></td>
+                                <td><strong>7.1494</strong></td>
+                            </tr>
+                            <tr>
+                                <td>2025年8月</td>
+                                <td>7.103</td>
+                            </tr>
+                            <tr>
+                                <td>2025年9月</td>
+                                <td>7.1055</td>
+                            </tr>
+                            <tr>
+                                <td>2025年10月</td>
+                                <td>7.088</td>
+                            </tr>
+                            <tr>
+                                <td>2025年11月</td>
+                                <td>7.0789</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化汇率数据
+    const rateData = {
+        '2025-07': { value: 7.1494, image: '2025-07.png' },
+        '2025-08': { value: 7.103, image: '2025-08.png' },
+        '2025-09': { value: 7.1055, image: '2025-09.png' },
+        '2025-10': { value: 7.088, image: '2025-10.png' },
+        '2025-11': { value: 7.0789, image: '2025-11.png' }
+    };
+    
+    // 更新当前汇率显示（使用第一个月份作为当前显示）
+    const currentMonth = Object.keys(rateData)[0];
+    const currentRate = rateData[currentMonth];
+    document.querySelector('.rate-value').textContent = currentRate.value;
+    document.querySelector('.rate-currency').textContent = 'CNY/USD';
+    
+    // 加载所有月份图片，按顺序从上到下显示
+    const currencyImages = document.querySelector('.currency-images');
+    const sortedMonths = Object.keys(rateData).sort();
+    for (const month of sortedMonths) {
+        const img = document.createElement('img');
+        img.className = 'currency-image';
+        img.src = "{{ url_for('static', filename='images/currencyRate/') }}" + rateData[month].image;
+        img.alt = `汇率图表 - ${month}`;
+        currencyImages.appendChild(img);
+    }
+});
+</script>
+
+<style>
+.exchange-rate-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.rate-image-section {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.currency-images {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.currency-image {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.rate-number-section {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.current-rate-display {
+    text-align: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.rate-value {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: #00ff88;
+    margin-right: 10px;
+}
+
+.rate-currency {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.rate-history {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.rate-history table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rate-history th,
+.rate-history td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rate-history th {
+    background: rgba(0, 255, 136, 0.1);
+    color: #00ff88;
+}
+
+.rate-history tr:last-child td {
+    border-bottom: none;
+}
+
+.rate-history strong {
+    color: #00ff88;
+}
+</style>

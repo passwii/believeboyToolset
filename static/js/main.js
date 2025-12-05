@@ -393,7 +393,7 @@ class Application {
       'sku-cost-table': '/toolset/sku-cost-table?embed=true',
       'project-progress-table': '/toolset/project-progress-table?embed=true',
       'profit-calculation-table': '/toolset/profit-calculation-table?embed=true',
-      'exchange-rate-display': '/toolset/exchange-rate-display?embed=true',
+      'exchange-rate-display': '/toolset/exchange-rate-display',
       'amazon-crawler': '/toolset/amazon-crawler?embed=true',
       'image-resizer': '/toolset/image-resizer?embed=true',
       'research-analysis': '/toolset/research-analysis?embed=true',

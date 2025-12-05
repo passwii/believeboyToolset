@@ -303,6 +303,19 @@ def list_shops():
         return jsonify({'success': False, 'message': '获取店铺列表失败'})
 
 
+@toolset_bp.route('/exchange-rate-display')
+@login_required
+def exchange_rate_display():
+    """汇率展示页面"""
+    LogService.log(
+        action="访问汇率展示",
+        resource="汇率展示",
+        log_type="user",
+        level="info"
+    )
+    return render_template('tools/exchange_rate_display.html')
+
+
 @toolset_bp.route('/excel-formula-remover', methods=['GET', 'POST'])
 @login_required
 def excel_formula_remover():

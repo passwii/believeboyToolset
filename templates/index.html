@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>彼励扶工具集-Tools</title>
     <link rel="icon" href="{{ url_for('static', filename='images/logo-i.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='images/logo-big.webp') }}" type="image/webp">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <!-- 优化后的模块化CSS文件 -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/core.css') }}">
@@ -34,7 +35,7 @@
 <body>
     <!-- 顶部标题栏 -->
     <header class="cyber-header">
-        <h1 class="site-title"><a href="{{ url_for('main.home') }}" class="site-title-link">彼励扶运营中心</a></h1>
+        <h1 class="site-title"><a href="{{ url_for('main.home') }}" class="site-title-link"><img src="{{ url_for('static', filename='images/logo-big.webp') }}" alt="彼励扶运营中心" class="site-logo">彼励扶运营中心</a></h1>
         <div class="user-container">
             <div class="user-dropdown">
                 <div class="user-info" id="user-dropdown-toggle">

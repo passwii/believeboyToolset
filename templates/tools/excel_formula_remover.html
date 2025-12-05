@@ -1,9 +1,9 @@
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-file-excel"></i> Excel 公式移除工具</h2>
-        <p class="card-description">上传您的 Excel 文件 (.xlsx)，此工具将移除所有单元格中的公式，并用其计算出的值替换，同时保留所有原始样式。处理完成后，您将可以直接下载文件。</p>
+<div class="tool-container card" style="max-width: 600px; margin: 120px auto; border: 2px dashed rgba(0, 212, 255, 0.3); padding: 30px; border-radius: 10px;">
+    <div class="tool-header text-center">
+        <h2><i class="fas fa-file-excel"></i> Excel去公式</h2>
+        <p>上传Excel文件移除公式并替换计算值</p>
     </div>
-    <div class="card-content">
+    <div class="card-content text-center">
         <form id="excel-form" action="{{ url_for('toolset.excel_formula_remover') }}" method="post" enctype="multipart/form-data" class="form-upload">
             <div class="form-group">
                 <label for="file-upload" class="form-label">

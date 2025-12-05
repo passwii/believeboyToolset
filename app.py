@@ -14,6 +14,14 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
+@app.route('/favicon.ico')
+def favicon():
+    response = app.send_static_file('images/logo-i.ico')
+    response.headers['Content-Type'] = 'image/x-icon'
+    return response
+
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
 # 配置密钥用于会话
 app.secret_key = SECRET_KEY
 
