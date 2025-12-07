@@ -398,7 +398,8 @@ class Application {
       'image-resizer': '/toolset/image-resizer?embed=true',
       'research-analysis': '/toolset/research-analysis?embed=true',
       'excel-formula-remover': '/toolset/excel-formula-remover',
-      'ai-panel': 'https://ai.believeboy.com'
+      'ai-panel': 'https://ai.believeboy.com',
+      'img-believeboy': '/toolset/img-believeboy'
     };
     
     return urlMap[contentType] || '#';

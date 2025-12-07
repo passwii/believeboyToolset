@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify, session, request, send_file
+from flask import Blueprint, render_template, jsonify, session, request, send_file, make_response
 from werkzeug.utils import secure_filename
 from core.auth import login_required
 from core.log_service import LogService
@@ -8,6 +8,8 @@ import uuid
 import io
 from datetime import datetime
 import traceback
+import requests
+from urllib.parse import urlparse, urlunparse
 
 # 添加apps目录到路径
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'apps'))
@@ -380,3 +382,142 @@ def excel_formula_remover():
         level="info"
     )
     return render_template('tools/excel_formula_remover.html')
+
+
+@toolset_bp.route('/img-believeboy')
+@login_required
+def img_believeboy():
+    """图片图床页面"""
+    LogService.log(
+        action="访问图片图床",
+        resource="图片图床",
+        log_type="user",
+        level="info"
+    )
+    return render_template('tools/img_believeboy.html')
+
+
+def rewrite_set_cookie(headers, new_domain):
+    """重写Set-Cookie头中的域名"""
+    set_cookie_headers = []
+    for header in headers:
+        if header[0].lower() == 'set-cookie':
+            cookie_str = header[1]
+            # 简单解析Set-Cookie字符串，替换Domain部分
+            parts = cookie_str.split(';')
+            new_parts = []
+            domain_replaced = False
+            for part in parts:
+                part = part.strip()
+                if part.lower().startswith('domain='):
+                    # 替换域名
+                    new_parts.append(f'Domain={new_domain}')
+                    domain_replaced = True
+                else:
+                    new_parts.append(part)
+            if not domain_replaced:
+                # 如果没有Domain部分，添加默认域名
+                new_parts.append(f'Domain={new_domain}')
+            new_cookie = '; '.join(new_parts)
+            set_cookie_headers.append(('Set-Cookie', new_cookie))
+        else:
+            set_cookie_headers.append(header)
+    return set_cookie_headers
+
+@toolset_bp.route('/proxy-img-believeboy')
+@login_required
+def proxy_img_believeboy():
+    """代理路由转发到img.believeboy.com"""
+    target_url = request.args.get('url', 'https://img.believeboy.com')
+    parsed_url = urlparse(target_url)
+    path = parsed_url.path or '/'
+    
+    # 使用会话保持cookie
+    session_obj = requests.Session()
+    
+    try:
+        # 发起GET请求，跟随重定向
+        resp = session_obj.get(target_url, timeout=10, allow_redirects=True)
+        
+        # 检查响应是否有效
+        if resp is None:
+            print("代理请求失败: 服务器未响应")
+            return make_response("代理请求失败: 服务器未响应", 500)
+            
+        # 重写Set-Cookie头，确保域名正确
+        try:
+            headers = list(resp.headers.items())
+        except AttributeError as e:
+            print(f"响应头访问失败: {str(e)}")
+            return make_response("代理请求失败: 响应头无效", 500)
+        except Exception as e:
+            print(f"响应头处理异常: {str(e)}")
+            return make_response(f"代理请求失败: 响应头处理错误 {str(e)}", 500)
+            
+        new_headers = rewrite_set_cookie(headers, 'localhost')
+        
+        # 替换内容中的URL
+        try:
+            content = resp.content.decode('utf-8')
+        except UnicodeDecodeError as e:
+            print(f"内容解码失败: {str(e)}")
+            return make_response("代理请求失败: 内容解码错误", 500)
+        except Exception as e:
+            print(f"内容处理异常: {str(e)}")
+            return make_response(f"代理请求失败: 内容处理错误 {str(e)}", 500)
+            
+        content = content.replace('https://img.believeboy.com', '/proxy-img-believeboy')
+        
+        # 返回修改后的内容和状态码
+        return make_response(content).set_data(content.encode('utf-8')).headers.set_list('Set-Cookie', new_headers)
+    except Exception as e:
+        print(f"代理请求异常: {str(e)}")
+        return make_response(f"代理请求失败: 请求异常 {str(e)}", 500)
+
+@toolset_bp.route('/proxy-img-believeboy/<path:path>')
+@login_required
+def proxy_img_believeboy_path(path):
+    """代理路由转发到img.believeboy.com的路径"""
+    target_url = f"https://img.believeboy.com/{path}"
+    
+    # 使用会话保持cookie
+    session_obj = requests.Session()
+    
+    try:
+        # 发起GET请求，跟随重定向
+        resp = session_obj.get(target_url, timeout=10, allow_redirects=True)
+        
+        # 检查响应是否有效
+        if resp is None:
+            print("代理请求失败: 服务器未响应")
+            return make_response("代理请求失败: 服务器未响应", 500)
+            
+        # 重写Set-Cookie头，确保域名正确
+        try:
+            headers = list(resp.headers.items())
+        except AttributeError as e:
+            print(f"响应头访问失败: {str(e)}")
+            return make_response("代理请求失败: 响应头无效", 500)
+        except Exception as e:
+            print(f"响应头处理异常: {str(e)}")
+            return make_response(f"代理请求失败: 响应头处理错误 {str(e)}", 500)
+            
+        new_headers = rewrite_set_cookie(headers, 'localhost')
+        
+        # 替换内容中的URL
+        try:
+            content = resp.content.decode('utf-8')
+        except UnicodeDecodeError as e:
+            print(f"内容解码失败: {str(e)}")
+            return make_response("代理请求失败: 内容解码错误", 500)
+        except Exception as e:
+            print(f"内容处理异常: {str(e)}")
+            return make_response(f"代理请求失败: 内容处理错误 {str(e)}", 500)
+            
+        content = content.replace('https://img.believeboy.com', '/proxy-img-believeboy')
+        
+        # 返回修改后的内容和状态码
+        return make_response(content).set_data(content.encode('utf-8')).headers.set_list('Set-Cookie', new_headers)
+    except Exception as e:
+        print(f"代理请求异常: {str(e)}")
+        return make_response(f"代理请求失败: 请求异常 {str(e)}", 500)
