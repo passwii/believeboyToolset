@@ -13,7 +13,7 @@ class Application {
     this.defaultSection = null;
     this.dynamicSection = null;
     this.menuToggle = null;
-    
+
     // 组件实例
     this.fileUploadComponent = null;
     this.shopManagementComponent = null;
@@ -22,7 +22,7 @@ class Application {
     this.modalComponent = null;
     this.formValidationComponent = null;
     this.dashboardComponent = null;
-    
+
     this.init();
   }
 
@@ -31,11 +31,11 @@ class Application {
    */
   async init() {
     if (this.isInitialized) return;
-    
+
     try {
       // 增加DOM准备检查，特别是在embed模式下
       await this.waitForDOMReady();
-      
+
       this.cacheElements();
       this.setupUserDropdown();
       this.setupMenuToggle();
@@ -43,7 +43,7 @@ class Application {
       this.initializeComponents();
       this.initializeDefaultContent();
       this.setupEventListeners();
-      
+
       this.isInitialized = true;
       console.log('Application initialized successfully');
     } catch (error) {
@@ -65,7 +65,7 @@ class Application {
           const dynamicSection = DOM.find('.dynamic-section');
           const navItems = DOM.findAll('.nav-item');
           const groupTitles = DOM.findAll('.group-title');
-          
+
           if (dynamicSection && (navItems.length > 0 || groupTitles.length > 0)) {
             console.log('DOM元素已准备就绪');
             resolve();
@@ -74,7 +74,7 @@ class Application {
             setTimeout(checkElements, 100);
           }
         };
-        
+
         checkElements();
       }
     });
@@ -88,7 +88,7 @@ class Application {
     this.groupTitles = DOM.findAll('.group-title');
     this.defaultSection = DOM.find('.default-section');
     this.dynamicSection = DOM.find('.dynamic-section');
-    
+
     // 创建移动端菜单切换按钮
     this.menuToggle = DOM.create('div', {
       className: 'menu-toggle'
@@ -103,7 +103,7 @@ class Application {
   setupUserDropdown() {
     const userDropdownToggle = DOM.find('#user-dropdown-toggle');
     const userDropdown = DOM.find('.user-dropdown');
-    
+
     if (!userDropdownToggle || !userDropdown) return;
 
     // 点击用户信息区域切换下拉菜单
@@ -122,7 +122,7 @@ class Application {
     if (dropdownMenu) {
       dropdownMenu.addEventListener('click', (e) => {
         e.stopPropagation();
-        
+
         // 处理更改密码链接点击
         const changePasswordLink = e.target.closest('.dropdown-item[data-content="change-password"]');
         if (changePasswordLink) {
@@ -143,7 +143,7 @@ class Application {
       const sidebar = DOM.find('.cyber-sidebar');
       if (sidebar) {
         sidebar.classList.toggle('active');
-        
+
         // 切换图标
         const icon = this.menuToggle.querySelector('i');
         if (sidebar.classList.contains('active')) {
@@ -161,7 +161,7 @@ class Application {
   initializeComponents() {
     // 初始化组件存储对象
     this.components = this.components || {};
-    
+
     try {
       // 初始化键盘快捷键组件
       if (typeof KeyboardShortcutsComponent !== 'undefined') {
@@ -170,12 +170,12 @@ class Application {
           showTooltips: true
         });
       }
-      
+
       // 初始化模态框组件
       if (typeof ModalComponent !== 'undefined') {
         this.components.modal = new ModalComponent();
       }
-      
+
       // 初始化表单验证组件
       if (typeof FormValidationComponent !== 'undefined') {
         this.components.formValidation = new FormValidationComponent({
@@ -185,7 +185,7 @@ class Application {
           validateOnInput: false
         });
       }
-      
+
       console.log('All components initialized successfully');
     } catch (error) {
       console.error('Failed to initialize components:', error);
@@ -230,7 +230,7 @@ class Application {
   handleGroupTitleClick(title) {
     // 检查当前是否已展开
     const isCurrentlyExpanded = title.classList.contains('expanded');
-    
+
     // 折叠所有其他大类
     this.groupTitles.forEach(otherTitle => {
       if (otherTitle !== title) {
@@ -241,7 +241,7 @@ class Application {
         }
       }
     });
-    
+
     // 切换当前大类的展开/收起状态
     const submenu = title.nextElementSibling;
     if (submenu && submenu.classList.contains('submenu')) {
@@ -253,13 +253,13 @@ class Application {
         submenu.classList.add('expanded');
       }
     }
-    
+
     // 移除所有活动类
     this.clearActiveStates();
-    
+
     // 添加活动类到当前项
     title.classList.add('active');
-    
+
     // 移动端点击后关闭侧边栏
     this.closeMobileSidebar();
   }
@@ -270,18 +270,18 @@ class Application {
   handleNavLinkClick(link) {
     // 获取内容类型
     const contentType = link.getAttribute('data-content');
-    
+
     if (!contentType) return;
 
     // 移除所有活动类
     this.clearActiveStates();
-    
+
     // 添加活动类到当前项
     link.parentElement.classList.add('active');
-    
+
     // 加载内容
     this.loadContent(contentType);
-    
+
     // 移动端点击后关闭侧边栏
     this.closeMobileSidebar();
   }
@@ -292,11 +292,11 @@ class Application {
   clearActiveStates() {
     this.navItems.forEach(item => item.classList.remove('active'));
     this.groupTitles.forEach(title => title.classList.remove('active'));
-    
+
     // 清除内容区域的活动状态
     const categorySections = DOM.findAll('.category-section');
     categorySections.forEach(section => section.classList.remove('active'));
-    
+
     if (this.defaultSection) {
       this.defaultSection.classList.remove('active');
     }
@@ -321,7 +321,7 @@ class Application {
    */
   async loadContent(contentType) {
     if (!this.dynamicSection) return;
-    
+
     // 显示加载指示器
     this.dynamicSection.innerHTML = `
       <div class="loading-container">
@@ -331,24 +331,24 @@ class Application {
         </div>
       </div>
     `;
-    
+
     // 添加活动状态到动态内容区域
     this.dynamicSection.classList.add('active');
-    
+
     // 根据内容类型确定URL
     const url = this.getContentUrl(contentType);
-    
+
     try {
       // 发送AJAX请求获取内容
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error('网络响应不正常');
       }
-      
+
       const html = await response.text();
       this.dynamicSection.innerHTML = html;
-      
+
       // 增加延时确保DOM完全渲染后再初始化
       setTimeout(() => {
         try {
@@ -359,7 +359,7 @@ class Application {
           console.error('页面内容初始化失败:', error);
         }
       }, 100); // 给DOM渲染时间
-      
+
     } catch (error) {
       console.error('加载内容失败:', error);
       this.dynamicSection.innerHTML = `
@@ -402,7 +402,7 @@ class Application {
       'ai-panel': 'https://ai.believeboy.com',
       'img-believeboy': '/toolset/img-believeboy'
     };
-    
+
     return urlMap[contentType] || '#';
   }
 
@@ -426,7 +426,7 @@ class Application {
       'shop-management': () => this.initializeShopManagement(),
       'change-password': () => this.initializeChangePassword()
     };
-    
+
     const initFunction = initFunctions[contentType];
     if (initFunction && typeof initFunction === 'function') {
       initFunction();
@@ -450,7 +450,7 @@ class Application {
     }
   }
 
-// 注意：initializeComponents() 方法已在上面定义，避免重复
+  // 注意：initializeComponents() 方法已在上面定义，避免重复
 
   /**
    * 设置键盘快捷键
@@ -517,24 +517,24 @@ class Application {
     // 增加延时确保DOM完全加载，特别是在embed模式下
     setTimeout(() => {
       console.log('开始初始化日报页面');
-      
+
       // 昨天按钮使用延时和clone确保事件绑定，避免重复绑定问题
       const yesterdayBtn = DOM.find('#yesterday-btn');
       console.log('查找昨天按钮:', yesterdayBtn);
-      
+
       if (yesterdayBtn) {
         // 清除可能存在的旧事件监听器
         const newBtn = yesterdayBtn.cloneNode(true);
         yesterdayBtn.parentNode.replaceChild(newBtn, yesterdayBtn);
-        
+
         // 绑定新的事件监听器
         newBtn.addEventListener('click', () => {
           console.log('昨天按钮被点击');
-          
+
           try {
             const yesterday = TimeUtils.yesterday('YYYY-MM-DD');
             const reportDateInput = DOM.find('#report_date');
-            
+
             if (reportDateInput) {
               reportDateInput.value = yesterday;
               console.log('日期已设置为昨天:', yesterday);
@@ -545,15 +545,15 @@ class Application {
             console.error('设置日期时出错:', error);
           }
         });
-        
+
         console.log('昨天按钮事件监听器已绑定');
       } else {
         console.error('找不到昨天按钮');
       }
-      
+
       // 初始化文件上传组件 - 增加更多检查和重试机制
       this.initializeDailyReportFileUpload();
-      
+
       this.setupFormSubmission('daily-report-form', '日报');
     }, 200); // 增加延时时间
   }
@@ -564,25 +564,25 @@ class Application {
   initializeDailyReportFileUpload() {
     const maxRetries = 3;
     let retryCount = 0;
-    
+
     const tryInit = () => {
       retryCount++;
       console.log(`尝试初始化文件上传组件 (第${retryCount}次)`);
-      
+
       try {
         // 检查必要的DOM元素是否存在
         const dropArea = DOM.find('#drop-area');
         const fileInput = DOM.find('#file-input');
         const fileList = DOM.find('#file-list');
         const submitBtn = DOM.find('#submit-btn');
-        
+
         console.log('DOM元素检查:', {
           dropArea: !!dropArea,
           fileInput: !!fileInput,
           fileList: !!fileList,
           submitBtn: !!submitBtn
         });
-        
+
         if (!dropArea || !fileInput || !fileList || !submitBtn) {
           if (retryCount < maxRetries) {
             console.log('DOM元素未完全加载，1秒后重试...');
@@ -592,13 +592,13 @@ class Application {
           }
           return;
         }
-        
+
         // 检查FileUploadComponent是否可用
         if (typeof FileUploadComponent === 'undefined') {
           console.error('FileUploadComponent未定义');
           return;
         }
-        
+
         // 初始化文件上传组件
         this.components.fileUpload = new FileUploadComponent({
           containerSelector: '#drop-area',
@@ -609,17 +609,17 @@ class Application {
           allowedTypes: ['txt', 'xlsx'],
           isDailyReport: true
         });
-        
+
         console.log('日报文件上传组件已初始化');
-        
+
         // 验证组件是否正确初始化
         if (this.components.fileUpload && this.components.fileUpload.options) {
           console.log('文件上传组件配置:', this.components.fileUpload.options);
         }
-        
+
       } catch (error) {
         console.error('文件上传组件初始化失败:', error);
-        
+
         if (retryCount < maxRetries) {
           console.log('初始化失败，1秒后重试...');
           setTimeout(tryInit, 1000);
@@ -632,7 +632,7 @@ class Application {
         }
       }
     };
-    
+
     // 开始初始化
     tryInit();
   }
@@ -661,13 +661,13 @@ class Application {
           isDailyReport: false
         });
       }
-      
+
       // 初始化上周按钮
       this.initializeLastWeekButton();
-      
+
       // 设置表单提交处理
       this.setupFormSubmission('analysis-form', '产品分析');
-      
+
       console.log('Product analysis page initialized');
     } catch (error) {
       console.error('Failed to initialize product analysis:', error);
@@ -682,17 +682,21 @@ class Application {
       // 初始化文件上传组件
       if (typeof FileUploadComponent !== 'undefined') {
         this.components.fileUpload = new FileUploadComponent({
-          isYumaiAnalysis: true, // Activate the new single-file mode
-          uploadEndpoint: '/yumai-analysis/upload'
+          containerSelector: '#upload-area',
+          inputSelector: '#file-input',
+          listSelector: '#selected-file',
+          submitSelector: '#submit-btn',
+          isYumaiAnalysis: true,
+          uploadEndpoint: '/yumai-analysis'
         });
       }
-      
+
       // 初始化上周按钮
       this.initializeLastWeekButton();
-      
+
       // 设置表单提交处理
       this.setupFormSubmission('yumai-analysis-form', '商品分析（优麦云）');
-      
+
       console.log('Yumai analysis page initialized');
     } catch (error) {
       console.error('Failed to initialize yumai analysis:', error);
@@ -707,24 +711,24 @@ class Application {
     setTimeout(() => {
       const lastWeekBtn = DOM.find('#last-week-btn');
       console.log('查找上周按钮:', lastWeekBtn);
-      
+
       if (lastWeekBtn) {
         // 清除可能存在的旧事件监听器
         const newBtn = lastWeekBtn.cloneNode(true);
         lastWeekBtn.parentNode.replaceChild(newBtn, lastWeekBtn);
-        
+
         // 绑定新的事件监听器
         newBtn.addEventListener('click', () => {
           console.log('上周按钮被点击');
-          
+
           try {
             // 使用 TimeUtils 计算上周日期范围
             const lastWeek = TimeUtils.lastWeek();
-            
+
             // 设置日期输入框的值
             const startDateInput = DOM.find('#report_start_date');
             const endDateInput = DOM.find('#report_end_date');
-            
+
             if (startDateInput && endDateInput) {
               startDateInput.value = lastWeek.start;
               endDateInput.value = lastWeek.end;
@@ -737,7 +741,7 @@ class Application {
             notify.error('设置日期失败，请重试');
           }
         });
-        
+
         console.log('上周按钮事件监听器已绑定');
       } else {
         console.error('找不到上周按钮');
@@ -750,7 +754,7 @@ class Application {
    */
   initializeOperationsOverview() {
     console.log('运营总览页面已加载');
-    
+
     // 初始化时间轴交互效果
     this.initializeTimelineInteractions();
   }
@@ -766,7 +770,7 @@ class Application {
         this.handleTimelineMarkerClick(e.currentTarget);
       });
     });
-    
+
     // 任务项点击事件
     const taskItems = DOM.findAll('.task-item');
     taskItems.forEach(item => {
@@ -774,7 +778,7 @@ class Application {
         this.handleTaskItemClick(e.currentTarget);
       });
     });
-    
+
     // 初始化进度条动画
     this.animateProgressBar();
   }
@@ -786,28 +790,28 @@ class Application {
     // 移除所有标记的活动状态
     const allMarkers = DOM.findAll('.timeline-marker');
     allMarkers.forEach(m => m.classList.remove('active'));
-    
+
     // 添加活动状态到当前标记
     marker.classList.add('active');
-    
+
     // 获取对应的内容区域
     const timelineItem = marker.closest('.timeline-item');
     const timelineSection = timelineItem?.querySelector('.timeline-section');
-    
+
     if (timelineSection) {
       // 高亮显示对应的内容区域
       DOM.findAll('.timeline-section').forEach(section => {
         section.classList.remove('highlighted');
       });
       timelineSection.classList.add('highlighted');
-      
+
       // 滚动到对应区域
       timelineSection.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });
     }
-    
+
     // 播放点击音效（如果需要）
     this.playClickSound();
   }
@@ -819,7 +823,7 @@ class Application {
     // 获取任务信息
     const taskName = taskItem.querySelector('.task-name')?.textContent;
     const taskStatus = taskItem.querySelector('.task-status')?.textContent;
-    
+
     if (taskName && taskStatus) {
       // 显示任务详情
       this.showTaskDetails(taskName, taskStatus, taskItem);
@@ -832,7 +836,7 @@ class Application {
   showTaskDetails(taskName, taskStatus, taskElement) {
     const taskDescription = taskElement.querySelector('.task-description')?.textContent;
     const outputBadge = taskElement.querySelector('.output-badge')?.textContent;
-    
+
     let message = `任务：${taskName}\n状态：${taskStatus}`;
     if (taskDescription) {
       message += `\n说明：${taskDescription}`;
@@ -840,7 +844,7 @@ class Application {
     if (outputBadge) {
       message += `\n输出：${outputBadge}`;
     }
-    
+
     // 显示通知
     notify.info(message);
   }
@@ -895,7 +899,7 @@ class Application {
             refreshInterval: 5 * 60 * 1000, // 5分钟
             apiEndpoint: '/api/statistics'
           });
-          
+
           // 加载统计数据
           this.components.dashboard.loadStatistics();
         } else {
@@ -925,7 +929,7 @@ class Application {
           checkUsernameEndpoint: '/admin/users/check-username'
         });
       }
-      
+
       console.log('用户管理页面已加载');
     } catch (error) {
       console.error('Failed to initialize user management:', error);
@@ -963,7 +967,7 @@ class Application {
         });
 
       }
-      
+
       console.log('店铺管理页面已加载');
     } catch (error) {
       console.error('Failed to initialize shop management:', error);
@@ -977,24 +981,24 @@ class Application {
     const form = DOM.find('.change-password-embed form');
     const newPassword = DOM.find('#new_password');
     const confirmPassword = DOM.find('#confirm_password');
-    
+
     if (form && newPassword && confirmPassword) {
       form.addEventListener('submit', (e) => {
         if (newPassword.value !== confirmPassword.value) {
           e.preventDefault();
-          
+
           // 创建错误消息
           const errorDiv = DOM.create('div', {
             className: 'flash-error'
           });
           errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> 两次输入的新密码不一致';
-          
+
           // 插入到表单前面
           form.parentNode.insertBefore(errorDiv, form);
-          
+
           // 滚动到错误消息
           errorDiv.scrollIntoView({ behavior: 'smooth' });
-          
+
           // 3秒后移除错误消息
           setTimeout(() => {
             if (errorDiv.parentNode) {
@@ -1012,12 +1016,12 @@ class Application {
   setupFormSubmission(formId, reportType) {
     const form = DOM.find(`#${formId}`);
     if (!form) return;
-    
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const formData = new FormData(form);
-      
+
       // 显示加载指示器
       const formContainer = form.parentElement;
       const originalContent = formContainer.innerHTML;
@@ -1027,37 +1031,37 @@ class Application {
           <span>正在生成${reportType}，请稍候...</span>
         </div>
       `;
-      
+
       try {
         const response = await fetch(form.action, {
           method: 'POST',
           body: formData
         });
-        
+
         if (response.ok) {
           const blob = await response.blob();
-          
+
           // 从响应头获取文件名
           const contentDisposition = response.headers.get('Content-Disposition');
           let filename = `${reportType.toLowerCase()}_${StringUtils.formatDate(new Date(), 'YYYY-MM-DD')}.xlsx`;
-          
+
           if (contentDisposition) {
             // 尝试从Content-Disposition头中提取文件名
             const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
             if (filenameMatch && filenameMatch[1]) {
               filename = filenameMatch[1].replace(/['"]/g, '');
             }
-            
+
             // 处理UTF-8编码的文件名 (filename*=UTF-8''...)
             const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/);
             if (utf8Match && utf8Match[1]) {
               filename = decodeURIComponent(utf8Match[1]);
             }
           }
-          
+
           console.log('下载文件名:', filename);
           await downloadFile(blob, filename);
-          
+
           notify.success(`${reportType}生成成功`);
         } else {
           throw new Error(`生成${reportType}失败`);
@@ -1068,7 +1072,7 @@ class Application {
       } finally {
         // 恢复表单
         formContainer.innerHTML = originalContent;
-        
+
         // 重新初始化页面
         if (formId === 'daily-report-form') {
           this.initializeDailyReport();
@@ -1148,7 +1152,7 @@ if (typeof window !== 'undefined') {
   window.Application = Application;
   window.initApp = initApp;
   window.getApp = () => app;
-  
+
   // 挂载组件到全局，以便于调试和访问
   window.Components = {
     getFileUpload: () => app?.getComponent('fileUpload'),

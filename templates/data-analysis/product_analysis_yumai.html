@@ -1,7 +1,7 @@
 <div class="container" id="product-analysis-yumai-page">
-    <h1>商品分析（优麦云）
-    </h1>
-    <form id="yumai-analysis-form" action="{{ url_for('yumai_analysis.yumai_analysis_page') }}" method="POST" enctype="multipart/form-data">
+    <h1>商品分析（优麦云）</h1>
+    <form id="yumai-analysis-form" action="{{ url_for('yumai_analysis.yumai_analysis_page') }}" method="POST"
+        enctype="multipart/form-data">
         <label for="project_name">项目名称:</label>
         <select name="project_name" id="project_name" required>
             <option value="">请选择项目</option>
@@ -18,25 +18,115 @@
             <button type="button" id="last-week-btn">上周</button>
         </div>
 
-        <!-- File Upload Area -->
-        <div class="drop-area" id="drop-area">
-            <h3>拖拽文件到此处</h3>
-            <p>或点击选择文件</p>
-            <p class="file-types">支持文件类型：.xlsx</p>
-            <p class="upload-hint">可以上传1个文件</p>
-            <input type="file" id="file-input" name="file" accept=".xlsx" style="display: none;">
-        </div>
+        <label for="file">上传文件:</label>
+        <input type="file" id="file" name="file" accept=".xlsx" required>
 
-        <!-- File List Display -->
-        <div class="file-list" id="file-list">
-            <!-- This will be populated by file-upload.js -->
-        </div>
-
-        <!-- Hidden inputs for file paths -->
-        <div class="hidden-inputs" id="hidden-inputs">
-            <!-- This will be populated by file-upload.js -->
-        </div>
-
-        <button type="submit" id="submit-btn" disabled>生成商品分析</button>
+        <button type="submit">生成商品分析</button>
     </form>
 </div>
+
+<style>
+    .upload-area {
+        border: 2px dashed var(--border-color, #444);
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--bg-secondary, #1a1a1a);
+        margin: 20px 0;
+    }
+
+    .upload-area:hover {
+        border-color: var(--neon-blue, #00d4ff);
+        background: rgba(0, 212, 255, 0.05);
+    }
+
+    .upload-area.has-file {
+        border-color: var(--success-color, #00ff88);
+        border-style: solid;
+    }
+
+    .upload-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+
+    .upload-area h3 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary, #fff);
+    }
+
+    .upload-area .file-types {
+        color: var(--text-secondary, #888);
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .selected-file {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: var(--bg-secondary, #1a1a1a);
+        border: 1px solid var(--success-color, #00ff88);
+        border-radius: 8px;
+        margin: 10px 0 20px 0;
+    }
+
+    .selected-file .file-name {
+        color: var(--text-primary, #fff);
+        font-weight: 500;
+        flex: 1;
+    }
+
+    .selected-file .file-size {
+        color: var(--text-secondary, #888);
+        font-size: 14px;
+    }
+
+    .remove-file-btn {
+        background: var(--error-color, #ff006e);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .remove-file-btn:hover {
+        transform: scale(1.1);
+        background: #cc0055;
+    }
+</style>
+
+<script>
+    // Last week button logic remains unchanged
+    const lastWeekBtn = document.getElementById('last-week-btn');
+    if (lastWeekBtn) {
+        lastWeekBtn.addEventListener('click', function () {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const lastSunday = new Date(today);
+            lastSunday.setDate(today.getDate() - dayOfWeek);
+            const lastMonday = new Date(lastSunday);
+            lastMonday.setDate(lastSunday.getDate() - 6);
+
+            document.getElementById('report_start_date').value = formatDate(lastMonday);
+            document.getElementById('report_end_date').value = formatDate(lastSunday);
+        });
+    }
+
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+</script>

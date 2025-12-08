@@ -36,6 +36,10 @@ class FileUploadComponent {
             return firstLine && firstLine.includes('snapshot-date');
           },
           test: (filename, ext) => ext === 'txt' && (filename.includes('inv') || filename.includes('fba'))
+        },
+        {
+          type: 'product_analysis_yumai',
+          test: (filename, ext) => ext === 'xlsx' && filename.includes('商品分析')
         }
       ],
       // 日报文件分类规则（基于文件内容）
@@ -74,7 +78,8 @@ class FileUploadComponent {
         'inventory_report': 'FBA库存',
         'sales_report': '所有订单',
         'fba_report': 'FBA库存',
-        'ad_report': '广告报表'
+        'ad_report': '广告报表',
+        'product_analysis_yumai': '商品分析'
       },
       // 文件类型提示
       fileTypeHints: {
@@ -103,7 +108,8 @@ class FileUploadComponent {
         business_report: null,
         payment_report: null,
         ad_product_report: null,
-        inventory_report: null
+        inventory_report: null,
+        product_analysis_yumai: null
       };
     }
     
@@ -524,20 +530,26 @@ class FileUploadComponent {
     formData.append('file_type', fileType);
 
     try {
-      const response = await api.post(this.options.uploadEndpoint, formData);
+      const response = await fetch(this.options.uploadEndpoint, {
+        method: 'POST',
+        body: formData
+      });
       
-      if (response.success) {
-        // 存储上传的文件路径
-        this.uploadedFiles[fileType] = response.file_path;
+      if (response.ok) {
+        const blob = await response.blob();
+        // 处理文件下载响应（如果需要）
+        // 例如：触发文件下载或处理响应数据
+        this.uploadedFiles[fileType] = URL.createObjectURL(blob);
         const pathInput = DOM.find(`#${fileType}_path`);
         if (pathInput) {
-          pathInput.value = response.file_path;
+          pathInput.value = URL.createObjectURL(blob);
         }
 
         this.updateFileItemUI(file, fileType, 'uploaded');
         notify.success(`文件 "${file.name}" 上传成功`);
       } else {
-        throw new Error(response.error || '上传失败');
+        const errorText = await response.text();
+        throw new Error(errorText || '上传失败');
       }
     } catch (error) {
       console.error('上传失败:', error);
