@@ -1,6 +1,6 @@
 <div class="container" id="product-analysis-yumai-page">
     <h1>商品分析（优麦云）</h1>
-    <form id="yumai-analysis-form" action="{{ url_for('yumai_analysis.yumai_analysis_page') }}" method="POST"
+    <form id="yumai-analysis-form" action="/yumai-analysis/process" method="POST"
         enctype="multipart/form-data">
         <label for="project_name">项目名称:</label>
         <select name="project_name" id="project_name" required>

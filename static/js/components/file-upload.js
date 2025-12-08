@@ -7,10 +7,10 @@ class FileUploadComponent {
   constructor(options = {}) {
     this.options = {
       containerSelector: '#drop-area',
-      inputSelector: '#file-input',
+      inputSelector: '#file',
       listSelector: '#file-list',
       submitSelector: '#submit-btn',
-      uploadEndpoint: '/dataset/product-analysis/upload-file',
+      uploadEndpoint: '/yumai-analysis/process',
       allowedTypes: ['csv', 'xlsx', 'txt'],
       maxFileSize: 50 * 1024 * 1024, // 50MB
       allowMultiple: true,
@@ -548,8 +548,19 @@ class FileUploadComponent {
         this.updateFileItemUI(file, fileType, 'uploaded');
         notify.success(`文件 "${file.name}" 上传成功`);
       } else {
-        const errorText = await response.text();
-        throw new Error(errorText || '上传失败');
+        let errorMessage;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const errorObj = await response.json();
+            errorMessage = errorObj.error || '上传失败';
+          } catch (e) {
+            errorMessage = await response.text() || '上传失败';
+          }
+        } else {
+          errorMessage = await response.text() || '上传失败';
+        }
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('上传失败:', error);
