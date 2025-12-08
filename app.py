@@ -8,6 +8,7 @@ from flask import Flask
 from routes import init_app
 from core.config import APP_CONFIG, SECRET_KEY, SESSION_CONFIG
 from core.auth import auth_bp
+from apps.yumai_analysis import yumai_analysis_bp
 from core.database_config import get_db_connection
 from core.database import init_db
 from datetime import datetime, timedelta
@@ -30,6 +31,7 @@ app.permanent_session_lifetime = timedelta(seconds=SESSION_CONFIG['permanent_ses
 
 # 注册认证蓝图
 app.register_blueprint(auth_bp)
+app.register_blueprint(yumai_analysis_bp)
 
 
 

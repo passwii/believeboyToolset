@@ -1,0 +1,42 @@
+<div class="container" id="product-analysis-yumai-page">
+    <h1>商品分析（优麦云）
+    </h1>
+    <form id="yumai-analysis-form" action="{{ url_for('yumai_analysis.yumai_analysis_page') }}" method="POST" enctype="multipart/form-data">
+        <label for="project_name">项目名称:</label>
+        <select name="project_name" id="project_name" required>
+            <option value="">请选择项目</option>
+            {% for project in projects %}
+            <option value="{{ project }}">{{ project }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="report_date_range">报表日期范围:</label>
+        <div class="date-range-container">
+            <input type="date" name="report_start_date" id="report_start_date" required>
+            <span>至</span>
+            <input type="date" name="report_end_date" id="report_end_date" required>
+            <button type="button" id="last-week-btn">上周</button>
+        </div>
+
+        <!-- File Upload Area -->
+        <div class="drop-area" id="drop-area">
+            <h3>拖拽文件到此处</h3>
+            <p>或点击选择文件</p>
+            <p class="file-types">支持文件类型：.xlsx</p>
+            <p class="upload-hint">可以上传1个文件</p>
+            <input type="file" id="file-input" name="file" accept=".xlsx" style="display: none;">
+        </div>
+
+        <!-- File List Display -->
+        <div class="file-list" id="file-list">
+            <!-- This will be populated by file-upload.js -->
+        </div>
+
+        <!-- Hidden inputs for file paths -->
+        <div class="hidden-inputs" id="hidden-inputs">
+            <!-- This will be populated by file-upload.js -->
+        </div>
+
+        <button type="submit" id="submit-btn" disabled>生成商品分析</button>
+    </form>
+</div>

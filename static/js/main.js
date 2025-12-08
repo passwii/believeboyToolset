@@ -381,6 +381,7 @@ class Application {
       'daily-report': '/dataset/daily-report',
       'monthly-report': '/dataset/monthly-report',
       'product-analysis': '/dataset/product-analysis',
+      'yumai-analysis': '/yumai-analysis',
       'operations-overview': '/toolset/operations-overview',
       'operations-nav': '/toolset/operations-nav',
       'shop-nav': '/toolset/shop-nav',
@@ -414,6 +415,7 @@ class Application {
       'daily-report': () => this.initializeDailyReport(),
       'monthly-report': () => this.initializeMonthlyReport(),
       'product-analysis': () => this.initializeProductAnalysis(),
+      'yumai-analysis': () => this.initializeYumaiAnalysis(),
       'operations-overview': () => this.initializeOperationsOverview(),
       'operations-nav': () => this.initializeOperationsNav(),
       'shop-nav': () => this.initializeShopNav(),
@@ -669,6 +671,31 @@ class Application {
       console.log('Product analysis page initialized');
     } catch (error) {
       console.error('Failed to initialize product analysis:', error);
+    }
+  }
+
+  /**
+   * 初始化优麦云商品分析页面
+   */
+  initializeYumaiAnalysis() {
+    try {
+      // 初始化文件上传组件
+      if (typeof FileUploadComponent !== 'undefined') {
+        this.components.fileUpload = new FileUploadComponent({
+          isYumaiAnalysis: true, // Activate the new single-file mode
+          uploadEndpoint: '/yumai-analysis/upload'
+        });
+      }
+      
+      // 初始化上周按钮
+      this.initializeLastWeekButton();
+      
+      // 设置表单提交处理
+      this.setupFormSubmission('yumai-analysis-form', '商品分析（优麦云）');
+      
+      console.log('Yumai analysis page initialized');
+    } catch (error) {
+      console.error('Failed to initialize yumai analysis:', error);
     }
   }
 
