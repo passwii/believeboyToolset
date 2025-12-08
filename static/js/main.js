@@ -1080,6 +1080,8 @@ class Application {
           this.initializeMonthlyReport();
         } else if (formId === 'analysis-form') {
           this.initializeProductAnalysis();
+        } else if (formId === 'yumai-analysis-form') {
+          this.initializeYumaiAnalysis();
         }
       }
     });
