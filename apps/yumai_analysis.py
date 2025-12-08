@@ -66,7 +66,7 @@ def process_yumai_data(file):
         raise ValueError("无法读取文件头部，请确保文件格式正确且至少有一行。")
 
     # Columns to keep, with original names
-    source_columns = ['SKU', 'ASIN', '币种', '可售', '销量', '销售额', '广告花费', '广告曝光量', '广告点击量', 'ACoAS']
+    source_columns = ['SKU', 'ASIN', '币种', '销量', '销售额', '可售', '广告花费', '广告曝光量', '广告点击量', 'ACoAS']
     
     # Check for missing columns
     missing = [col for col in source_columns if col not in header]
