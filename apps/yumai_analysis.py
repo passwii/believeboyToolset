@@ -105,9 +105,9 @@ def process_yumai_data(file):
 
     # To calculate summary
     summary = {
-        '销量': 0, '销售额': 0, '广告花费': 0, '广告曝光量': 0, '广告点击量': 0,
+        '销量': 0, '销售额': 0, '广告花费': 0, '广告曝光量': 0, '广告点击量': 0, '可售': 0,
     }
-    numeric_cols = ['销量', '销售额', '广告花费', '广告曝光量', '广告点击量']
+    numeric_cols = ['销量', '销售额', '广告花费', '广告曝光量', '广告点击量', '可售']
 
     # Copy data and styles
     for row_idx in range(2, ws.max_row + 1):
@@ -140,6 +140,7 @@ def process_yumai_data(file):
         '币种': '',
         '销量': summary['销量'],
         '销售额': summary['销售额'],
+        '可售': summary['可售'],
         '广告花费': summary['广告花费'],
         '广告曝光量': summary['广告曝光量'],
         '广告点击量': summary['广告点击量'],
