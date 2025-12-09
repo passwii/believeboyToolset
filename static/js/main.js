@@ -694,6 +694,9 @@ class Application {
       // 初始化上周按钮
       this.initializeLastWeekButton();
 
+      // 初始化昨天按钮
+      this.initializeYesterdayButton();
+
       // 设置表单提交处理
       this.setupFormSubmission('yumai-analysis-form', '商品分析（优麦云）');
 
@@ -745,6 +748,52 @@ class Application {
         console.log('上周按钮事件监听器已绑定');
       } else {
         console.error('找不到上周按钮');
+      }
+    }, 100);
+  }
+
+  /**
+   * 初始化昨天按钮
+   */
+  initializeYesterdayButton() {
+    // 使用 setTimeout 确保 DOM 元素已经加载
+    setTimeout(() => {
+      const yesterdayBtn = DOM.find('#yesterday-btn');
+      console.log('查找昨天按钮:', yesterdayBtn);
+
+      if (yesterdayBtn) {
+        // 清除可能存在的旧事件监听器
+        const newBtn = yesterdayBtn.cloneNode(true);
+        yesterdayBtn.parentNode.replaceChild(newBtn, yesterdayBtn);
+
+        // 绑定新的事件监听器
+        newBtn.addEventListener('click', () => {
+          console.log('昨天按钮被点击');
+
+          try {
+            // 使用 TimeUtils 获取昨天的日期
+            const yesterday = TimeUtils.yesterday('YYYY-MM-DD');
+
+            // 设置日期输入框的值
+            const startDateInput = DOM.find('#report_start_date');
+            const endDateInput = DOM.find('#report_end_date');
+
+            if (startDateInput && endDateInput) {
+              startDateInput.value = yesterday;
+              endDateInput.value = yesterday;
+              console.log('日期已设置为昨天:', yesterday);
+            } else {
+              console.error('找不到日期输入框');
+            }
+          } catch (error) {
+            console.error('设置日期时出错:', error);
+            notify.error('设置日期失败，请重试');
+          }
+        });
+
+        console.log('昨天按钮事件监听器已绑定');
+      } else {
+        console.error('找不到昨天按钮');
       }
     }, 100);
   }
