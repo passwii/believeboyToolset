@@ -610,7 +610,7 @@ def product_analysis():
             
             if not project_name:
                 flash('请选择项目名称')
-                return redirect(url_for('dataset.product_analysis_page'))
+                return redirect(url_for('dataset.product_analysis'))
             
             # 获取已上传的文件路径
             business_report_path = request.form.get('business_report_path')
@@ -621,13 +621,13 @@ def product_analysis():
             # 验证所有必需的文件都已上传
             if not all([business_report_path, payment_report_path, ad_product_report_path]):
                 flash('请确保所有必需文件都已上传完成')
-                return redirect(url_for('dataset.product_analysis_page'))
+                return redirect(url_for('dataset.product_analysis'))
             
             # 验证必需文件是否存在
             required_files = [business_report_path, payment_report_path, ad_product_report_path]
             if not all([os.path.exists(path) for path in required_files]):
                 flash('必需文件不存在，请重新上传')
-                return redirect(url_for('dataset.product_analysis_page'))
+                return redirect(url_for('dataset.product_analysis'))
             
             # 验证可选的库存报告文件是否存在（如果提供了路径）
             if inventory_report_path and not os.path.exists(inventory_report_path):
@@ -676,6 +676,6 @@ def product_analysis():
             import traceback
             traceback.print_exc()
             flash(f'处理过程中发生错误: {str(e)}')
-            return redirect(url_for('dataset.product_analysis_page'))
+            return redirect(url_for('dataset.product_analysis'))
 
     return render_template('data-analysis/product_analysis.html')

@@ -36,10 +36,6 @@ class FileUploadComponent {
             return firstLine && firstLine.includes('snapshot-date');
           },
           test: (filename, ext) => ext === 'txt' && (filename.includes('inv') || filename.includes('fba'))
-        },
-        {
-          type: 'product_analysis_yumai',
-          test: (filename, ext) => ext === 'xlsx' && filename.includes('商品分析')
         }
       ],
       // 日报文件分类规则（基于文件内容）
@@ -108,13 +104,12 @@ class FileUploadComponent {
         business_report: null,
         payment_report: null,
         ad_product_report: null,
-        inventory_report: null,
-        product_analysis_yumai: null
+        inventory_report: null
       };
     }
     
     // 设置必填文件类型（库存报告为可选）
-    this.requiredFileTypes = this.options.requiredFileTypes || Object.keys(this.uploadedFiles).filter(type => type !== 'inventory_report');
+    this.requiredFileTypes = this.options.requiredFileTypes || ['business_report', 'payment_report', 'ad_product_report'];
     this.init();
   }
 
