@@ -43,9 +43,12 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     if inventory_report_path:
         print(f"[DEBUG] 库存报告路径: {inventory_report_path}")
 
-    # Generate report date from start date and current time
-    start_date = report_start_date.replace('-', '')
-    report_date = f"{start_date}-{current_time}"
+    # Generate report date from start date and end date (YYYYMMDD-MMDD format)
+    start_date_parts = report_start_date.split('-')
+    end_date_parts = report_end_date.split('-')
+    start_date_part = f"{start_date_parts[0]}{start_date_parts[1]}{start_date_parts[2]}"  # 获取完整日期，如 '20251201'
+    end_date_part = f"{end_date_parts[1]}{end_date_parts[2]}"        # 获取月份和日期，如 '1207'
+    report_date = f"{start_date_part}-{end_date_part}"
     print(f"[DEBUG] 生成报告日期: {report_date}")
 
     project_folder_path = os.path.join(source_folder, 'project', project_name, '产品数据分析')
