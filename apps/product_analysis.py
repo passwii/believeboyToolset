@@ -18,14 +18,35 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv', 'xlsx', 'txt'}
 
 def process_product_analysis(project_name, report_start_date, report_end_date, business_report_path, payment_report_path, ad_product_report_path, inventory_report_path=None):
-    current_time = datetime.datetime.now().strftime('%H-%M-%S')
+    if not project_name:
+        raise ValueError("Project name cannot be empty")
+    current_time = datetime.datetime.now().strftime('%H%M')
     source_folder = os.getcwd()
     os.chdir(source_folder)
+    
+    print(f"[DEBUG] 开始处理产品分析，项目名称: {project_name}")
+    print(f"[DEBUG] 报告开始日期: {report_start_date}, 结束日期: {report_end_date}")
+    print(f"[DEBUG] 商业报告路径: {business_report_path}")
+    print(f"[DEBUG] 付款报告路径: {payment_report_path}")
+    print(f"[DEBUG] 广告产品报告路径: {ad_product_report_path}")
+    if inventory_report_path:
+        print(f"[DEBUG] 库存报告路径: {inventory_report_path}")
+    
+    print(f"[DEBUG] 处理产品分析参数:")
+    print(f"[DEBUG] 项目名称: {project_name}")
+    print(f"[DEBUG] 报告开始日期: {report_start_date}")
+    print(f"[DEBUG] 报告结束日期: {report_end_date}")
+    print(f"[DEBUG] 商业报告路径: {business_report_path}")
+    print(f"[DEBUG] 付款报告路径: {payment_report_path}")
+    print(f"[DEBUG] 广告产品报告路径: {ad_product_report_path}")
+    print(f"[DEBUG] 当前时间: {datetime.datetime.now().strftime('%H%M')}")
+    if inventory_report_path:
+        print(f"[DEBUG] 库存报告路径: {inventory_report_path}")
 
-    # Combine dates for file naming
+    # Generate report date from start date and current time
     start_date = report_start_date.replace('-', '')
-    end_date = report_end_date.replace('-', '')[4:]  # Remove the year (YYYY) from end date
-    report_date = f"{start_date}-{end_date}"
+    report_date = f"{start_date}-{current_time}"
+    print(f"[DEBUG] 生成报告日期: {report_date}")
 
     project_folder_path = os.path.join(source_folder, 'project', project_name, '产品数据分析')
     os.makedirs(project_folder_path, exist_ok=True)
@@ -33,17 +54,32 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     tmp_folder_path = os.path.join(source_folder, 'project', project_name, 'tmp')
     os.makedirs(tmp_folder_path, exist_ok=True)
 
-    product_analysis_file_path = os.path.join(project_folder_path, f'{project_name}_product_analysis_{report_date}.xlsx')
+    product_analysis_file_path = os.path.join(project_folder_path, f'{project_name}_ProductAnalysis_{report_date}.xlsx')
 
-    # 直接读取已保存的文件
+    print(f"[DEBUG] 读取商业报告文件: {business_report_path}")
     business_report = pd.read_csv(business_report_path, encoding='utf-8')
+    print(f"[DEBUG] 商业报告数据形状: {business_report.shape}")
+    
+    print(f"[DEBUG] 读取付款报告文件: {payment_report_path}")
     payment_report = pd.read_csv(payment_report_path, encoding='utf-8', thousands=',', skiprows=7)
+    print(f"[DEBUG] 付款报告数据形状: {payment_report.shape}")
+    
+    print(f"[DEBUG] 读取广告产品报告文件: {ad_product_report_path}")
     ad_product_report = pd.read_excel(ad_product_report_path, engine='openpyxl')
-    # 直接使用内置的基础信息表文件
+    print(f"[DEBUG] 广告产品报告数据形状: {ad_product_report.shape}")
+    
+    print(f"[DEBUG] 读取基础信息表文件: apps/model_file/BLF_Basic_Info.csv")
     basic_report = pd.read_csv('apps/model_file/BLF_Basic_Info.csv', encoding='utf-8')
+    print(f"[DEBUG] 基础信息表数据形状: {basic_report.shape}")
     
     # 根据当前项目名称过滤基础信息数据
+    print(f"[DEBUG] 过滤基础信息表，项目名称: {project_name}")
+    before_filter = basic_report.shape
     basic_report = basic_report[basic_report['project_name'] == project_name]
+    after_filter = basic_report.shape
+    print(f"[DEBUG] 基础信息表过滤前形状: {before_filter}, 过滤后形状: {after_filter}")
+    if after_filter[0] == 0:
+        print(f"[ERROR] 没有找到项目名称为 '{project_name}' 的数据！")
 
     files_to_copy = [
         (business_report_path, f'{tmp_folder_path}/{project_name}_Business_Report_{report_date}_{current_time}.csv'),
@@ -405,6 +441,7 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
             if r_idx == len(df_overview) + 1:  # +1 因为包含标题行
                 cell.font = Font(bold=True)
 
+    print(f"[DEBUG] 保存产品分析报告到路径: {product_analysis_file_path}")
     # 保存项目概览工作簿到指定路径
     wb.save(product_analysis_file_path)
 
@@ -598,8 +635,8 @@ def upload_file():
         traceback.print_exc()
         return {'success': False, 'error': str(e)}, 500
 
-@product_analysis_bp.route('/product-analysis', methods=['GET', 'POST'])
-def product_analysis():
+@product_analysis_bp.route('/submit', methods=['POST'])
+def submit_product_analysis():
     if request.method == 'POST':
         try:
             project_name = request.form.get('project_name')
@@ -636,6 +673,9 @@ def product_analysis():
             
             print(f"使用已上传的文件: Business={business_report_path}, Payment={payment_report_path}, AD={ad_product_report_path}")
             
+            print(f"[DEBUG] 调用处理函数，参数: project_name={project_name}, start_date={report_start_date}, end_date={report_end_date}")
+            print(f"[DEBUG] 文件路径: Business={business_report_path}, Payment={payment_report_path}, AD={ad_product_report_path}, Inventory={inventory_report_path}")
+            
             # 使用已上传的文件路径进行后续处理
             file_content, filename = process_product_analysis(
                 project_name,
@@ -646,6 +686,7 @@ def product_analysis():
                 ad_product_report_path,
                 inventory_report_path
             )
+            print(f"[DEBUG] 处理函数执行完成，生成文件名: {filename}")
             
             # 记录生成产品分析报告成功日志
             LogService.log(

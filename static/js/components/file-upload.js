@@ -509,17 +509,18 @@ class FileUploadComponent {
       });
       
       if (response.ok) {
-        const blob = await response.blob();
-        // 处理文件下载响应（如果需要）
-        // 例如：触发文件下载或处理响应数据
-        this.uploadedFiles[fileType] = URL.createObjectURL(blob);
-        const pathInput = DOM.find(`#${fileType}_path`);
-        if (pathInput) {
-          pathInput.value = URL.createObjectURL(blob);
+        const result = await response.json();
+        if (result.success) {
+            this.uploadedFiles[fileType] = result.file_path;
+            const pathInput = DOM.find(`#${fileType}_path`);
+            if (pathInput) {
+                pathInput.value = result.file_path;
+            }
+            this.updateFileItemUI(file, fileType, 'uploaded');
+            notify.success(`文件 "${file.name}" 上传成功`);
+        } else {
+            throw new Error(result.error || '上传成功但服务器返回错误');
         }
-
-        this.updateFileItemUI(file, fileType, 'uploaded');
-        notify.success(`文件 "${file.name}" 上传成功`);
       } else {
         let errorMessage;
         const contentType = response.headers.get('content-type');
