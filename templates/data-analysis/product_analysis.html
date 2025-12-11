@@ -19,13 +19,11 @@
             <button type="button" id="last-week-btn">上周</button>
         </div>
 
-        <!-- 简化的拖拽文件上传区域 -->
-        <div class="drop-area" id="drop-area">
-            <h3>拖拽文件到此处</h3>
-            <p>或点击选择文件</p>
+        <!-- 简化的文件选择器 -->
+        <div class="file-upload-container">
+            <input type="file" id="file-input" name="files" multiple accept=".csv,.xlsx,.txt" class="file-input">
             <p class="file-types">支持文件类型：.csv, .xlsx, .txt</p>
             <p class="upload-hint">可以分次上传，每次上传1个或多个文件</p>
-            <input type="file" id="file-input" name="files" multiple accept=".csv,.xlsx,.txt" style="display: none;">
         </div>
 
         <!-- 文件列表显示 -->

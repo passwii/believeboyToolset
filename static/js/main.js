@@ -652,7 +652,7 @@ class Application {
       // 初始化文件上传组件
       if (typeof FileUploadComponent !== 'undefined') {
         this.components.fileUpload = new FileUploadComponent({
-          containerSelector: '#drop-area',
+          containerSelector: '.file-upload-container',
           inputSelector: '#file-input',
           listSelector: '#file-list',
           submitSelector: '#submit-btn',

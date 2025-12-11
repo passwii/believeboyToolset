@@ -136,29 +136,7 @@ class FileUploadComponent {
    * 设置事件监听器
    */
   setupEventListeners() {
-    if (!this.dropArea || !this.fileInput) return;
-
-    // 点击拖拽区域时触发文件选择
-    this.dropArea.addEventListener('click', () => {
-      this.fileInput.click();
-    });
-
-    // 阻止默认的拖拽行为
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      this.dropArea.addEventListener(eventName, this.preventDefaults, false);
-    });
-
-    // 拖拽进入和悬停时的样式
-    ['dragenter', 'dragover'].forEach(eventName => {
-      this.dropArea.addEventListener(eventName, this.highlight, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-      this.dropArea.addEventListener(eventName, this.unhighlight, false);
-    });
-
-    // 处理文件拖拽放下
-    this.dropArea.addEventListener('drop', this.handleDrop.bind(this), false);
+    if (!this.fileInput) return;
 
     // 处理文件选择
     this.fileInput.addEventListener('change', this.handleFileSelect.bind(this));
