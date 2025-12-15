@@ -150,14 +150,14 @@ def process_yumai_data(yumai_report_path, inventory_report_path=None):
         summary_df = pd.DataFrame([summary_data])
         inv_df = pd.concat([inv_df, summary_df], ignore_index=True)
 
-        bold_font = Font(bold=True)
         for r_idx, row in enumerate(dataframe_to_rows(inv_df, index=False, header=True), 1):
             for c_idx, value in enumerate(row, 1):
                 cell = ws_inv.cell(row=r_idx, column=c_idx, value=value)
                 cell.alignment = Alignment(horizontal="center", vertical="center")
                 cell.border = border
-                if r_idx == 1 or r_idx == len(inv_df) + 1:
-                    cell.font = bold_font
+                if r_idx == 1:
+                    cell.font = copy(header_font)
+                    cell.fill = copy(header_fill)
 
         for col in ws_inv.columns:
             max_length = 0

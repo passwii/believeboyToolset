@@ -595,40 +595,8 @@ class FileUploadComponent {
     if (status === 'uploaded') {
       if (!removeBtn) {
         removeBtn = DOM.create('button', {
-          className: 'remove-file fixed-remove-btn'
+          className: 'remove-file'
         }, '×');
-        
-        // 设置固定样式
-        removeBtn.style.cssText = `
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          background: var(--error-color);
-          color: white;
-          border: none;
-          border-radius: 50%;
-          width: 24px;
-          height: 24px;
-          font-size: 14px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
-          z-index: 10;
-        `;
-        
-        // 添加悬停效果
-        removeBtn.addEventListener('mouseenter', () => {
-          removeBtn.style.background = '#cc0055';
-          removeBtn.style.transform = 'translateY(-50%) scale(1.1)';
-        });
-        
-        removeBtn.addEventListener('mouseleave', () => {
-          removeBtn.style.background = 'var(--error-color)';
-          removeBtn.style.transform = 'translateY(-50%) scale(1)';
-        });
         
         removeBtn.addEventListener('click', () => this.removeFile(fileType));
         fileItem.appendChild(removeBtn);
