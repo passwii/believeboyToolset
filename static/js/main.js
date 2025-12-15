@@ -679,28 +679,48 @@ class Application {
    */
   initializeYumaiAnalysis() {
     try {
-      // 初始化文件上传组件
       if (typeof FileUploadComponent !== 'undefined') {
         this.components.fileUpload = new FileUploadComponent({
-          containerSelector: '#upload-area',
+          containerSelector: '.file-upload-container',
           inputSelector: '#file-input',
-          listSelector: '#selected-file',
+          listSelector: '#file-list',
           submitSelector: '#submit-btn',
-          isYumaiAnalysis: true,
-          uploadEndpoint: '/yumai-analysis'
+          uploadEndpoint: '/yumai-analysis/upload-file',
+          allowedTypes: ['xlsx', 'txt'],
+          isDailyReport: false,
+          
+          // Custom configuration for Yumai Analysis
+          uploadedFiles: {
+            yumai_report: null,
+            inventory_report: null,
+          },
+          requiredFileTypes: ['yumai_report'],
+          rules: [
+            {
+              type: 'yumai_report',
+              test: (filename, ext) => ext === 'xlsx'
+            },
+            {
+              type: 'inventory_report',
+              test: (filename, ext) => ext === 'txt' && (filename.includes('inv') || filename.includes('fba'))
+            }
+          ],
+          fileNames: {
+            'yumai_report': '优麦云报表',
+            'inventory_report': 'FBA库存',
+          },
+          fileTypeHints: {
+            'yumai_report': '.xlsx格式',
+            'inventory_report': '.txt格式, 可选',
+          }
         });
       }
 
-      // 初始化上周按钮
       this.initializeLastWeekButton();
-
-      // 初始化昨天按钮
       this.initializeYesterdayButton();
-
-      // 设置表单提交处理
       this.setupFormSubmission('yumai-analysis-form', '商品分析（优麦云）');
 
-      console.log('Yumai analysis page initialized');
+      console.log('Yumai analysis page initialized with custom multi-file support');
     } catch (error) {
       console.error('Failed to initialize yumai analysis:', error);
     }
