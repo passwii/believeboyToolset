@@ -1091,20 +1091,24 @@ class Application {
     const form = DOM.find(`#${formId}`);
     if (!form) return;
 
+    // Prevent multiple listeners by attaching a flag
+    if (form.dataset.submissionHandlerAttached) {
+      return;
+    }
+    form.dataset.submissionHandlerAttached = 'true';
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const formData = new FormData(form);
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.innerHTML;
 
-      // 显示加载指示器
-      const formContainer = form.parentElement;
-      const originalContent = formContainer.innerHTML;
-      formContainer.innerHTML = `
-        <div class="loading-indicator">
-          <i class="fas fa-spinner fa-spin"></i>
-          <span>正在生成${reportType}，请稍候...</span>
-        </div>
-      `;
+      // Show loading state on the button
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 正在生成${reportType}...`;
+      }
 
       try {
         const response = await fetch(form.action, {
@@ -1114,31 +1118,24 @@ class Application {
 
         if (response.ok) {
           const blob = await response.blob();
-
-          // 从响应头获取文件名
           const contentDisposition = response.headers.get('Content-Disposition');
           let filename = `${reportType.toLowerCase()}_${new Date().toISOString().split('T')[0]}.xlsx`;
 
           if (contentDisposition) {
-            // 尝试从Content-Disposition头中提取文件名
             const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
             if (filenameMatch && filenameMatch[1]) {
               filename = filenameMatch[1].replace(/['"]/g, '');
             }
-
-            // 处理UTF-8编码的文件名 (filename*=UTF-8''...)
             const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/);
             if (utf8Match && utf8Match[1]) {
               filename = decodeURIComponent(utf8Match[1]);
             }
           }
-
-          console.log('下载文件名:', filename);
-          // Assuming `downloadFile` is a global utility
+          
           if (window.downloadFile) {
-            await window.downloadFile(blob, filename);
+             await window.downloadFile(blob, filename);
           } else {
-             const url = window.URL.createObjectURL(blob);
+            const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
@@ -1150,25 +1147,32 @@ class Application {
           }
 
           notify.success(`${reportType}生成成功`);
+
+          // On success, reset the component state for the next use.
+          if (this.components.fileUpload && typeof this.components.fileUpload.reset === 'function') {
+            this.components.fileUpload.reset();
+          }
+
         } else {
-          throw new Error(`生成${reportType}失败`);
+          let errorMsg = `生成${reportType}失败`;
+          try {
+            const errorData = await response.json();
+            if(errorData && errorData.error) { errorMsg = errorData.error; }
+          } catch(err) {
+            errorMsg = await response.text() || response.statusText;
+          }
+          throw new Error(errorMsg);
         }
       } catch (error) {
         console.error('Error:', error);
-        notify.error(`生成${reportType}失败，请重试`);
+        notify.error(error.message || `生成${reportType}时发生未知错误`);
       } finally {
-        // 恢复表单
-        formContainer.innerHTML = originalContent;
-
-        // 重新初始化页面
-        if (formId === 'daily-report-form') {
-          this.initializeDailyReport();
-        } else if (formId === 'monthly-report-form') {
-          this.initializeMonthlyReport();
-        } else if (formId === 'analysis-form') {
-          this.initializeProductAnalysis();
-        } else if (formId === 'yumai-analysis-form') {
-          this.initializeYumaiAnalysis();
+        // Restore button state. The reset() call will handle disabling it.
+        if (submitBtn) {
+          if (!submitBtn.disabled) {
+             submitBtn.disabled = false;
+          }
+          submitBtn.innerHTML = originalBtnText;
         }
       }
     });
