@@ -702,6 +702,11 @@ class Application {
             },
             {
               type: 'inventory_report',
+              contentTest: async (file, content) => {
+                if (!file.name.toLowerCase().endsWith('.txt')) return false;
+                const firstLine = content.split('\n')[0];
+                return firstLine && firstLine.includes('snapshot-date');
+              },
               test: (filename, ext) => ext === 'txt' && (filename.includes('inv') || filename.includes('fba'))
             }
           ],
@@ -711,7 +716,7 @@ class Application {
           },
           fileTypeHints: {
             'yumai_report': '.xlsx格式',
-            'inventory_report': '.txt格式, 可选',
+            'inventory_report': '.txt格式, 内容包含"snapshot-date"',
           }
         });
       }
@@ -1112,7 +1117,7 @@ class Application {
 
           // 从响应头获取文件名
           const contentDisposition = response.headers.get('Content-Disposition');
-          let filename = `${reportType.toLowerCase()}_${StringUtils.formatDate(new Date(), 'YYYY-MM-DD')}.xlsx`;
+          let filename = `${reportType.toLowerCase()}_${new Date().toISOString().split('T')[0]}.xlsx`;
 
           if (contentDisposition) {
             // 尝试从Content-Disposition头中提取文件名
@@ -1129,7 +1134,20 @@ class Application {
           }
 
           console.log('下载文件名:', filename);
-          await downloadFile(blob, filename);
+          // Assuming `downloadFile` is a global utility
+          if (window.downloadFile) {
+            await window.downloadFile(blob, filename);
+          } else {
+             const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          }
 
           notify.success(`${reportType}生成成功`);
         } else {
