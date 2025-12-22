@@ -46,7 +46,14 @@ def reset_style(filename):
                     ws1.cell(r, c).style = sty2
                     ws1.column_dimensions[get_column_letter(
                         c)].width = width
+        #冻结首行
+        ws1.freeze_panes = ws1['A2']
+    
+    # 
     wb['报表总览'].sheet_properties.tabColor = "1072BA"
+    wb['交易一览'].sheet_properties.tabColor = "CCCCCC" # 深灰色
+    
+    
     return wb.save(filename)
 
 def allowed_file(filename):
@@ -64,7 +71,7 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     source_folder = os.getcwd()
     os.chdir(source_folder)
 
-    report_name = f'{project_name} 美国站 {report_date}'
+    report_name = f'{project_name}_美国站_{report_date}'
 
     project_folder_path = os.path.join(source_folder, 'project', project_name, '月报')
     os.makedirs(project_folder_path, exist_ok=True)
@@ -124,6 +131,8 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     Subscription = Service_Fee.loc[Service_Fee['description'].isin(['Subscription'])]
     FBA_Inbound = Service_Fee.loc[Service_Fee['description'].isin(['FBA Inbound Placement Service Fee'])]
     AGL_Selection = Service_Fee.loc[Service_Fee['description'].isin(['FBA International Freight', 'FBA International Freight Duties and Taxes Charge'])]
+    # AmazonFees 优惠券 + 一般服务费（不含广告）
+    Amazon_Fees_and_Service_Fee = PRR.loc[(PRR['type'].isin(['Amazon Fees', 'Service Fee'])) & (PRR['description'] != 'Cost of Advertising')]
     
     '''计算 Income (与PDF完全一致) '''
     # 重新测量费的计算口径需要未来确认
@@ -183,6 +192,11 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     # 信用卡扣费
     AMZ_Card = round(Debt['total'].sum(), 2)
 
+    # 处理子项求和筛选展示
+    
+    
+    
+    # 汇总数据
     pt1 = skuGroup.sort_values(by='quantity', ascending=False, inplace=False)
     pt2 = refund_skuGroup.sort_values(by='quantity', ascending=False, inplace=False)
     
@@ -190,10 +204,12 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     'Income':['Product sales (non-FBA)', 'Product sale refunds (non-FBA) ', 'FBA product sales', 'FBA product sale refunds', 'FBA inventory credit', 'FBA liquidation proceeds', 'Shipping credits', 'Shipping credit refunds', 'Gift wrap credits', 'Gift wrap credit refunds', 'Promotional rebates', 'Promotional rebate refunds', 'Chargebacks', 'Total_Income'],
     '收入':['销售额（非FBA）', '销售额退款（非FBA）', '销售额（FBA）', '销售额退款（FBA）', 'FBA库存赔偿（FBA）', 'FBA清算收入', '运费收入', '运费退款', '礼品包装收入', '礼品包装退款', '促销折扣', '促销折扣退款', '拒付退款', '合计销售额'],
     'In金额（USD）':[Product_sales_non_FBA, Product_sale_refunds_non_FBA, FBA_product_sales, FBA_product_sale_refunds, FBA_inventory_credit, FBA_liquidation_proceeds, Shipping_credits, Shipping_credit_refunds, Gift_wrap_credits, Gift_wrap_credits_refunds, Promotional_rebates, Promotional_rebate_refunds, Chargebacks, Income_total],
+    'In源表':['FBM 订单', 'FBM 退款', 'FBA 订单', 'FBA 退款', 'FBA库存赔偿（FBA）', '清算费用', '所有订单', '所有退款', '所有订单', '所有退款', '所有订单', '所有退款', '拒付退款', ''],
     
     'Expense':['Seller-fulfilled selling fees', 'FBA selling fees', 'Selling fee refunds', 'FBA transaction fees', 'FBA transaction fee refunds', 'Other transaction fees', 'Other transaction fee refunds', 'FBA inventory and inbound services fees', 'Service fees', 'Adjustments', 'Cost of Advertising', 'Liquidations fees', 'Amazon Shipping Charge Adjustments','Total_Expense'],
     '支出':['卖家自配送销售佣金', 'FBA销售佣金', '销售佣金退款', 'FBA派送费用', 'FBA派送费退款', '其他交易费用', '其他交易费用退款', 'FBA仓储及入库服务费', '服务费', '赔偿', '广告费用', '清算费用', '亚马逊运费调整','合计费用'],
     'Ex金额（USD）':[Seller_fulfilled_selling_fees, FBA_selling_fees, Selling_fee_refunds, FBA_transaction_fees, FBA_transaction_fee_refunds, Other_transaction_fees, Other_transaction_fee_refunds, FBA_inventory_and_inbound_services_fees, Service_fees, Adjustments, Cost_of_Advertising, Liquidations_fees, Amazon_Shipping_Charge_Adjustments, Expense_total],
+    'Ex源表':['FBM 订单', 'FBA 订单', '所有退款', 'FBA 订单', 'FBA 退款', '', '', 'FBA仓储及入库服务费', '服务费', '其他赔偿', '广告费', '清算费用', '', ''], 
     })  
     
 
@@ -207,7 +223,20 @@ def process_monthly_report(project_name, report_date, payment_range_report):
             '报表总览': pt3,
             '销售SKU明细':pt1,
             '退款SKU明细':pt2,
-            '交易一览': PRR
+            '交易一览': PRR,
+            '所有订单': Order,
+            '所有退款': Refund,
+            'FBM 订单':FBM_Order,
+            'FBM 退款':FBM_Refund,
+            'FBA 订单':FBA_Order,
+            'FBA 退款':FBA_Refund,
+            'FBA库存赔偿':Adjustment_Income,
+            '其他赔偿':Adjustment_Expense,
+            '清算费用':Liquidation, # Liquidation['product sales']
+            '拒付退款':Chargeback_Refund,
+            'FBA仓储及入库服务费':FBA_Inventory_Fee,
+            '服务费（不含广告）':Amazon_Fees_and_Service_Fee,
+            '广告费':Advertising,
         }
         
         # 使用循环一次性写入所有sheet
@@ -221,7 +250,7 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     with open(project_monthly_file_path, 'rb') as f:
         file_content = f.read()
 
-    return file_content, f'Monthly Report{report_name}.xlsx'
+    return file_content, f'月度财务报表_{report_name}.xlsx'
 
 @monthly_report_bp.route('/monthly-report', methods=['GET', 'POST'])
 def monthly_report():
