@@ -641,7 +641,51 @@ class Application {
    * 初始化月报页面
    */
   initializeMonthlyReport() {
+    // 设置表单提交处理
     this.setupFormSubmission('monthly-report-form', '月报');
+    
+    // 初始化月报特定的文件上传组件
+    this.initializeMonthlyReportFileUpload();
+  }
+
+  /**
+   * 初始化月报文件上传组件
+   */
+  initializeMonthlyReportFileUpload() {
+    try {
+      // 检查必要的DOM元素是否存在
+      const dropArea = DOM.find('#drop-area');
+      const fileInput = DOM.find('#file-input');
+      const fileList = DOM.find('#file-list');
+      const submitBtn = DOM.find('#submit-btn');
+
+      console.log('月报页面DOM元素检查:', {
+        dropArea: !!dropArea,
+        fileInput: !!fileInput,
+        fileList: !!fileList,
+        submitBtn: !!submitBtn
+      });
+
+      if (dropArea && fileInput && fileList && submitBtn) {
+        // 检查FileUploadComponent是否可用
+        if (typeof FileUploadComponent !== 'undefined') {
+          // 初始化文件上传组件
+          this.components.fileUpload = new FileUploadComponent({
+            containerSelector: '#drop-area',
+            inputSelector: '#file-input',
+            listSelector: '#file-list',
+            submitSelector: '#submit-btn',
+            uploadEndpoint: '/dataset/monthly-report/upload-file',
+            allowedTypes: ['csv'],
+            isDailyReport: false
+          });
+
+          console.log('月报文件上传组件已初始化');
+        }
+      }
+    } catch (error) {
+      console.error('月报文件上传组件初始化失败:', error);
+    }
   }
 
   /**
@@ -1153,6 +1197,18 @@ class Application {
             this.components.fileUpload.reset();
           }
 
+          // 检查响应头中的重置标志
+          const shouldResetForm = response.headers.get('X-Form-Reset');
+          if (shouldResetForm === 'true') {
+            // 重置表单字段
+            this.resetFormFields(form);
+            
+            // 如果有月报表单处理器，也调用其重置方法
+            if (window.monthlyReportFormHandler && typeof window.monthlyReportFormHandler.resetForm === 'function') {
+              window.monthlyReportFormHandler.resetForm();
+            }
+          }
+
         } else {
           let errorMsg = `生成${reportType}失败`;
           try {
@@ -1176,6 +1232,55 @@ class Application {
         }
       }
     });
+
+    // 重置表单字段
+    this.resetFormFields(form);
+  }
+
+  /**
+   * 重置表单字段
+   */
+  resetFormFields(form) {
+    if (!form) return;
+
+    try {
+      // 重置项目名称选择框
+      const projectNameSelect = form.querySelector('#project_name');
+      if (projectNameSelect) {
+        projectNameSelect.value = '';
+      }
+
+      // 重置报表日期选择框
+      const reportDateSelect = form.querySelector('#report_date');
+      if (reportDateSelect) {
+        reportDateSelect.value = '';
+      }
+
+      // 重置文件输入框
+      const fileInput = form.querySelector('input[type="file"]');
+      if (fileInput) {
+        // 清除文件选择
+        fileInput.value = '';
+        
+        // 如果有文件列表，清空文件列表
+        const fileList = form.querySelector('#file-list');
+        if (fileList) {
+          fileList.innerHTML = '';
+        }
+      }
+
+      // 清除任何错误消息
+      const errorMessages = form.querySelectorAll('.flash-error, .error-message');
+      errorMessages.forEach(error => {
+        if (error.parentNode) {
+          error.parentNode.removeChild(error);
+        }
+      });
+
+      console.log('表单字段已重置');
+    } catch (error) {
+      console.error('重置表单字段时出错:', error);
+    }
   }
 
   /**
