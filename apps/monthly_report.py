@@ -100,6 +100,9 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     # DataFrame - Type 一级分类
     Order = PRR.loc[PRR['type'].isin(['Order'])]
     Refund = PRR.loc[PRR['type'].isin(['Refund'])]
+    #空白 Type 分类
+    Blank = PRR.loc[PRR['type'] == 0]
+    
     Chargeback_Refund = PRR.loc[PRR['type'].isin(['Chargeback Refund'])]
     Liquidation = PRR.loc[PRR['type'].isin(['Liquidations'])]
     Adjustment = PRR.loc[PRR['type'].isin(['Adjustment'])]
@@ -123,23 +126,36 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     FBM_Refund = Refund.loc[Refund['fulfillment'].isin(['Seller'])]
     
     #Income赔偿
-    Adjustment_Income = Adjustment.loc[Adjustment['description'].isin(['FBA Inventory Reimbursement - Customer Return','FBA Inventory Reimbursement - Damaged:Warehouse'])]
+    Adjustment_Income = Adjustment.loc[Adjustment['description'].isin([
+        'FBA Inventory Reimbursement - Customer Return',
+        'FBA Inventory Reimbursement - Damaged:Warehouse',
+        'FBA Inventory Reimbursement - Lost:Warehouse',
+        'FBA Inventory Reimbursement - Defective:Warehouse',
+        'FBA Inventory Reimbursement - Expired:Warehouse'
+        ])]
     #Expense赔偿
     Adjustment_Expense = Adjustment.loc[Adjustment['description'].isin(['FBA Inventory Reimbursement - General Adjustment'])]
     
     Advertising = Service_Fee.loc[Service_Fee['description'].isin(['Cost of Advertising'])]
     Subscription = Service_Fee.loc[Service_Fee['description'].isin(['Subscription'])]
     FBA_Inbound = Service_Fee.loc[Service_Fee['description'].isin(['FBA Inbound Placement Service Fee'])]
-    AGL_Selection = Service_Fee.loc[Service_Fee['description'].isin(['FBA International Freight', 'FBA International Freight Duties and Taxes Charge'])]
+    AGL_Selection = Service_Fee.loc[Service_Fee['description'].isin([
+        'FBA International Freight', 
+        'FBA International Freight Duties and Taxes Charge'
+        ])]
     # AmazonFees 优惠券 + 一般服务费（不含广告）
-    Amazon_Fees_and_Service_Fee = PRR.loc[(PRR['type'].isin(['Amazon Fees', 'Service Fee'])) & (PRR['description'] != 'Cost of Advertising')]
+    Amazon_Fees_and_Service_Fee_without_AD = PRR.loc[(PRR['type'].isin(['Amazon Fees', 'Service Fee'])) & (PRR['description'] != 'Cost of Advertising') & (PRR['description'] != 'Refund for Advertiser')]
     
-    '''计算 Income (与PDF完全一致) '''
+    
+    Service_Refund_for_Advertiser = Service_Fee.loc[Service_Fee['description'].isin(['Refund for Advertiser'])]
+    # 空白, Description 二级分类包含Price Discount开头的项
+    Price_Discount = Blank.loc[Blank['description'].str.startswith('Price Discount')]
+    
     # 重新测量费的计算口径需要未来确认
     Product_sales_non_FBA = round(FBM_Order['product sales'].sum(), 2)
     Product_sale_refunds_non_FBA = round(FBM_Refund['product sales'].sum(), 2)
     FBA_product_sales = round(FBA_Order['product sales'].sum(), 2)
-    FBA_product_sale_refunds = round(FBA_Refund['product sales'].sum(), 2)
+    FBA_product_sale_refunds = round(FBA_Refund['product sales'].sum(), 2) + round(FBA_Refund['other'].sum(), 2) # FBA 退款的其他费用也计入退款
     Fee_Adjustment_fee = round(Fee_Adjustment.loc[Fee_Adjustment['description'].isin(['FBA Weight/Dimension Change'])]['total'].sum(), 2)
     FBA_inventory_credit = round(Adjustment_Income['total'].sum(), 2) + Fee_Adjustment_fee
     FBA_liquidation_proceeds = round(Liquidation['product sales'].sum(), 2)
@@ -149,7 +165,9 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     Gift_wrap_credits_refunds = round(Refund['gift wrap credits'].sum(), 2)
     Promotional_rebates = round(Order['promotional rebates'].sum(), 2)
     Promotional_rebate_refunds = round(Refund['promotional rebates'].sum(), 2)
+    A_to_z_Guarantee_claims = 0
     Chargebacks = round(Chargeback_Refund['total'].sum(), 2)
+    SAFE_T_reimbursement = 0
 
     Income_total = round(Product_sales_non_FBA + Product_sale_refunds_non_FBA + FBA_product_sales + FBA_product_sale_refunds + FBA_inventory_credit + FBA_liquidation_proceeds + Shipping_credits + Shipping_credit_refunds + Gift_wrap_credits + Gift_wrap_credits_refunds + Promotional_rebates + Promotional_rebate_refunds + Chargebacks, 2)
     
@@ -162,20 +180,30 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     Other_transaction_fees = 0
     Other_transaction_fee_refunds = 0
     FBA_inventory_and_inbound_services_fees = round(FBA_Inventory_Fee['total'].sum(), 2)
+    Shipping_label_purchases = 0
+    Shipping_label_refunds = 0
+    Carrier_shipping_label_adjustments = 0
+    # 服务费 = 优惠券 + 一般服务费（不含广告）+ 闪电促销费 + Price Discount
     Coupon_fee = round(Amazon_Fees['total'].sum(), 2)
     Lightning_Deal_Fee = round(LD['total'].sum(), 2)
+    Service_Price_Discount = round(Price_Discount['total'].sum(), 2)
     # 服务费去掉广告费用的综合 + 优惠券就是整体的PDF服务费计算
-    Service_fees_without_ADs = round(Service_Fee.loc[~Service_Fee['description'].isin(['Cost of Advertising'])]['total'].sum(), 2)
-    Service_fees = Coupon_fee + Service_fees_without_ADs + Lightning_Deal_Fee
+    Service_fees_without_ADs = round(Service_Fee.loc[~Service_Fee['description'].isin(['Cost of Advertising', 'Refund for Advertiser'])]['total'].sum(), 2)
+    Service_fees = Coupon_fee + Service_fees_without_ADs + Lightning_Deal_Fee + Service_Price_Discount
+    
+    
     # 退款管理费和佣金退款合并计算在PDF中是和佣金退款合并的，所以是0
     Refund_administration_fees = 0
     Adjustments = round(Adjustment_Expense['total'].sum(), 2)
     Cost_of_Advertising = round(Advertising['total'].sum(), 2)
+    Refund_for_Advertiser = round(Service_Refund_for_Advertiser['total'].sum(), 2)
     # Liquidation 清算费用
     Liquidations_fees = round(Liquidation['other transaction fees'].sum(), 2)
+    Receivables = 0
+    Deductions = 0
     Amazon_Shipping_Charge_Adjustments = 0
 
-    Expense_total = round(Seller_fulfilled_selling_fees + FBA_selling_fees + Selling_fee_refunds + FBA_transaction_fees + FBA_transaction_fee_refunds + Other_transaction_fees + Other_transaction_fee_refunds + FBA_inventory_and_inbound_services_fees + Service_fees + Adjustments + Cost_of_Advertising + Liquidations_fees + Amazon_Shipping_Charge_Adjustments, 2)
+    Expense_total = round(Seller_fulfilled_selling_fees + FBA_selling_fees + Selling_fee_refunds + FBA_transaction_fees + FBA_transaction_fee_refunds + Other_transaction_fees + Other_transaction_fee_refunds + FBA_inventory_and_inbound_services_fees + Shipping_label_purchases + Shipping_label_refunds + Carrier_shipping_label_adjustments + Service_fees + Refund_administration_fees + Adjustments + Cost_of_Advertising + Refund_for_Advertiser + Liquidations_fees + Receivables + Deductions + Amazon_Shipping_Charge_Adjustments, 2)
 
     # 销售SKU明细
     skuGroup = Order.groupby(['sku'], as_index=False).agg({'quantity': 'sum'})
@@ -201,15 +229,228 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     pt2 = refund_skuGroup.sort_values(by='quantity', ascending=False, inplace=False)
     
     pt3 = pd.DataFrame({
-    'Income':['Product sales (non-FBA)', 'Product sale refunds (non-FBA) ', 'FBA product sales', 'FBA product sale refunds', 'FBA inventory credit', 'FBA liquidation proceeds', 'Shipping credits', 'Shipping credit refunds', 'Gift wrap credits', 'Gift wrap credit refunds', 'Promotional rebates', 'Promotional rebate refunds', 'Chargebacks', 'Total_Income'],
-    '收入':['销售额（非FBA）', '销售额退款（非FBA）', '销售额（FBA）', '销售额退款（FBA）', 'FBA库存赔偿（FBA）', 'FBA清算收入', '运费收入', '运费退款', '礼品包装收入', '礼品包装退款', '促销折扣', '促销折扣退款', '拒付退款', '合计销售额'],
-    'In金额（USD）':[Product_sales_non_FBA, Product_sale_refunds_non_FBA, FBA_product_sales, FBA_product_sale_refunds, FBA_inventory_credit, FBA_liquidation_proceeds, Shipping_credits, Shipping_credit_refunds, Gift_wrap_credits, Gift_wrap_credits_refunds, Promotional_rebates, Promotional_rebate_refunds, Chargebacks, Income_total],
-    'In源表':['FBM 订单', 'FBM 退款', 'FBA 订单', 'FBA 退款', 'FBA库存赔偿（FBA）', '清算费用', '所有订单', '所有退款', '所有订单', '所有退款', '所有订单', '所有退款', '拒付退款', ''],
+    'Income':[
+        'Product sales (non-FBA)',
+        'Product sale refunds (non-FBA) ',
+        'FBA product sales',
+        'FBA product sale refunds',
+        'FBA inventory credit',
+        'FBA liquidation proceeds',
+        'Shipping credits',
+        'Shipping credit refunds',
+        'Gift wrap credits',
+        'Gift wrap credit refunds',
+        'Promotional rebates',
+        'Promotional rebate refunds',
+        'A-to-z Guarantee claims',
+        'Chargebacks',
+        'SAFE-T reimbursement',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        'Total_Income'],
     
-    'Expense':['Seller-fulfilled selling fees', 'FBA selling fees', 'Selling fee refunds', 'FBA transaction fees', 'FBA transaction fee refunds', 'Other transaction fees', 'Other transaction fee refunds', 'FBA inventory and inbound services fees', 'Service fees', 'Adjustments', 'Cost of Advertising', 'Liquidations fees', 'Amazon Shipping Charge Adjustments','Total_Expense'],
-    '支出':['卖家自配送销售佣金', 'FBA销售佣金', '销售佣金退款', 'FBA派送费用', 'FBA派送费退款', '其他交易费用', '其他交易费用退款', 'FBA仓储及入库服务费', '服务费', '赔偿', '广告费用', '清算费用', '亚马逊运费调整','合计费用'],
-    'Ex金额（USD）':[Seller_fulfilled_selling_fees, FBA_selling_fees, Selling_fee_refunds, FBA_transaction_fees, FBA_transaction_fee_refunds, Other_transaction_fees, Other_transaction_fee_refunds, FBA_inventory_and_inbound_services_fees, Service_fees, Adjustments, Cost_of_Advertising, Liquidations_fees, Amazon_Shipping_Charge_Adjustments, Expense_total],
-    'Ex源表':['FBM 订单', 'FBA 订单', '所有退款', 'FBA 订单', 'FBA 退款', '', '', 'FBA仓储及入库服务费', '服务费', '其他赔偿', '广告费', '清算费用', '', ''], 
+    '收入':[
+        '销售额（非FBA）',
+        '销售额退款（非FBA）', 
+        '销售额（FBA）', 
+        '销售额退款（FBA）', 
+        'FBA库存赔偿（FBA）', 
+        'FBA清算收入', 
+        '运费收入', 
+        '运费退款', 
+        '礼品包装收入', 
+        '礼品包装退款', 
+        '促销折扣', 
+        '促销折扣退款', 
+        'A-to-z保障索赔',
+        '拒付退款', 
+        'SAFE-T赔偿',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '合计销售额'],
+    
+    'In金额（USD）':[
+        Product_sales_non_FBA, 
+        Product_sale_refunds_non_FBA, 
+        FBA_product_sales, 
+        FBA_product_sale_refunds, 
+        FBA_inventory_credit, 
+        FBA_liquidation_proceeds, 
+        Shipping_credits, 
+        Shipping_credit_refunds, 
+        Gift_wrap_credits, 
+        Gift_wrap_credits_refunds, 
+        Promotional_rebates, 
+        Promotional_rebate_refunds, 
+        A_to_z_Guarantee_claims,
+        Chargebacks, 
+        SAFE_T_reimbursement,
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        Income_total
+        ],
+    
+    'In源表':[
+        'FBM 订单-订单金额', 
+        'FBM 退款-订单金额', 
+        'FBA 订单-订单金额', 
+        'FBA 退款-订单金额', 
+        'FBA库存赔偿-订单金额+其他金额', 
+        '清算费用-订单金额', 
+        '所有订单-运费金额', 
+        '所有退款-运费金额', 
+        '所有订单-礼品包装金额', 
+        '所有退款-礼品包装金额', 
+        '所有订单-促销折扣金额', 
+        '所有退款-促销折扣金额', 
+        '', 
+        '拒付退款-总计',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        ''
+        ],
+    
+    '':[
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        ''
+        ],
+
+    'Expense':[
+        'Seller fulfilled selling fees', 
+        'FBA selling fees', 
+        'Selling fee refunds', 
+        'FBA transaction fees', 
+        'FBA transaction fee refunds', 
+        'Other transaction fees', 
+        'Other transaction fee refunds', 
+        'FBA inventory and inbound services fees', 
+        'Shipping label purchases', 
+        'Shipping label refunds', 
+        'Carrier shipping label adjustments', 
+        'Service fees', 
+        'Refund administration fees', 
+        'Adjustments',
+        'Cost of Advertising', 
+        'Refund for Advertiser',
+        'Liquidations fees',
+        'Receivables',
+        'Deductions',
+        'Amazon Shipping Charge Adjustments',
+        '',
+        'Total_Expense'
+        ],
+    
+    '支出':[
+        '卖家自配送销售佣金', 
+        'FBA销售佣金',
+        '销售佣金退款',
+        'FBA派送费', 
+        'FBA派送费退款',
+        '其他交易费用',
+        '其他交易费用退款',
+        'FBA库存和入库服务费',
+        '购买配送标签',
+        '配送标签退款',
+        '承运商配送标签调整',
+        '服务费',
+        '退款管理费',
+        '调整项',
+        '广告成本',
+        '广告商退款',
+        '清算处理费',
+        '应收账款',
+        '扣款',
+        '亚马逊配送运费调整',
+        '',
+        '合计费用'
+        ],
+    
+    'Ex金额（USD）':[
+        Seller_fulfilled_selling_fees,
+        FBA_selling_fees,
+        Selling_fee_refunds,
+        FBA_transaction_fees,
+        FBA_transaction_fee_refunds,
+        Other_transaction_fees,
+        Other_transaction_fee_refunds,
+        FBA_inventory_and_inbound_services_fees,
+        Shipping_label_purchases,
+        Shipping_label_refunds,
+        Carrier_shipping_label_adjustments,
+        Service_fees,
+        Refund_administration_fees,
+        Adjustments,
+        Cost_of_Advertising,
+        Refund_for_Advertiser,
+        Liquidations_fees,
+        Receivables,
+        Deductions,
+        Amazon_Shipping_Charge_Adjustments,
+        '',
+        Expense_total
+        ],
+    
+    'Ex源表':[
+        'FBM 订单-销售佣金',
+        'FBA 订单-销售佣金', 
+        '所有退款-销售佣金 + 退款管理费',
+        'FBA 订单 - 派送费',
+        'FBA 退款 - 派送费',
+        '', 
+        '', 
+        'FBA仓储及入库服务费 - 总计',
+        '', 
+        '',
+        '',
+        '服务费（不含广告）-总计',
+        '合并在销售佣金退款中扣除', 
+        '其他赔偿调整-总计',
+        '广告费-总计',        
+        '广告退款-总计', 
+        '清算费用-其他交易费用',
+        '',
+        '',
+        '',
+        '',
+        ''
+        ], 
     })  
     
 
@@ -235,8 +476,9 @@ def process_monthly_report(project_name, report_date, payment_range_report):
             '清算费用':Liquidation, # Liquidation['product sales']
             '拒付退款':Chargeback_Refund,
             'FBA仓储及入库服务费':FBA_Inventory_Fee,
-            '服务费（不含广告）':Amazon_Fees_and_Service_Fee,
+            '服务费（不含广告）':Amazon_Fees_and_Service_Fee_without_AD,
             '广告费':Advertising,
+            '广告退款':Service_Refund_for_Advertiser,
         }
         
         # 使用循环一次性写入所有sheet

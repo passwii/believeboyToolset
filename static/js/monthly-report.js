@@ -118,6 +118,16 @@ class MonthlyReportFormHandler {
         }
       }
 
+      // 重新启用提交按钮
+      const submitBtn = this.form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        // 恢复按钮文本为默认（如果按钮文本被改变）
+        if (submitBtn.dataset.originalText) {
+          submitBtn.innerHTML = submitBtn.dataset.originalText;
+        }
+      }
+
       console.log('月报表单已重置');
     } catch (error) {
       console.error('重置月报表单时出错:', error);

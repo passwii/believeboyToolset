@@ -1225,9 +1225,7 @@ class Application {
       } finally {
         // Restore button state. The reset() call will handle disabling it.
         if (submitBtn) {
-          if (!submitBtn.disabled) {
-             submitBtn.disabled = false;
-          }
+          submitBtn.disabled = false;
           submitBtn.innerHTML = originalBtnText;
         }
       }
@@ -1276,6 +1274,16 @@ class Application {
           error.parentNode.removeChild(error);
         }
       });
+
+      // 重新启用提交按钮
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        // 恢复按钮文本为默认（如果按钮文本被改变）
+        if (submitBtn.dataset.originalText) {
+          submitBtn.innerHTML = submitBtn.dataset.originalText;
+        }
+      }
 
       console.log('表单字段已重置');
     } catch (error) {
