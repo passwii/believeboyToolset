@@ -49,9 +49,6 @@ def reset_style(filename):
         #冻结首行
         ws1.freeze_panes = ws1['A2']
     
-    # 
-    wb['报表总览'].sheet_properties.tabColor = "1072BA"
-    wb['交易一览'].sheet_properties.tabColor = "CCCCCC" # 深灰色
     
     
     return wb.save(filename)
@@ -219,9 +216,24 @@ def process_monthly_report(project_name, report_date, payment_range_report):
 
     # 处理子项求和筛选展示
     
+    # PT4核算数据，展示国内的收入和支出明细逻辑（不同于亚马逊PDF核算逻辑）
+    pt4_income_sales = Product_sales_non_FBA + FBA_product_sales + Shipping_credits + Gift_wrap_credits + Promotional_rebates
+    pt4_income_refund = Product_sale_refunds_non_FBA + FBA_product_sale_refunds + Shipping_credit_refunds + Gift_wrap_credits_refunds + Promotional_rebate_refunds
+    pt4_income_adjustment = FBA_inventory_credit + FBA_liquidation_proceeds
+    pt4_income_chargeback = Chargebacks + A_to_z_Guarantee_claims + SAFE_T_reimbursement
+    pt4_income_total = pt4_income_sales + pt4_income_refund + pt4_income_adjustment + pt4_income_chargeback
     
+    pt4_expense_selling_fee = Seller_fulfilled_selling_fees + FBA_selling_fees + Selling_fee_refunds # 平台费（平台费 + 退款管理费）
+    pt4_expense_fba_fee = FBA_transaction_fees + FBA_transaction_fee_refunds # 派送费
+    pt4_expense_inventory_fee = FBA_inventory_and_inbound_services_fees # 仓储费      
+    pt4_service_fee = Service_fees # 服务费（不含广告)
+    pt4_expense_advertising = Cost_of_Advertising + Refund_for_Advertiser # 广告费
+    pt4_expense_other_fees = Adjustments + Liquidations_fees + Other_transaction_fees + Other_transaction_fee_refunds + Receivables + Deductions + Amazon_Shipping_Charge_Adjustments + Shipping_label_purchases + Shipping_label_refunds + Carrier_shipping_label_adjustments
+    pt4_expense_total = pt4_expense_selling_fee + pt4_expense_fba_fee + pt4_expense_inventory_fee + pt4_service_fee + pt4_expense_advertising + pt4_expense_other_fees
     
-    # 汇总数据
+    amazon_pay_back = pt4_income_total + pt4_expense_total
+    
+    # 准备汇总数据
     pt1 = skuGroup.sort_values(by='quantity', ascending=False, inplace=False)
     pt2 = refund_skuGroup.sort_values(by='quantity', ascending=False, inplace=False)
     
@@ -450,18 +462,35 @@ def process_monthly_report(project_name, report_date, payment_range_report):
         ], 
     })  
     
+    # 按照行横向顺序写入Excel
+    pt4 = pd.DataFrame({
+        '1-销售额': [pt4_income_sales],
+        '2-销售额退款': [pt4_income_refund],
+        '3-赔偿': [pt4_income_adjustment],
+        '4-其他收入': [pt4_income_chargeback],
+        '5-平台费': [pt4_expense_selling_fee],
+        '6-派送费': [pt4_expense_fba_fee],
+        '7-仓储费': [pt4_expense_inventory_fee],
+        '8-服务费': [pt4_service_fee],
+        '9-广告费': [pt4_expense_advertising],
+        '10-其他费用': [pt4_expense_other_fees],
+        '收入合计': [pt4_income_total],
+        '支出合计': [pt4_expense_total],
+        '亚马逊回款金额': [amazon_pay_back],
+        '信用卡扣款-支出': [AMZ_Card],
+    }, index=[0])
 
-    
     project_monthly_file_path = os.path.join(project_folder_path, f'{project_name}_{report_date}_monthly_{current_time}.xlsx')
     
     # 使用 ExcelWriter 的上下文管理器
     with pd.ExcelWriter(project_monthly_file_path, engine='xlsxwriter') as writer:
         # 创建一个字典来存储所有需要写入的数据帧和对应的sheet名称
         sheets_to_write = {
-            '报表总览': pt3,
+            '总览草稿': pt4,
+            '报表核算': pt3,
+            '交易一览': PRR,
             '销售SKU明细':pt1,
             '退款SKU明细':pt2,
-            '交易一览': PRR,
             '所有订单': Order,
             '所有退款': Refund,
             'FBM 订单':FBM_Order,
