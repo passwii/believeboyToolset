@@ -126,13 +126,8 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     FBM_Refund = Refund.loc[Refund['fulfillment'].isin(['Seller'])]
     
     #Income赔偿
-    Adjustment_Income = Adjustment.loc[Adjustment['description'].isin([
-        'FBA Inventory Reimbursement - Customer Return',
-        'FBA Inventory Reimbursement - Damaged:Warehouse',
-        'FBA Inventory Reimbursement - Lost:Warehouse',
-        'FBA Inventory Reimbursement - Defective:Warehouse',
-        'FBA Inventory Reimbursement - Expired:Warehouse'
-        ])]
+    # 不是FBA Inventory Reimbursement - General Adjustment 的其他赔偿
+    Adjustment_Income = Adjustment.loc[~Adjustment['description'].isin(['FBA Inventory Reimbursement - General Adjustment'])]
     #Expense赔偿
     Adjustment_Expense = Adjustment.loc[Adjustment['description'].isin(['FBA Inventory Reimbursement - General Adjustment'])]
     
