@@ -102,6 +102,8 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     Refund = PRR.loc[PRR['type'].isin(['Refund'])]
     #空白 Type 分类
     Blank = PRR.loc[PRR['type'] == 0]
+    # 服装类目的特殊退货收费，计算入仓储费
+    FBA_Customer_Return_Fee = PRR.loc[PRR['type'].isin(['FBA Customer Return Fee'])]
     
     Chargeback_Refund = PRR.loc[PRR['type'].isin(['Chargeback Refund'])]
     Liquidation = PRR.loc[PRR['type'].isin(['Liquidations'])]
@@ -174,7 +176,7 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     FBA_transaction_fee_refunds = round(FBA_Refund['fba fees'].sum(), 2)
     Other_transaction_fees = 0
     Other_transaction_fee_refunds = 0
-    FBA_inventory_and_inbound_services_fees = round(FBA_Inventory_Fee['total'].sum(), 2)
+    FBA_inventory_and_inbound_services_fees = round(FBA_Inventory_Fee['total'].sum(), 2) + round(FBA_Customer_Return_Fee['total'].sum(), 2)
     Shipping_label_purchases = 0
     Shipping_label_refunds = 0
     Carrier_shipping_label_adjustments = 0
