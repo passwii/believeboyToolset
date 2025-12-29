@@ -126,9 +126,9 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     
     #Income赔偿
     # 不是FBA Inventory Reimbursement - General Adjustment 的其他赔偿
-    Adjustment_Income = Adjustment.loc[~Adjustment['description'].isin(['FBA Inventory Reimbursement - General Adjustment'])]
+    Adjustment_Income = Adjustment.loc[~Adjustment['description'].isin(['FBA Inventory Reimbursement - General Adjustment', 'Non-subscription Fee Adjustment'])]
     #Expense赔偿
-    Adjustment_Expense = Adjustment.loc[Adjustment['description'].isin(['FBA Inventory Reimbursement - General Adjustment'])]
+    Adjustment_Expense = Adjustment.loc[Adjustment['description'].isin(['FBA Inventory Reimbursement - General Adjustment', 'Non-subscription Fee Adjustment'])]
     
     Advertising = Service_Fee.loc[Service_Fee['description'].isin(['Cost of Advertising'])]
     Subscription = Service_Fee.loc[Service_Fee['description'].isin(['Subscription'])]
