@@ -34,7 +34,6 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(yumai_analysis_bp)
 
 
-
 # 初始化数据库
 init_db()
 
