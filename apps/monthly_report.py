@@ -35,8 +35,11 @@ def reset_style(filename):
     for ws1 in wb:
         nrows = ws1.max_row
         ncols = ws1.max_column
-        width = 12
         height = 15
+        
+        # 判断是否为"报表核算"sheet，如果是则使用自适应列宽
+        is_report_sheet = ws1.title == '报表核算'
+        
         for r in range(1, nrows + 1):
             for c in range(1, ncols + 1):
                 if r == 1:
@@ -44,8 +47,37 @@ def reset_style(filename):
                     ws1.row_dimensions[r].height = height
                 else:
                     ws1.cell(r, c).style = sty2
-                    ws1.column_dimensions[get_column_letter(
-                        c)].width = width
+        
+        # 根据sheet类型设置列宽
+        if is_report_sheet:
+            # 报表核算sheet使用自适应列宽
+            for col in range(1, ncols + 1):
+                col_letter = get_column_letter(col)
+                max_length = 0
+                # 遍历该列所有单元格，找到最大内容长度
+                for row in range(1, nrows + 1):
+                    cell = ws1.cell(row, col)
+                    if cell.value:
+                        # 获取单元格值的长度，考虑中文字符
+                        cell_value = str(cell.value)
+                        # 中文字符按2个字符计算，英文按1个字符计算
+                        length = 0
+                        for char in cell_value:
+                            if '\u4e00' <= char <= '\u9fff':
+                                length += 2
+                            else:
+                                length += 1
+                        max_length = max(max_length, length)
+                
+                # 设置列宽，最小为8，最大为50，并添加一些padding
+                adjusted_width = min(max(max_length + 2, 8), 50)
+                ws1.column_dimensions[col_letter].width = adjusted_width
+        else:
+            # 其他sheet使用固定列宽
+            width = 12
+            for c in range(1, ncols + 1):
+                ws1.column_dimensions[get_column_letter(c)].width = width
+        
         #冻结首行
         ws1.freeze_panes = ws1['A2']
     

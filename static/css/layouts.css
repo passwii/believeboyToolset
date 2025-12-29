@@ -1154,7 +1154,6 @@
 }
 
 .feature-item:hover {
-  transform: translateY(-5px);
   border-color: var(--neon-blue);
   box-shadow: 0 10px 20px rgba(0, 212, 255, 0.2);
   background: rgba(0, 212, 255, 0.1);

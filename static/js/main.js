@@ -212,6 +212,14 @@ class Application {
       });
     });
 
+    // Feature 卡片点击事件处理
+    const featureItems = DOM.findAll('.feature-item');
+    featureItems.forEach(item => {
+      item.addEventListener('click', () => {
+        this.handleFeatureItemClick(item);
+      });
+    });
+
     // 初始化所有子菜单为折叠状态
     const submenus = DOM.findAll('.submenu');
     submenus.forEach(submenu => {
@@ -287,11 +295,34 @@ class Application {
   }
 
   /**
+   * 处理 Feature 卡片点击
+   */
+  handleFeatureItemClick(item) {
+    // 获取内容类型
+    const contentType = item.getAttribute('data-content');
+
+    if (!contentType) return;
+
+    // 移除所有活动类
+    this.clearActiveStates();
+
+    // 添加活动类到当前项
+    item.classList.add('active');
+
+    // 加载内容
+    this.loadContent(contentType);
+  }
+
+  /**
    * 清除所有活动状态
    */
   clearActiveStates() {
     this.navItems.forEach(item => item.classList.remove('active'));
     this.groupTitles.forEach(title => title.classList.remove('active'));
+
+    // 清除 feature 卡片的活动状态
+    const featureItems = DOM.findAll('.feature-item');
+    featureItems.forEach(item => item.classList.remove('active'));
 
     // 清除内容区域的活动状态
     const categorySections = DOM.findAll('.category-section');
