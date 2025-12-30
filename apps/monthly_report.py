@@ -166,7 +166,7 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     Subscription = Service_Fee.loc[Service_Fee['description'].isin(['Subscription'])]
     FBA_Inbound = Service_Fee.loc[Service_Fee['description'].isin(['FBA Inbound Placement Service Fee'])]
     AGL_Selection = Service_Fee.loc[Service_Fee['description'].isin([
-        'FBA International Freight', 
+        'FBA International Freight Shipping Charge', 
         'FBA International Freight Duties and Taxes Charge'
         ])]
     # AmazonFees 优惠券 + 一般服务费（不含广告）
@@ -205,7 +205,7 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     FBA_transaction_fee_refunds = round(FBA_Refund['fba fees'].sum(), 2)
     Other_transaction_fees = 0
     Other_transaction_fee_refunds = 0
-    FBA_inventory_and_inbound_services_fees = round(FBA_Inventory_Fee['total'].sum(), 2) + round(FBA_Customer_Return_Fee['total'].sum(), 2)
+    FBA_inventory_and_inbound_services_fees = round(FBA_Inventory_Fee['total'].sum(), 2) + round(FBA_Customer_Return_Fee['total'].sum(), 2) + round(AGL_Selection['total'].sum(), 2)
     Shipping_label_purchases = 0
     Shipping_label_refunds = 0
     Carrier_shipping_label_adjustments = 0
@@ -214,7 +214,10 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     Lightning_Deal_Fee = round(LD['total'].sum(), 2)
     Service_Price_Discount = round(Price_Discount['total'].sum(), 2)
     # 服务费去掉广告费用的综合 + 优惠券就是整体的PDF服务费计算
-    Service_fees_without_ADs = round(Service_Fee.loc[~Service_Fee['description'].isin(['Cost of Advertising', 'Refund for Advertiser'])]['total'].sum(), 2)
+    Service_fees_without_ADs = round(Service_Fee.loc[~Service_Fee['description'].isin(['Cost of Advertising', 
+                                                                                       'Refund for Advertiser', 
+                                                                                       'FBA International Freight Shipping Charge',
+                                                                                       'FBA International Freight Duties and Taxes Charge'])]['total'].sum(), 2)
     Service_fees = Coupon_fee + Service_fees_without_ADs + Lightning_Deal_Fee + Service_Price_Discount
     
     
