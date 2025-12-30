@@ -475,7 +475,7 @@ def process_monthly_report(project_name, report_date, payment_range_report):
         'FBA 订单-销售佣金', 
         '所有退款-销售佣金 + 退款管理费',
         'FBA 订单 - 派送费',
-        'FBA 退款 - 派送费',
+        'FBA 退款 - 派送费 + 测量费',
         '', 
         '', 
         'FBA仓储及入库服务费 - 总计',
