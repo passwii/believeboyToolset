@@ -182,7 +182,7 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     FBA_product_sales = round(FBA_Order['product sales'].sum(), 2)
     FBA_product_sale_refunds = round(FBA_Refund['product sales'].sum(), 2) + round(FBA_Refund['other'].sum(), 2) # FBA 退款的其他费用也计入退款
     Fee_Adjustment_fee = round(Fee_Adjustment.loc[Fee_Adjustment['description'].isin(['Fee Adjustment - Weight and Dimension Change'])]['total'].sum(), 2)
-    FBA_inventory_credit = round(Adjustment_Income['total'].sum(), 2) + Fee_Adjustment_fee
+    FBA_inventory_credit = round(Adjustment_Income['total'].sum(), 2)
     FBA_liquidation_proceeds = round(Liquidation['product sales'].sum(), 2)
     Shipping_credits = round(Order['shipping credits'].sum(), 2)
     Shipping_credit_refunds = round(Refund['shipping credits'].sum(), 2)
