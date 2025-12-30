@@ -137,7 +137,6 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     Chargeback_Refund = PRR.loc[PRR['type'].isin(['Chargeback Refund'])]
     Liquidation = PRR.loc[PRR['type'].isin(['Liquidations'])]
     Adjustment = PRR.loc[PRR['type'].isin(['Adjustment'])]
-    Fee_Adjustment = PRR.loc[PRR['type'].isin(['Fee Adjustment'])]
     Service_Fee = PRR.loc[PRR['type'].isin(['Service Fee'])]
     FBA_Inventory_Reimbursement = PRR.loc[PRR['type'].isin(['FBA Inventory Reimbursement'])]
     FBA_Inventory_Fee = PRR.loc[PRR['type'].isin(['FBA Inventory Fee'])]
@@ -182,7 +181,7 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     Product_sale_refunds_non_FBA = round(FBM_Refund['product sales'].sum(), 2)
     FBA_product_sales = round(FBA_Order['product sales'].sum(), 2)
     FBA_product_sale_refunds = round(FBA_Refund['product sales'].sum(), 2) + round(FBA_Refund['other'].sum(), 2) # FBA 退款的其他费用也计入退款
-    Fee_Adjustment_fee = round(Fee_Adjustment.loc[Fee_Adjustment['description'].isin(['FBA Weight/Dimension Change'])]['total'].sum(), 2)
+    Fee_Adjustment_fee = round(Fee_Adjustment.loc[Fee_Adjustment['description'].isin(['Fee Adjustment - Weight and Dimension Change'])]['total'].sum(), 2)
     FBA_inventory_credit = round(Adjustment_Income['total'].sum(), 2) + Fee_Adjustment_fee
     FBA_liquidation_proceeds = round(Liquidation['product sales'].sum(), 2)
     Shipping_credits = round(Order['shipping credits'].sum(), 2)
@@ -202,7 +201,7 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     FBA_selling_fees = round(FBA_Order['selling fees'].sum(), 2)
     Selling_fee_refunds = round(Refund['selling fees'].sum(), 2) #目前不确定是否是全部还是Order和Refund分别计算
     FBA_transaction_fees = round(FBA_Order['fba fees'].sum(), 2) + round(FBA_Transaction_fees['fba fees'].sum(), 2)
-    FBA_transaction_fee_refunds = round(FBA_Refund['fba fees'].sum(), 2)
+    FBA_transaction_fee_refunds = round(FBA_Refund['fba fees'].sum(), 2) + Fee_Adjustment_fee
     Other_transaction_fees = 0
     Other_transaction_fee_refunds = 0
     FBA_inventory_and_inbound_services_fees = round(FBA_Inventory_Fee['total'].sum(), 2) + round(FBA_Customer_Return_Fee['total'].sum(), 2) + round(AGL_Selection['total'].sum(), 2)
