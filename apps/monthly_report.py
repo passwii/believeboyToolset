@@ -133,6 +133,8 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     Blank = PRR.loc[PRR['type'] == 0]
     # 服装类目的特殊退货收费，计算入仓储费
     FBA_Customer_Return_Fee = PRR.loc[PRR['type'].isin(['FBA Customer Return Fee'])]
+    # 服务费增加新环节
+    Amazon_Fees_Reversal = PRR.loc[PRR['type'].isin(['Amazon Fees - Reversal'])]
     
     Chargeback_Refund = PRR.loc[PRR['type'].isin(['Chargeback Refund'])]
     Liquidation = PRR.loc[PRR['type'].isin(['Liquidations'])]
@@ -208,7 +210,8 @@ def process_monthly_report(project_name, report_date, payment_range_report):
     Shipping_label_purchases = 0
     Shipping_label_refunds = 0
     Carrier_shipping_label_adjustments = 0
-    # 服务费 = 优惠券 + 一般服务费（不含广告）+ 闪电促销费 + Price Discount
+    # 服务费 = 优惠券 + 一般服务费（不含广告）+ 闪电促销费 + Price Discount + Coupon Performance Based Fee
+    Coupon_Performance_Base_Fee = round(Amazon_Fees_Reversal['total'].sum(), 2)
     Coupon_fee = round(Amazon_Fees['total'].sum(), 2)
     Lightning_Deal_Fee = round(LD['total'].sum(), 2)
     Service_Price_Discount = round(Price_Discount['total'].sum(), 2)
@@ -217,7 +220,7 @@ def process_monthly_report(project_name, report_date, payment_range_report):
                                                                                        'Refund for Advertiser', 
                                                                                        'FBA International Freight Shipping Charge',
                                                                                        'FBA International Freight Duties and Taxes Charge'])]['total'].sum(), 2)
-    Service_fees = Coupon_fee + Service_fees_without_ADs + Lightning_Deal_Fee + Service_Price_Discount
+    Service_fees = Coupon_fee + Service_fees_without_ADs + Lightning_Deal_Fee + Service_Price_Discount + Coupon_Performance_Base_Fee
     
     
     # 退款管理费和佣金退款合并计算在PDF中是和佣金退款合并的，所以是0
