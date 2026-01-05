@@ -293,7 +293,6 @@
                     <p class="update-log-timeline-description">
                         提交者: {{ commit.author }}
                     </p>
-                    <!-- 根据提交信息自动添加标签 -->
                     {% if 'feat' in commit.message or '新增' in commit.message %}
                         <span class="update-log-timeline-tag update-log-tag-feature">新增功能</span>
                     {% elif 'fix' in commit.message or '修复' in commit.message %}
@@ -305,8 +304,20 @@
             </div>
             {% endfor %}
         {% else %}
-            <!-- 默认的更新日志内容 -->
-            <!-- 新增卡片开始 -->
+            <div class="update-log-timeline-item">
+                <div class="update-log-timeline-node"></div>
+                <div class="update-log-timeline-content">
+                    <span class="update-log-timeline-version">V4.1</span>
+                    <div class="update-log-timeline-date">2026-01-05</div>
+                    <h3 class="update-log-timeline-title">费用核算模块全面升级</h3>
+                    <p class="update-log-timeline-description">
+                        增加Coupon费用核算，优化仓储费和服务费计算逻辑，增加AGL费用核算功能；更新测量费用计算方式，完善库存赔偿条目；改进店铺数据标准化处理和系统维护功能。
+                    </p>
+                    <span class="update-log-timeline-tag update-log-tag-improvement">功能优化</span>
+                    <span class="update-log-timeline-tag update-log-tag-feature">财务核算</span>
+                </div>
+            </div>
+
             <div class="update-log-timeline-item">
                 <div class="update-log-timeline-node"></div>
                 <div class="update-log-timeline-content">
