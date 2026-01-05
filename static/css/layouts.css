@@ -316,7 +316,6 @@
 .dynamic-section #last-week-btn:hover,
 .dynamic-section #yesterday-btn:hover {
     background: #45a049;
-    transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 

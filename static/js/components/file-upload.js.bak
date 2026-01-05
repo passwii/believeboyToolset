@@ -1,216 +1,106 @@
 /**
- * 统一文件上传组件
- * 支持多种分析页面的文件上传和自动分类
+ * 文件上传组件
+ * 专门用于产品分析页面的文件上传功能
  */
-
-// 文件类型配置常量
-const FILE_TYPES = {
-  // 业务报告
-  business_report: {
-    name: '业务报告',
-    extensions: ['csv'],
-    hint: '.csv格式',
-    contentType: 'text/csv',
-    color: '#00d4ff',
-    icon: 'fa-chart-line'
-  },
-
-  // 付款报告
-  payment_report: {
-    name: '付款报告',
-    extensions: ['csv'],
-    hint: '.csv格式',
-    contentType: 'text/csv',
-    color: '#00ff88',
-    icon: 'fa-credit-card'
-  },
-
-  // 广告报表（日报和产品分析通用）
-  ad_report: {
-    name: '广告报表',
-    extensions: ['xlsx'],
-    hint: '.xlsx格式',
-    contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    color: '#ffaa00',
-    icon: 'fa-ad'
-  },
-
-  // FBA库存（日报和产品分析通用）
-  fba_report: {
-    name: 'FBA库存',
-    extensions: ['txt'],
-    hint: '.txt格式，内容包含"snapshot-date"',
-    contentType: 'text/plain',
-    color: '#00ff88',
-    icon: 'fa-warehouse'
-  },
-
-  // 所有订单（日报）
-  sales_report: {
-    name: '所有订单',
-    extensions: ['txt'],
-    hint: '.txt格式，内容包含"amazon-order-id"',
-    contentType: 'text/plain',
-    color: '#00d4ff',
-    icon: 'fa-shopping-cart'
-  },
-
-  // 优麦云报告
-  yumai_report: {
-    name: '优麦云报表',
-    extensions: ['xlsx'],
-    hint: '.xlsx格式',
-    contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    color: '#00d4ff',
-    icon: 'fa-chart-bar'
-  }
-};
-
-// 页面配置
-const PAGE_CONFIGS = {
-  daily_report: {
-    fileTypes: ['sales_report', 'fba_report', 'ad_report'],
-    required: ['sales_report', 'fba_report', 'ad_report'],
-    optional: [],
-    uploadEndpoint: '/dataset/daily-report/upload-file',
-    submitText: '生成日报'
-  },
-
-  monthly_report: {
-    fileTypes: ['payment_report'],
-    required: ['payment_report'],
-    optional: [],
-    uploadEndpoint: '/dataset/monthly-report/upload-file',
-    submitText: '生成月报'
-  },
-
-  product_analysis: {
-    fileTypes: ['business_report', 'payment_report', 'ad_report', 'fba_report'],
-    required: ['business_report', 'payment_report', 'ad_report'],
-    optional: ['fba_report'],
-    uploadEndpoint: '/dataset/product-analysis/upload-file',
-    submitText: '生成产品分析'
-  },
-
-  product_analysis_yumai: {
-    fileTypes: ['yumai_report', 'fba_report'],
-    required: ['yumai_report'],
-    optional: ['fba_report'],
-    uploadEndpoint: '/yumai-analysis/upload-file',
-    submitText: '生成商品分析（优麦云）'
-  }
-};
-
-// 文件类型检测规则
-const FILE_TYPE_RULES = {
-  sales_report: {
-    contentTest: async (file, content) => {
-      if (!file.name.toLowerCase().endsWith('.txt')) return false;
-      const firstLine = content.split('\n')[0];
-      return firstLine && firstLine.includes('amazon-order-id');
-    },
-    fallbackTest: (filename) => filename.startsWith('or')
-  },
-
-  fba_report: {
-    contentTest: async (file, content) => {
-      if (!file.name.toLowerCase().endsWith('.txt')) return false;
-      const firstLine = content.split('\n')[0];
-      return firstLine && firstLine.includes('snapshot-date');
-    },
-    fallbackTest: (filename) => filename.includes('fba') || filename.includes('inv')
-  },
-
-  ad_report: {
-    contentTest: async (file) => {
-      return file.name.toLowerCase().endsWith('.xlsx');
-    },
-    fallbackTest: (filename, ext) => {
-      return ext === 'xlsx' && (
-        filename.includes('ad') ||
-        filename.includes('广告') ||
-        filename.includes('advertising') ||
-        filename.includes('推广')
-      );
-    }
-  },
-
-  business_report: {
-    test: (filename, ext) => {
-      return ext === 'csv' && (filename.includes('business') || filename.includes('业务'));
-    }
-  },
-
-  payment_report: {
-    test: (filename, ext) => {
-      return ext === 'csv' && (
-        filename.includes('transaction') ||
-        filename.includes('付款') ||
-        filename.includes('payment')
-      );
-    }
-  },
-
-  yumai_report: {
-    test: (filename, ext) => ext === 'xlsx'
-  }
-};
 
 class FileUploadComponent {
   constructor(options = {}) {
-    // 合并配置
     this.options = {
       containerSelector: '#drop-area',
       inputSelector: '#file',
       listSelector: '#file-list',
       submitSelector: '#submit-btn',
-      pageType: null, // daily_report, monthly_report, product_analysis, product_analysis_yumai
+      uploadEndpoint: '/yumai-analysis/process',
       allowedTypes: ['csv', 'xlsx', 'txt'],
       maxFileSize: 50 * 1024 * 1024, // 50MB
       allowMultiple: true,
+      // 自定义文件分类规则
+      rules: [
+        {
+          type: 'business_report',
+          test: (filename, ext) => ext === 'csv' && (filename.includes('business') || filename.includes('业务'))
+        },
+        {
+          type: 'payment_report',
+          test: (filename, ext) => ext === 'csv' && (filename.includes('transaction') || filename.includes('付款') || filename.includes('payment'))
+        },
+        {
+          type: 'ad_product_report',
+          test: (filename, ext) => ext === 'xlsx' && (filename.includes('ad') || filename.includes('广告') || filename.includes('advertising') || filename.includes('推广'))
+        },
+        {
+          type: 'inventory_report',
+          contentTest: async (file, content) => {
+            if (!file.name.toLowerCase().endsWith('.txt')) return false;
+            const firstLine = content.split('\n')[0];
+            return firstLine && firstLine.includes('snapshot-date');
+          },
+          test: (filename, ext) => ext === 'txt' && (filename.includes('inv') || filename.includes('fba'))
+        }
+      ],
+      // 日报文件分类规则（基于文件内容）
+      dailyRules: [
+        {
+          type: 'sales_report',
+          contentTest: async (file, content) => {
+            if (!file.name.toLowerCase().endsWith('.txt')) return false;
+            const firstLine = content.split('\n')[0];
+            return firstLine && firstLine.includes('amazon-order-id');
+          },
+          fallbackTest: (filename, ext) => ext === 'txt' && filename.startsWith('or')
+        },
+        {
+          type: 'fba_report',
+          contentTest: async (file, content) => {
+            if (!file.name.toLowerCase().endsWith('.txt')) return false;
+            const firstLine = content.split('\n')[0];
+            return firstLine && firstLine.includes('snapshot-date');
+          },
+          fallbackTest: (filename, ext) => ext === 'txt' && filename.includes('fba')
+        },
+        {
+          type: 'ad_report',
+          contentTest: async (file, content) => {
+            return file.name.toLowerCase().endsWith('.xlsx');
+          },
+          fallbackTest: (filename, ext) => ext === 'xlsx'
+        }
+      ],
+      // 文件类型显示名称
+      fileNames: {
+        'business_report': '业务报告',
+        'payment_report': '付款报告',
+        'ad_product_report': '广告报表',
+        'inventory_report': 'FBA库存',
+        'sales_report': '所有订单',
+        'fba_report': 'FBA库存',
+        'ad_report': '广告报表',
+        'product_analysis_yumai': '商品分析'
+      },
+      // 文件类型提示
+      fileTypeHints: {
+        'business_report': '.csv格式',
+        'payment_report': '.csv格式',
+        'ad_product_report': '.xlsx格式',
+        'inventory_report': '.txt格式，内容包含"snapshot-date"',
+        'sales_report': '.txt格式，内容包含"amazon-order-id"',
+        'fba_report': '.txt格式，内容包含"snapshot-date"',
+        'ad_report': '.xlsx格式'
+      },
+      // 是否为日报模式
+      isDailyReport: false,
       ...options
     };
 
-    // 获取页面配置
-    this.pageConfig = this.options.pageType ? PAGE_CONFIGS[this.options.pageType] : null;
-
-    // 如果没有指定页面类型，使用旧版本的兼容逻辑
-    if (!this.pageConfig) {
-      this.initLegacyMode();
-    } else {
-      this.initModernMode();
-    }
-
-    this.init();
-  }
-
-  /**
-   * 初始化现代模式（推荐）
-   */
-  initModernMode() {
-    this.uploadedFiles = {};
-    this.pageConfig.fileTypes.forEach(type => {
-      this.uploadedFiles[type] = null;
-    });
-    this.requiredFileTypes = this.pageConfig.required;
-    this.uploadEndpoint = this.pageConfig.uploadEndpoint;
-    this.submitText = this.pageConfig.submitText;
-  }
-
-  /**
-   * 初始化旧版模式（向后兼容）
-   */
-  initLegacyMode() {
-    // 判断是否为日报模式
+    // 根据模式初始化文件存储对象
     if (this.options.isDailyReport) {
       this.uploadedFiles = {
         sales_report: null,
         fba_report: null,
         ad_report: null
       };
-      this.requiredFileTypes = ['sales_report', 'fba_report', 'ad_report'];
-      this.uploadEndpoint = '/dataset/daily-report/upload-file';
-      this.submitText = '生成日报';
+      // 日报模式的必填文件类型
+      this.requiredFileTypes = this.options.requiredFileTypes || ['sales_report', 'fba_report', 'ad_report'];
     } else {
       this.uploadedFiles = {
         business_report: null,
@@ -218,14 +108,15 @@ class FileUploadComponent {
         ad_product_report: null,
         inventory_report: null
       };
-      this.requiredFileTypes = ['business_report', 'payment_report', 'ad_product_report'];
-      this.uploadEndpoint = '/yumai-analysis/process';
-      this.submitText = '生成产品分析';
+      // 产品分析模式的必填文件类型（库存报告为可选）
+      this.requiredFileTypes = this.options.requiredFileTypes || ['business_report', 'payment_report', 'ad_product_report'];
     }
+
+    this.init();
   }
 
   /**
-   * 初始化组件
+   * 初始化文件上传组件
    */
   init() {
     this.cacheElements();
@@ -278,6 +169,14 @@ class FileUploadComponent {
   }
 
   /**
+   * 阻止默认行为
+   */
+  preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  /**
    * 高亮拖拽区域
    */
   highlight() {
@@ -295,8 +194,6 @@ class FileUploadComponent {
    * 处理文件拖拽
    */
   handleDrop(e) {
-    e.preventDefault();
-    e.stopPropagation();
     const dt = e.dataTransfer;
     const files = dt.files;
     this.handleFiles(files);
@@ -321,17 +218,17 @@ class FileUploadComponent {
       const ext = file.name.split('.').pop().toLowerCase();
       const isValidType = this.options.allowedTypes.includes(ext);
       const isValidSize = Validation.isValidFileSize(file, this.options.maxFileSize);
-
+      
       if (!isValidType) {
         notify.warning(`文件 "${file.name}" 格式不支持，仅支持 ${this.options.allowedTypes.join(', ')} 格式`);
         return false;
       }
-
+      
       if (!isValidSize) {
         notify.warning(`文件 "${file.name}" 过大，最大支持 ${StringUtils.formatFileSize(this.options.maxFileSize)}`);
         return false;
       }
-
+      
       return true;
     });
 
@@ -354,19 +251,20 @@ class FileUploadComponent {
   async readFileContent(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-
+      
       reader.onload = (e) => {
         resolve(e.target.result);
       };
-
+      
       reader.onerror = () => {
         reject(new Error('文件读取失败'));
       };
-
+      
       // 根据文件类型选择读取方式
       if (file.name.toLowerCase().endsWith('.txt')) {
         reader.readAsText(file, 'UTF-8');
       } else if (file.name.toLowerCase().endsWith('.xlsx')) {
+        // Excel文件需要特殊处理
         reader.readAsArrayBuffer(file);
       } else {
         reject(new Error('不支持的文件类型'));
@@ -380,44 +278,42 @@ class FileUploadComponent {
   async determineFileType(file) {
     const filename = file.name.toLowerCase();
     const ext = filename.split('.').pop().toLowerCase();
+    
+    const rules = this.options.isDailyReport ? this.options.dailyRules : this.options.rules;
 
-    // 遍历所有已注册的文件类型规则
-    for (const [type, rule] of Object.entries(FILE_TYPE_RULES)) {
-      // 检查是否为当前页面需要的类型
-      if (!this.uploadedFiles.hasOwnProperty(type)) {
-        continue;
-      }
-
+    for (const rule of rules) {
+      // Flag to see if we should proceed to fallback test
       let continueToFallback = true;
 
-      // 1. 优先使用内容检测
+      // 1. Prioritize content-based detection if it exists
       if (rule.contentTest) {
         try {
-          this.updateFileItemUI(file, type, 'analyzing');
+          this.updateFileItemUI(file, rule.type, 'analyzing');
           const content = await this.readFileContent(file);
           if (await rule.contentTest(file, content)) {
-            if (!this.uploadedFiles[type] || await this.confirmReplace(file, type)) {
-              return type;
+            if (!this.uploadedFiles[rule.type] || await this.confirmReplace(file, rule.type)) {
+              return rule.type; // Success, exit function
             }
-            continueToFallback = false;
+            // If user cancels replace, we shouldn't try the fallback test for this file type
+            continueToFallback = false; 
           }
         } catch (error) {
-          console.warn(`Content test for ${type} failed, will try fallback. Error: ${error}`);
+          console.warn(`Content test for ${rule.type} failed, will try fallback. Error: ${error}`);
         }
       }
 
-      // 2. 尝试回退测试
+      // 2. If content test was not performed, or failed, try filename-based fallback
       if (continueToFallback) {
         const fallbackTest = rule.fallbackTest || rule.test;
         if (fallbackTest && fallbackTest(filename, ext)) {
-          if (!this.uploadedFiles[type] || await this.confirmReplace(file, type)) {
-            return type;
-          }
+           if (!this.uploadedFiles[rule.type] || await this.confirmReplace(file, rule.type)) {
+              return rule.type; // Success, exit function
+           }
         }
       }
     }
-
-    // 如果没有规则匹配，显示手动选择对话框
+    
+    // If no rule matched, show the manual selection dialog
     return await this.showFileTypeSelectionDialog(file);
   }
 
@@ -425,8 +321,7 @@ class FileUploadComponent {
    * 确认是否替换已上传的文件
    */
   async confirmReplace(file, fileType) {
-    const fileConfig = FILE_TYPES[fileType];
-    const typeName = fileConfig ? fileConfig.name : fileType;
+    const typeName = this.options.fileNames[fileType];
     return await notify.confirm(`文件 "${file.name}" 将替换已上传的${typeName}，是否继续？`);
   }
 
@@ -434,13 +329,30 @@ class FileUploadComponent {
    * 显示文件类型选择对话框
    */
   async showFileTypeSelectionDialog(file) {
-    const availableTypes = Object.keys(this.uploadedFiles).filter(type => !this.uploadedFiles[type]);
+    const buttonConfigs = {
+      'sales_report': {text: '所有订单', className: 'sales', color: 'var(--neon-blue, #00d4ff)'},
+      'fba_report': {text: 'FBA库存', className: 'fba', color: 'var(--success-color, #00ff88)'},
+      'ad_report': {text: '广告报表', className: 'ad', color: 'var(--warning-color, #ffaa00)'},
+      'business_report': {text: '业务报告', className: 'business', color: 'var(--neon-blue, #00d4ff)'},
+      'payment_report': {text: '付款报告', className: 'payment', color: 'var(--success-color, #00ff88)'},
+      'ad_product_report': {text: '广告报表', className: 'ad', color: 'var(--warning-color, #ffaa00)'},
+      'inventory_report': {text: '库存报告 (可选)', className: 'inventory', color: '#6c757d'}
+    };
+
+    const availableTypes = Object.keys(this.uploadedFiles);
+    const titleText = this.options.isDailyReport ? '请选择日报文件类型' : '请选择产品分析文件类型';
 
     return new Promise((resolve) => {
-      const modal = DOM.create('div', { className: 'file-type-modal' });
-      const dialog = DOM.create('div', { className: 'file-type-dialog' });
-
-      // 设置样式
+      // 创建模态对话框
+      const modal = DOM.create('div', {
+        className: 'file-type-modal'
+      });
+      
+      const dialog = DOM.create('div', {
+        className: 'file-type-dialog'
+      });
+      
+      // 主题兼容样式
       modal.style.cssText = `
         position: fixed;
         top: 0;
@@ -453,7 +365,7 @@ class FileUploadComponent {
         align-items: center;
         z-index: 1000;
       `;
-
+      
       dialog.style.cssText = `
         background: var(--bg-primary, #1a1a1a);
         border: 2px solid var(--border-color, #333);
@@ -464,85 +376,104 @@ class FileUploadComponent {
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         color: var(--text-primary, #ffffff);
       `;
-
+      
       // 文件信息
-      const fileInfo = DOM.create('div', { className: 'file-info' });
+      const fileInfo = DOM.create('div', {
+        className: 'file-info'
+      });
+      fileInfo.style.cssText = `
+        margin-bottom: 25px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        border: 1px solid var(--border-color, #444);
+      `;
       fileInfo.innerHTML = `
         <p style="margin: 8px 0; color: var(--text-primary, #ffffff);"><strong>文件名：</strong>${file.name}</p>
         <p style="margin: 8px 0; color: var(--text-primary, #ffffff);"><strong>文件大小：</strong>${StringUtils.formatFileSize(file.size)}</p>
         <p style="margin: 8px 0; color: var(--text-secondary, #aaa);"><strong>文件类型：</strong>无法自动识别，请手动选择</p>
       `;
-
+      
       // 按钮容器
-      const buttonContainer = DOM.create('div', { className: 'file-type-buttons' });
+      const buttonContainer = DOM.create('div', {
+        className: 'file-type-buttons'
+      });
       buttonContainer.style.cssText = `
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 12px;
         margin-top: 20px;
       `;
-
-      // 创建按钮
+      
+      // 动态创建按钮，只显示未上传的文件类型
+      const availableTypes = Object.keys(this.uploadedFiles).filter(type => !this.uploadedFiles[type]);
+      
       availableTypes.forEach(type => {
-        const config = FILE_TYPES[type];
+        const config = buttonConfigs[type];
         if (config) {
           const btn = DOM.create('button', {
-            className: `file-type-btn`,
-            style: `
-              padding: 15px 20px;
-              border: none;
-              border-radius: 8px;
-              cursor: pointer;
-              font-weight: 600;
-              font-size: 14px;
-              transition: all 0.3s ease;
-              background: ${config.color};
-              color: white;
-            `
-          }, `${config.name}${config.optional ? ' (可选)' : ''}`);
-
+            className: `file-type-btn ${config.className}`
+          }, config.text);
+          btn.style.cssText = `
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: ${config.color};
+            color: white;
+          `;
           btn.addEventListener('mouseenter', () => {
             btn.style.transform = 'translateY(-2px)';
-            btn.style.boxShadow = `0 6px 20px ${config.color}40`;
+            btn.style.boxShadow = `0 6px 20px ${config.color}20`;
           });
-
           btn.addEventListener('mouseleave', () => {
             btn.style.transform = 'translateY(0)';
             btn.style.boxShadow = 'none';
           });
-
           btn.addEventListener('click', () => {
             document.body.removeChild(modal);
             resolve(type);
           });
-
           buttonContainer.appendChild(btn);
         }
       });
-
-      // 取消按钮
+      
+      
       const cancelBtn = DOM.create('button', {
-        className: 'file-type-btn cancel',
-        style: `
-          padding: 15px 20px;
-          border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          font-weight: 600;
-          font-size: 14px;
-          transition: all 0.3s ease;
-          background: var(--error-color);
-          color: white;
-          grid-column: 1 / -1;
-          margin-top: 10px;
-        `
+        className: 'file-type-btn cancel'
       }, '取消');
-
+      cancelBtn.style.cssText = `
+        padding: 15px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: var(--error-color);
+        color: white;
+        grid-column: 1 / -1;
+        margin-top: 10px;
+      `;
+      
+      cancelBtn.addEventListener('mouseenter', () => {
+        cancelBtn.style.transform = 'translateY(-2px)';
+        cancelBtn.style.boxShadow = '0 6px 20px rgba(255, 0, 110, 0.4)';
+      });
+      
+      cancelBtn.addEventListener('mouseleave', () => {
+        cancelBtn.style.transform = 'translateY(0)';
+        cancelBtn.style.boxShadow = 'none';
+      });
+      
       cancelBtn.addEventListener('click', () => {
         document.body.removeChild(modal);
         resolve(null);
       });
-
+      
       // 点击背景关闭
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -550,22 +481,24 @@ class FileUploadComponent {
           resolve(null);
         }
       });
-
+      
+      // 创建标题
+      const title = DOM.create('h3', {}, titleText);
+      title.style.cssText = `
+        margin-bottom: 20px;
+        color: var(--text-primary, #ffffff);
+        text-align: center;
+        font-size: 18px;
+        font-weight: 600;
+      `;
+      
       // 组装对话框
-      const title = DOM.create('h3', {
-        style: `
-          margin-bottom: 20px;
-          color: var(--text-primary, #ffffff);
-          text-align: center;
-          font-size: 18px;
-          font-weight: 600;
-        `
-      }, '请选择文件类型');
-
       buttonContainer.appendChild(cancelBtn);
+      
       dialog.appendChild(title);
       dialog.appendChild(fileInfo);
       dialog.appendChild(buttonContainer);
+      
       modal.appendChild(dialog);
       document.body.appendChild(modal);
     });
@@ -593,23 +526,23 @@ class FileUploadComponent {
     formData.append('file_type', fileType);
 
     try {
-      const response = await fetch(this.uploadEndpoint, {
+      const response = await fetch(this.options.uploadEndpoint, {
         method: 'POST',
         body: formData
       });
-
+      
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          this.uploadedFiles[fileType] = result.file_path;
-          const pathInput = DOM.find(`#${fileType}_path`);
-          if (pathInput) {
-            pathInput.value = result.file_path;
-          }
-          this.updateFileItemUI(file, fileType, 'uploaded');
-          notify.success(`文件 "${file.name}" 上传成功`);
+            this.uploadedFiles[fileType] = result.file_path;
+            const pathInput = DOM.find(`#${fileType}_path`);
+            if (pathInput) {
+                pathInput.value = result.file_path;
+            }
+            this.updateFileItemUI(file, fileType, 'uploaded');
+            notify.success(`文件 "${file.name}" 上传成功`);
         } else {
-          throw new Error(result.error || '上传成功但服务器返回错误');
+            throw new Error(result.error || '上传成功但服务器返回错误');
         }
       } else {
         let errorMessage;
@@ -645,8 +578,7 @@ class FileUploadComponent {
     const fileItem = DOM.find(`#file-${fileType}`);
     if (!fileItem) return;
 
-    const fileConfig = FILE_TYPES[fileType];
-    const fileName = file ? file.name : (fileConfig ? fileConfig.name : fileType);
+    const fileName = file ? file.name : this.getFileTypeName(fileType);
     const fileSize = file ? ` (${StringUtils.formatFileSize(file.size)})` : '';
 
     fileItem.className = `file-item ${status}`;
@@ -655,67 +587,41 @@ class FileUploadComponent {
     const progressSpan = fileItem.querySelector('.upload-progress');
 
     // 保留帮助图标
-    const helpIcon = nameSpan?.querySelector('.help-icon');
+    const helpIcon = nameSpan.querySelector('.help-icon');
     const helpIconHTML = helpIcon ? helpIcon.outerHTML : '';
 
-    if (!nameSpan) return;
-
     if (status === 'uploading') {
-      nameSpan.innerHTML = `${fileName}${fileSize}${helpIconHTML}`;
-      if (progressSpan) progressSpan.textContent = '上传中...';
+      nameSpan.innerHTML = `${this.getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
+      progressSpan.textContent = '上传中...';
     } else if (status === 'uploaded') {
+      // 上传成功时只显示文件名，移除类型前缀和状态文字
       nameSpan.innerHTML = `${fileName}${fileSize}${helpIconHTML}`;
-      if (progressSpan) progressSpan.textContent = '';
+      progressSpan.textContent = '';
     } else if (status === 'error') {
-      nameSpan.innerHTML = `${fileName}${fileSize}${helpIconHTML}`;
-      if (progressSpan) progressSpan.textContent = `✗ 上传失败: ${errorMessage}`;
+      nameSpan.innerHTML = `${this.getFileTypeName(fileType)}: ${fileName}${fileSize}${helpIconHTML}`;
+      progressSpan.textContent = `✗ 上传失败: ${errorMessage}`;
     } else if (status === 'analyzing') {
-      nameSpan.innerHTML = `正在分析文件内容${helpIconHTML}`;
-      if (progressSpan) progressSpan.textContent = '分析中...';
+      nameSpan.innerHTML = `${this.getFileTypeName(fileType)}: 正在分析文件内容${helpIconHTML}`;
+      progressSpan.textContent = '分析中...';
     } else if (status === 'empty') {
-      const hint = fileConfig ? fileConfig.hint : '';
-      nameSpan.innerHTML = `${fileConfig ? fileConfig.name : fileType}：等待上传（${hint}）${helpIconHTML}`;
-      if (progressSpan) progressSpan.textContent = '未上传';
+      const hint = this.options.fileTypeHints[fileType] || '';
+      nameSpan.innerHTML = `${this.getFileTypeName(fileType)}：等待上传（${hint}）${helpIconHTML}`;
+      progressSpan.textContent = '未上传';
     } else if (status === 'optional') {
-      const hint = fileConfig ? fileConfig.hint : '';
-      nameSpan.innerHTML = `${fileConfig ? fileConfig.name : fileType}：等待上传（${hint}）${helpIconHTML}`;
-      if (progressSpan) progressSpan.textContent = '未上传（可选）';
+      const hint = this.options.fileTypeHints[fileType] || '';
+      nameSpan.innerHTML = `${this.getFileTypeName(fileType)}：等待上传（${hint}）${helpIconHTML}`;
+      progressSpan.textContent = '未上传（可选）';
     }
 
-    // 添加或更新删除按钮
+    // 添加或更新删除按钮 - 固定样式和位置
     let removeBtn = fileItem.querySelector('.remove-file');
     if (status === 'uploaded') {
       if (!removeBtn) {
         removeBtn = DOM.create('button', {
-          className: 'remove-file',
-          style: `
-            background: var(--error-color);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-          `
+          className: 'remove-file'
         }, '×');
-
+        
         removeBtn.addEventListener('click', () => this.removeFile(fileType));
-        removeBtn.addEventListener('mouseenter', () => {
-          removeBtn.style.background = '#cc0055';
-        });
-        removeBtn.addEventListener('mouseleave', () => {
-          removeBtn.style.background = 'var(--error-color)';
-        });
-
         fileItem.appendChild(removeBtn);
       }
     } else if (removeBtn) {
@@ -727,17 +633,29 @@ class FileUploadComponent {
    * 设置文件类型显示
    */
   setupFileTypes() {
+    // 初始化所有文件项为空状态
     Object.keys(this.uploadedFiles).forEach(fileType => {
-      const fileConfig = FILE_TYPES[fileType];
-      const isOptional = this.pageConfig && this.pageConfig.optional && this.pageConfig.optional.includes(fileType);
-      this.updateFileItemUI(null, fileType, isOptional ? 'optional' : 'empty');
+      // 库存报告为可选，不显示为empty状态
+      if (fileType === 'inventory_report') {
+        this.updateFileItemUI(null, fileType, 'optional');
+      } else {
+        this.updateFileItemUI(null, fileType, 'empty');
+      }
     });
+  }
+
+  /**
+   * 获取文件类型名称
+   */
+  getFileTypeName(fileType) {
+    return this.options.fileNames[fileType] || fileType;
   }
 
   /**
    * 设置文件项事件
    */
   setupFileItemEvents() {
+    // 项目名称改变时清空已上传的文件
     const projectNameSelect = DOM.find('#project_name');
     if (projectNameSelect) {
       projectNameSelect.addEventListener('change', () => {
@@ -756,8 +674,9 @@ class FileUploadComponent {
       pathInput.value = '';
     }
 
-    const isOptional = this.pageConfig && this.pageConfig.optional && this.pageConfig.optional.includes(fileType);
-    this.updateFileItemUI(null, fileType, isOptional ? 'optional' : 'empty');
+    // 重置UI为空状态
+    this.updateFileItemUI(null, fileType, 'empty');
+
     this.checkAllFilesUploaded();
   }
 
@@ -771,15 +690,14 @@ class FileUploadComponent {
       if (pathInput) {
         pathInput.value = '';
       }
-
-      const isOptional = this.pageConfig && this.pageConfig.optional && this.pageConfig.optional.includes(key);
-      this.updateFileItemUI(null, key, isOptional ? 'optional' : 'empty');
+      this.updateFileItemUI(null, key, 'empty');
     });
 
     if (this.submitBtn) {
       this.submitBtn.disabled = true;
     }
 
+    // 清空文件时移除completed状态
     if (this.dropArea) {
       this.dropArea.classList.remove('completed');
     }
@@ -795,13 +713,13 @@ class FileUploadComponent {
       this.submitBtn.disabled = !allRequiredUploaded;
 
       if (allRequiredUploaded) {
-        this.submitBtn.textContent = this.submitText;
+        this.submitBtn.textContent = this.options.isDailyReport ? '生成日报' : '生成产品分析';
       } else {
         this.submitBtn.textContent = '请等待必填文件上传完成';
       }
     }
 
-    // 设置拖拽区域状态
+    // 如果必填文件都已上传，设置拖拽区域为completed状态
     if (allRequiredUploaded && this.dropArea) {
       this.dropArea.classList.add('completed');
     } else if (this.dropArea) {
@@ -825,38 +743,58 @@ class FileUploadComponent {
       this.fileInput.value = '';
     }
   }
-
-  /**
-   * 销毁组件
-   */
-  destroy() {
-    if (this.fileInput) {
-      this.fileInput.removeEventListener('change', this.handleFileSelect.bind(this));
-    }
-
-    if (this.dropArea) {
-      this.dropArea.removeEventListener('dragover', this.preventDefaults.bind(this));
-      this.dropArea.removeEventListener('dragleave', this.unhighlight.bind(this));
-      this.dropArea.removeEventListener('dragenter', this.highlight.bind(this));
-      this.dropArea.removeEventListener('drop', this.handleDrop.bind(this));
-    }
-  }
 }
 
-// 导出配置和类
+// 文件上传工具函数
+const FileUploadUtils = {
+  /**
+   * 创建文件上传组件实例
+   */
+  create(options) {
+    return new FileUploadComponent(options);
+  },
+
+  /**
+   * 验证文件类型
+   */
+  validateFileType(file, allowedTypes = ['csv', 'xlsx']) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    return allowedTypes.includes(ext);
+  },
+
+  /**
+   * 格式化文件大小
+   */
+  formatFileSize: StringUtils.formatFileSize,
+
+  /**
+   * 创建文件验证错误消息
+   */
+  createValidationMessage(file, allowedTypes, maxSize) {
+    const messages = [];
+    
+    if (!this.validateFileType(file, allowedTypes)) {
+      messages.push(`不支持的文件格式 "${file.name}"，仅支持 ${allowedTypes.join(', ')} 格式`);
+    }
+    
+    if (!Validation.isValidFileSize(file, maxSize)) {
+      messages.push(`文件 "${file.name}" 过大，最大支持 ${StringUtils.formatFileSize(maxSize)}`);
+    }
+    
+    return messages;
+  }
+};
+
+// 导出
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     FileUploadComponent,
-    FILE_TYPES,
-    PAGE_CONFIGS,
-    FILE_TYPE_RULES
+    FileUploadUtils
   };
 }
 
 // 挂载到全局
 if (typeof window !== 'undefined') {
   window.FileUploadComponent = FileUploadComponent;
-  window.FILE_TYPES = FILE_TYPES;
-  window.PAGE_CONFIGS = PAGE_CONFIGS;
-  window.FILE_TYPE_RULES = FILE_TYPE_RULES;
+  window.FileUploadUtils = FileUploadUtils;
 }

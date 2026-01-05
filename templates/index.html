@@ -14,22 +14,28 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layouts.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/themes.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/file-upload.css') }}">
     <!-- 优化后的模块化JavaScript文件 -->
     <script src="{{ url_for('static', filename='js/core/utils.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/core/notifications.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/core/api.js') }}" defer></script>
+    
+    <!-- 核心模块 -->
+    <script src="{{ url_for('static', filename='js/core/config.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/core/navigation.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/core/page-loader.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/core/page-initializers.js') }}" defer></script>
     
     <!-- 组件文件 -->
     <script src="{{ url_for('static', filename='js/components/dashboard.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/components/file-upload.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/components/shop-management.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/components/user-management.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/components/keyboard-shortcuts.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/components/modal.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/components/form-validation.js') }}" defer></script>
     
     <!-- 主应用文件 -->
-    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/core/app.js') }}" defer></script>
 </head>
 
 <body>
@@ -95,6 +101,12 @@
                     </div>
                     <ul class="submenu">
                         <li class="nav-item">
+                            <a href="#" data-content="yumai-analysis" class="nav-link">
+                                <i class="fas fa-chart-line"></i>
+                                <span>商品分析（优麦云日/周报）</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="#" data-content="daily-report" class="nav-link">
                                 <i class="fas fa-calendar-day"></i>
                                 <span>销售日报</span>
@@ -111,13 +123,7 @@
                                 <i class="fas fa-calculator"></i>
                                 <span>产品分析</span>
                             </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" data-content="yumai-analysis" class="nav-link">
-                                <i class="fas fa-chart-line"></i>
-                                <span>商品分析（优麦云）</span>
-                            </a>
-                        </li>
+                        </li>                        
                     </ul>
                 </li>
                 <li class="menu-group">

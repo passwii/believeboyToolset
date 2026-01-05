@@ -1,4 +1,12 @@
-from flask import Blueprint, render_template, request, send_file, redirect, flash, url_for
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    send_file,
+    redirect,
+    flash,
+    url_for,
+)
 import os
 import io
 import datetime
@@ -12,87 +20,118 @@ from openpyxl.styles import Border, Side, Alignment
 from openpyxl.utils import get_column_letter
 from core.log_service import LogService
 
-product_analysis_bp = Blueprint('product_analysis', __name__)
+product_analysis_bp = Blueprint("product_analysis", __name__)
+
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'csv', 'xlsx', 'txt'}
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in {
+        "csv",
+        "xlsx",
+        "txt",
+    }
 
-def process_product_analysis(project_name, report_start_date, report_end_date, business_report_path, payment_report_path, ad_product_report_path, inventory_report_path=None):
+
+def process_product_analysis(
+    project_name,
+    report_start_date,
+    report_end_date,
+    business_report_path,
+    payment_report_path,
+    ad_report_path,
+    fba_report_path=None,
+):
     if not project_name:
         raise ValueError("Project name cannot be empty")
-    current_time = datetime.datetime.now().strftime('%H%M')
+    current_time = datetime.datetime.now().strftime("%H%M")
     source_folder = os.getcwd()
     os.chdir(source_folder)
-    
+
     print(f"[DEBUG] 开始处理产品分析，项目名称: {project_name}")
     print(f"[DEBUG] 报告开始日期: {report_start_date}, 结束日期: {report_end_date}")
     print(f"[DEBUG] 商业报告路径: {business_report_path}")
     print(f"[DEBUG] 付款报告路径: {payment_report_path}")
-    print(f"[DEBUG] 广告产品报告路径: {ad_product_report_path}")
-    if inventory_report_path:
-        print(f"[DEBUG] 库存报告路径: {inventory_report_path}")
-    
+    print(f"[DEBUG] 广告产品报告路径: {ad_report_path}")
+    if fba_report_path:
+        print(f"[DEBUG] 库存报告路径: {fba_report_path}")
+
     print(f"[DEBUG] 处理产品分析参数:")
     print(f"[DEBUG] 项目名称: {project_name}")
     print(f"[DEBUG] 报告开始日期: {report_start_date}")
     print(f"[DEBUG] 报告结束日期: {report_end_date}")
     print(f"[DEBUG] 商业报告路径: {business_report_path}")
     print(f"[DEBUG] 付款报告路径: {payment_report_path}")
-    print(f"[DEBUG] 广告产品报告路径: {ad_product_report_path}")
+    print(f"[DEBUG] 广告产品报告路径: {ad_report_path}")
     print(f"[DEBUG] 当前时间: {datetime.datetime.now().strftime('%H%M')}")
-    if inventory_report_path:
-        print(f"[DEBUG] 库存报告路径: {inventory_report_path}")
+    if fba_report_path:
+        print(f"[DEBUG] 库存报告路径: {fba_report_path}")
 
     # Generate report date from start date and end date (YYYYMMDD-MMDD format)
-    start_date_parts = report_start_date.split('-')
-    end_date_parts = report_end_date.split('-')
+    start_date_parts = report_start_date.split("-")
+    end_date_parts = report_end_date.split("-")
     start_date_part = f"{start_date_parts[0]}{start_date_parts[1]}{start_date_parts[2]}"  # 获取完整日期，如 '20251201'
-    end_date_part = f"{end_date_parts[1]}{end_date_parts[2]}"        # 获取月份和日期，如 '1207'
+    end_date_part = (
+        f"{end_date_parts[1]}{end_date_parts[2]}"  # 获取月份和日期，如 '1207'
+    )
     report_date = f"{start_date_part}-{end_date_part}"
     print(f"[DEBUG] 生成报告日期: {report_date}")
 
-    project_folder_path = os.path.join(source_folder, 'project', project_name, '产品数据分析')
+    project_folder_path = os.path.join(
+        source_folder, "project", project_name, "产品数据分析"
+    )
     os.makedirs(project_folder_path, exist_ok=True)
 
-    tmp_folder_path = os.path.join(source_folder, 'project', project_name, 'tmp')
+    tmp_folder_path = os.path.join(source_folder, "project", project_name, "tmp")
     os.makedirs(tmp_folder_path, exist_ok=True)
 
-    product_analysis_file_path = os.path.join(project_folder_path, f'{project_name}_ProductAnalysis_{report_date}.xlsx')
+    product_analysis_file_path = os.path.join(
+        project_folder_path, f"{project_name}_ProductAnalysis_{report_date}.xlsx"
+    )
 
     print(f"[DEBUG] 读取商业报告文件: {business_report_path}")
-    business_report = pd.read_csv(business_report_path, encoding='utf-8')
+    business_report = pd.read_csv(business_report_path, encoding="utf-8")
     print(f"[DEBUG] 商业报告数据形状: {business_report.shape}")
-    
+
     print(f"[DEBUG] 读取付款报告文件: {payment_report_path}")
-    payment_report = pd.read_csv(payment_report_path, encoding='utf-8', thousands=',', skiprows=7)
+    payment_report = pd.read_csv(
+        payment_report_path, encoding="utf-8", thousands=",", skiprows=7
+    )
     print(f"[DEBUG] 付款报告数据形状: {payment_report.shape}")
-    
-    print(f"[DEBUG] 读取广告产品报告文件: {ad_product_report_path}")
-    ad_product_report = pd.read_excel(ad_product_report_path, engine='openpyxl')
+
+    print(f"[DEBUG] 读取广告产品报告文件: {ad_report_path}")
+    ad_product_report = pd.read_excel(ad_report_path, engine="openpyxl")
     print(f"[DEBUG] 广告产品报告数据形状: {ad_product_report.shape}")
-    
+
     print(f"[DEBUG] 读取基础信息表文件: apps/model_file/BLF_Basic_Info.csv")
-    basic_report = pd.read_csv('apps/model_file/BLF_Basic_Info.csv', encoding='utf-8')
+    basic_report = pd.read_csv("apps/model_file/BLF_Basic_Info.csv", encoding="utf-8")
     print(f"[DEBUG] 基础信息表数据形状: {basic_report.shape}")
-    
+
     # 根据当前项目名称过滤基础信息数据
     print(f"[DEBUG] 过滤基础信息表，项目名称: {project_name}")
     before_filter = basic_report.shape
-    basic_report = basic_report[basic_report['project_name'] == project_name]
+    basic_report = basic_report[basic_report["project_name"] == project_name]
     after_filter = basic_report.shape
     print(f"[DEBUG] 基础信息表过滤前形状: {before_filter}, 过滤后形状: {after_filter}")
     if after_filter[0] == 0:
         print(f"[ERROR] 没有找到项目名称为 '{project_name}' 的数据！")
 
     files_to_copy = [
-        (business_report_path, f'{tmp_folder_path}/{project_name}_Business_Report_{report_date}_{current_time}.csv'),
-        (payment_report_path, f'{tmp_folder_path}/{project_name}_Payment_Report_{report_date}_{current_time}.csv'),
-        (ad_product_report_path, f'{tmp_folder_path}/{project_name}_AD_Product_{report_date}_{current_time}.xlsx')
+        (
+            business_report_path,
+            f"{tmp_folder_path}/{project_name}_Business_Report_{report_date}_{current_time}.csv",
+        ),
+        (
+            payment_report_path,
+            f"{tmp_folder_path}/{project_name}_Payment_Report_{report_date}_{current_time}.csv",
+        ),
+        (
+            ad_report_path,
+            f"{tmp_folder_path}/{project_name}_AD_Product_{report_date}_{current_time}.xlsx",
+        ),
     ]
 
-    if inventory_report_path and os.path.exists(inventory_report_path):
-        tmp_inv_path = f'{tmp_folder_path}/{project_name}_Inventory_Report_{report_date}_{current_time}.csv'
-        files_to_copy.append((inventory_report_path, tmp_inv_path))
+    if fba_report_path and os.path.exists(fba_report_path):
+        tmp_inv_path = f"{tmp_folder_path}/{project_name}_Inventory_Report_{report_date}_{current_time}.csv"
+        files_to_copy.append((fba_report_path, tmp_inv_path))
 
     for src, dst in files_to_copy:
         shutil.copy(src, dst)
@@ -101,278 +140,424 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     df_project_sku_asin = basic_report.copy()
 
     # 广告数据读取
-    df_ad_sku_asin = ad_product_report[['广告SKU', '广告ASIN']].copy()
-    df_ad_sku_asin.rename(columns={'广告SKU': 'SKU', '广告ASIN': 'ASIN'}, inplace=True)
+    df_ad_sku_asin = ad_product_report[["广告SKU", "广告ASIN"]].copy()
+    df_ad_sku_asin.rename(columns={"广告SKU": "SKU", "广告ASIN": "ASIN"}, inplace=True)
     df_ad_sku_asin = df_ad_sku_asin.drop_duplicates()
 
-    ad_column = ['广告SKU', '展示量', '点击量', '花费', '7天总销售额', '7天总销售量(#)']
-    df_ad_simple = (ad_product_report[ad_column].copy()).groupby('广告SKU').sum().reset_index()
-    df_ad_simple.rename(columns={'广告SKU': 'SKU',
-                                 '展示量': '广告展示量',
-                                 '点击量': '广告点击量',
-                                 '花费': '广告花费',
-                                 '7天总销售量(#)': '广告订单量',
-                                 '7天总销售额': '广告销售额'}, inplace=True)
+    ad_column = ["广告SKU", "展示量", "点击量", "花费", "7天总销售额", "7天总销售量(#)"]
+    df_ad_simple = (
+        (ad_product_report[ad_column].copy()).groupby("广告SKU").sum().reset_index()
+    )
+    df_ad_simple.rename(
+        columns={
+            "广告SKU": "SKU",
+            "展示量": "广告展示量",
+            "点击量": "广告点击量",
+            "花费": "广告花费",
+            "7天总销售量(#)": "广告订单量",
+            "7天总销售额": "广告销售额",
+        },
+        inplace=True,
+    )
     # 将广告数据与项目数据进行合并, 让 SKU-ASIN 表加入到广告数据表中
-    df_merge_ad_sku_asin = pd.merge(df_project_sku_asin, df_ad_simple, on='SKU', how='left')
+    df_merge_ad_sku_asin = pd.merge(
+        df_project_sku_asin, df_ad_simple, on="SKU", how="left"
+    )
 
     # 读取Payment数据表，此时数据表中的sku都是小写格式
     df_payment = payment_report.copy()
     df_payment.fillna(0, inplace=True)
 
     # 筛选出类型为'Order'和'Refund'的记录
-    df_order_and_refund = df_payment.loc[df_payment['type'].isin(['Order', 'Refund'])]
+    df_order_and_refund = df_payment.loc[df_payment["type"].isin(["Order", "Refund"])]
     # 分别筛选出类型为'Order'和'Refund'的记录
-    df_orders = df_payment.loc[df_payment['type'].isin(['Order'])]
-    df_refund = df_payment.loc[df_payment['type'].isin(['Refund'])]
-    
+    df_orders = df_payment.loc[df_payment["type"].isin(["Order"])]
+    df_refund = df_payment.loc[df_payment["type"].isin(["Refund"])]
+
     # 计算每个sku的销售和退款的平台费用与FBA配送费
-    sale_refund_amz_fee = df_order_and_refund.groupby('sku', as_index=False).agg({
-        'selling fees': lambda x: round(x.mul(-1).sum(), 2),
-        'fba fees': lambda x: round(x.mul(-1).sum(), 2)
-    })
+    sale_refund_amz_fee = df_order_and_refund.groupby("sku", as_index=False).agg(
+        {
+            "selling fees": lambda x: round(x.mul(-1).sum(), 2),
+            "fba fees": lambda x: round(x.mul(-1).sum(), 2),
+        }
+    )
 
     # 计算每个sku的销售总额，包括产品销售、运费和促销折扣
-    sale_group = df_orders.groupby('sku', as_index=False).agg({'quantity': 'sum',
-                                                               'product sales': lambda x: round(x.sum(), 2),
-                                                               'shipping credits': lambda x: round(x.sum(), 2),
-                                                               'promotional rebates': lambda x: round(x.sum(), 2)
-    })
+    sale_group = df_orders.groupby("sku", as_index=False).agg(
+        {
+            "quantity": "sum",
+            "product sales": lambda x: round(x.sum(), 2),
+            "shipping credits": lambda x: round(x.sum(), 2),
+            "promotional rebates": lambda x: round(x.sum(), 2),
+        }
+    )
 
     # 计算每个sku的退款总额，包括产品销售、运费、促销折扣和其他费用
-    df_refund_group = df_refund.groupby('sku', as_index=False).agg({'quantity': 'sum',
-                                                                   'product sales': lambda x: round(x.sum(), 2),
-                                                                   'shipping credits': lambda x: round(x.sum(), 2),
-                                                                   'promotional rebates': lambda x: round(x.sum(), 2),
-                                                                   'other': lambda x: round(x.sum(), 2)
-    })
+    df_refund_group = df_refund.groupby("sku", as_index=False).agg(
+        {
+            "quantity": "sum",
+            "product sales": lambda x: round(x.sum(), 2),
+            "shipping credits": lambda x: round(x.sum(), 2),
+            "promotional rebates": lambda x: round(x.sum(), 2),
+            "other": lambda x: round(x.sum(), 2),
+        }
+    )
 
     # 计算销售数据的总销售额
-    sale_group['sale total'] = (sale_group['product sales'] + sale_group['shipping credits']
-                                + sale_group['promotional rebates'])
+    sale_group["sale total"] = (
+        sale_group["product sales"]
+        + sale_group["shipping credits"]
+        + sale_group["promotional rebates"]
+    )
 
     # 计算退款数据的总退款额
-    df_refund_group['refund total'] = abs(df_refund_group['product sales'] + df_refund_group['shipping credits']
-                                          + df_refund_group['promotional rebates'] + df_refund_group['other'])  
-    
+    df_refund_group["refund total"] = abs(
+        df_refund_group["product sales"]
+        + df_refund_group["shipping credits"]
+        + df_refund_group["promotional rebates"]
+        + df_refund_group["other"]
+    )
+
     # 重命名销售数据的列名，以便更清晰地反映数据内容
-    sale_group = sale_group.rename(columns={
-        'quantity': '实际销售量',
-        'sale total': '实际销售额'
-    })
+    sale_group = sale_group.rename(
+        columns={"quantity": "实际销售量", "sale total": "实际销售额"}
+    )
     # 移除不再需要的列
-    sale_group = sale_group.drop(columns=['product sales', 'shipping credits', 'promotional rebates'])
-    
+    sale_group = sale_group.drop(
+        columns=["product sales", "shipping credits", "promotional rebates"]
+    )
+
     # 重命名退款数据的列名，以便更清晰地反映数据内容
-    df_refund_group = df_refund_group.rename(columns={
-        'quantity': '实际退款量',
-        'refund total': '实际退款额'
-    })
+    df_refund_group = df_refund_group.rename(
+        columns={"quantity": "实际退款量", "refund total": "实际退款额"}
+    )
     # 移除不再需要的列
-    df_refund_group = df_refund_group.drop(columns=['product sales', 'shipping credits', 'promotional rebates', 'other'])   
-    
+    df_refund_group = df_refund_group.drop(
+        columns=["product sales", "shipping credits", "promotional rebates", "other"]
+    )
+
     # 合并销售和退款数据
-    df_sale_refund_only = pd.merge(sale_group, df_refund_group, on='sku', how='left')
+    df_sale_refund_only = pd.merge(sale_group, df_refund_group, on="sku", how="left")
     # 合并销售退款数据和平台费用与FBA配送费数据
-    df_sale_refund = pd.merge(df_sale_refund_only, sale_refund_amz_fee, on='sku', how='left')
-    
+    df_sale_refund = pd.merge(
+        df_sale_refund_only, sale_refund_amz_fee, on="sku", how="left"
+    )
+
     # 重命名最终数据的列名，使其更易于理解
-    df_sale_refund.rename(columns={
-        'sku': 'SKU',
-        'selling fees': '平台佣金',
-        'fba fees': 'FBA配送费'
-    }, inplace=True)
-    
+    df_sale_refund.rename(
+        columns={"sku": "SKU", "selling fees": "平台佣金", "fba fees": "FBA配送费"},
+        inplace=True,
+    )
+
     # 根据SKU将销售退款数据与项目SKU信息进行合并，以获取每个SKU的头程单价和FOB单价信息
-    df_sale_refund_basic_info = pd.merge(df_sale_refund,
-                                         df_project_sku_asin[['SKU', '头程单价', 'FOB单价']], on='SKU', how='left')
-    
+    df_sale_refund_basic_info = pd.merge(
+        df_sale_refund,
+        df_project_sku_asin[["SKU", "头程单价", "FOB单价"]],
+        on="SKU",
+        how="left",
+    )
+
     # 由于已通过合并获取了所需信息，因此删除原列以简化数据集
-    df_sale_refund_basic_info = df_sale_refund_basic_info.drop(columns=['头程单价', 'FOB单价'])
-    
+    df_sale_refund_basic_info = df_sale_refund_basic_info.drop(
+        columns=["头程单价", "FOB单价"]
+    )
+
     # 选择保留的关键业务指标列，这些指标对于分析销售和市场表现至关重要
-    business_to_keep = ['（子）ASIN', '页面浏览量 - 总计 ', '已订购商品数量', '会话数 - 总计', '已订购商品销售额']
+    business_to_keep = [
+        "（子）ASIN",
+        "页面浏览量 - 总计 ",
+        "已订购商品数量",
+        "会话数 - 总计",
+        "已订购商品销售额",
+    ]
     # 从原始业务报告数据框中提取保留的列，并创建一个新的数据框
     business_report = business_report[business_to_keep].copy()
-    
+
     # 重命名列，以便更清晰地反映数据的含义，简化后续分析
-    business_report.rename(columns={'（子）ASIN': 'ASIN',
-                                    '页面浏览量 - 总计 ': '页面浏览量',
-                                    '已订购商品数量': '总销量',
-                                    '会话数 - 总计': '总访客',
-                                    '已订购商品销售额': '总销售额',
-                                    }, inplace=True)
+    business_report.rename(
+        columns={
+            "（子）ASIN": "ASIN",
+            "页面浏览量 - 总计 ": "页面浏览量",
+            "已订购商品数量": "总销量",
+            "会话数 - 总计": "总访客",
+            "已订购商品销售额": "总销售额",
+        },
+        inplace=True,
+    )
     # 将总销售额列，逗号和 US$符号去除,并且数值化
-    business_report['总销售额'] = business_report['总销售额'].replace({r'\$': '', ',': '', 'US': ''}, regex=True).astype(float)
+    business_report["总销售额"] = (
+        business_report["总销售额"]
+        .replace({r"\$": "", ",": "", "US": ""}, regex=True)
+        .astype(float)
+    )
 
     # 合并广告与业务数据，基于ASIN关联，以便整合不同数据源的信息
-    df_merge_business_ad_asin = pd.merge(df_merge_ad_sku_asin, business_report, on='ASIN', how='left')
+    df_merge_business_ad_asin = pd.merge(
+        df_merge_ad_sku_asin, business_report, on="ASIN", how="left"
+    )
     # 进一步合并销售与退款基本信息，基于SKU关联，完善数据视图
-    df_merge_business_ad_basic = pd.merge(df_merge_business_ad_asin, df_sale_refund_basic_info, on='SKU',
-                                          how='left')
+    df_merge_business_ad_basic = pd.merge(
+        df_merge_business_ad_asin, df_sale_refund_basic_info, on="SKU", how="left"
+    )
     # 创建最终的数据合并副本，为后续计算和分析做准备
     df_merge_all = df_merge_business_ad_basic.copy()
     # 计算产品的FOB成本，即实际销售量乘以FOB单价，用于分析成本
-    df_merge_all['产品FOB'] = df_merge_all['实际销售量'] * df_merge_all['FOB单价']
-    
+    df_merge_all["产品FOB"] = df_merge_all["实际销售量"] * df_merge_all["FOB单价"]
+
     # 计算销售过程中的头程成本，即实际销售量乘以头程单价，用于分析物流成本
-    df_merge_all['销售头程'] = df_merge_all['实际销售量'] * df_merge_all['头程单价']
-    
+    df_merge_all["销售头程"] = df_merge_all["实际销售量"] * df_merge_all["头程单价"]
+
     # 总览所有数据
     # 业务报告：页面浏览量	总访客	总销量	总转化	总销售额
     # 广告数据：广告展示量	广告点击	广告点击率	广告订单量	广告单占比	广告转化	广告花费	广告销售额	CPC	ACOS	SP
     # 自然数据；自然流量	自然流量占比	自然单	自然单转化	退款量	退款率
     # Payment数据：产品FOB	成本占比	销售头程	头程占比	配送费	配送费占比	佣金	佣金占比	总成本	总成本占比	利润	利润率	实际销售额	平均售价
-    
-    overview_data = {
-        '日期': [],
-        # 基础信息
-        'SKU': [],
-        'ASIN': [],
-        # 业务报告
-        '总销量': [],
-        '总销售额': [],
-        '页面浏览量': [],
-        '总访客': [],
-        '总转化': [],  # 总转化 = 总销量 / 页面浏览量
-        # 广告数据
-        '广告展示量': [],
-        '广告点击量': [],
-        '广告点击率': [],  # 广告点击率 = 广告点击量 / 广告展示量
-        '广告订单量': [],
-        '广告单占比': [],  # 广告单占比 = 广告订单量 / 业务报告销售量
-        '广告转化率': [],  # 广告转化 = 广告订单量 / 广告点击量
-        '广告花费': [],
-        '广告销售额': [],
-        'CPC': [],  # CPC = 广告花费 / 广告点击量
-        'ACOS': [],  # ACOS = 广告花费 / 广告销售额
-        'SP占比': [],  # SP占比 = 广告花费 / 总销售额
-        # 自然数据
-        '自然流量': [],  # 自然流量 = 页面浏览量 - 广告点击量
-        '自然流量占比': [],  # 自然流量占比 = 自然流量 / 页面浏览量
-        '自然单': [],  # 自然单 = 总销量 - 广告订单量
-        '自然单转化': [],  # 自然单转化 = 自然单 / 自然流量
 
+    overview_data = {
+        "日期": [],
+        # 基础信息
+        "SKU": [],
+        "ASIN": [],
+        # 业务报告
+        "总销量": [],
+        "总销售额": [],
+        "页面浏览量": [],
+        "总访客": [],
+        "总转化": [],  # 总转化 = 总销量 / 页面浏览量
+        # 广告数据
+        "广告展示量": [],
+        "广告点击量": [],
+        "广告点击率": [],  # 广告点击率 = 广告点击量 / 广告展示量
+        "广告订单量": [],
+        "广告单占比": [],  # 广告单占比 = 广告订单量 / 业务报告销售量
+        "广告转化率": [],  # 广告转化 = 广告订单量 / 广告点击量
+        "广告花费": [],
+        "广告销售额": [],
+        "CPC": [],  # CPC = 广告花费 / 广告点击量
+        "ACOS": [],  # ACOS = 广告花费 / 广告销售额
+        "SP占比": [],  # SP占比 = 广告花费 / 总销售额
+        # 自然数据
+        "自然流量": [],  # 自然流量 = 页面浏览量 - 广告点击量
+        "自然流量占比": [],  # 自然流量占比 = 自然流量 / 页面浏览量
+        "自然单": [],  # 自然单 = 总销量 - 广告订单量
+        "自然单转化": [],  # 自然单转化 = 自然单 / 自然流量
         # Payment数据
-        '产品FOB': [],
-        '成本占比': [],
-        '销售头程': [],
-        '头程占比': [],
-        'FBA配送费': [],
-        '配送费占比': [],
-        '平台佣金': [],
-        '佣金占比': [],
-        '总成本': [],
-        '总成本占比': [],
-        '利润': [],
-        '利润率': [],
-        '实际销售额': [],
-        '实际销售量': [],
-        '实际退款额': [],
-        '实际退款量': [],
-        '平均售价': [],  # 平均售价 = 实际销售额 / 实际销售量
-        '退款率': [],  # 退款率 = 实际退款 / 实际销量'
+        "产品FOB": [],
+        "成本占比": [],
+        "销售头程": [],
+        "头程占比": [],
+        "FBA配送费": [],
+        "配送费占比": [],
+        "平台佣金": [],
+        "佣金占比": [],
+        "总成本": [],
+        "总成本占比": [],
+        "利润": [],
+        "利润率": [],
+        "实际销售额": [],
+        "实际销售量": [],
+        "实际退款额": [],
+        "实际退款量": [],
+        "平均售价": [],  # 平均售价 = 实际销售额 / 实际销售量
+        "退款率": [],  # 退款率 = 实际退款 / 实际销量'
     }
 
     # 汇总
     df_overview = pd.DataFrame(overview_data)
     df_overview = pd.concat([df_overview, df_merge_all], ignore_index=True)
     # df_overview = df_overview.drop_duplicates(subset=['SKU', 'ASIN'], keep='first')
-    df_overview['日期'] = report_date
+    df_overview["日期"] = report_date
 
     # 处理前的NA填充
-    df_overview['实际销售额'] = df_overview['实际销售额'].fillna(0)
-    df_overview['实际退款额'] = df_overview['实际退款额'].fillna(0)
-    df_overview['实际销售量'] = df_overview['实际销售量'].fillna(0)
+    df_overview["实际销售额"] = df_overview["实际销售额"].fillna(0)
+    df_overview["实际退款额"] = df_overview["实际退款额"].fillna(0)
+    df_overview["实际销售量"] = df_overview["实际销售量"].fillna(0)
 
     # 业务报告
-    df_overview['总销量'] = df_overview['总销量'].fillna(0)
-    df_overview['总销售额'] = df_overview['总销售额'].fillna(0)
-    df_overview['页面浏览量'] = pd.to_numeric(df_overview['页面浏览量'].fillna(0).astype(str).str.replace(',', ''), errors='coerce')
-    df_overview['总访客'] = pd.to_numeric(df_overview['总访客'].fillna(0).astype(str).str.replace(',', ''), errors='coerce')
-    
+    df_overview["总销量"] = df_overview["总销量"].fillna(0)
+    df_overview["总销售额"] = df_overview["总销售额"].fillna(0)
+    df_overview["页面浏览量"] = pd.to_numeric(
+        df_overview["页面浏览量"].fillna(0).astype(str).str.replace(",", ""),
+        errors="coerce",
+    )
+    df_overview["总访客"] = pd.to_numeric(
+        df_overview["总访客"].fillna(0).astype(str).str.replace(",", ""),
+        errors="coerce",
+    )
+
     # 计算总转化率，当页面浏览量为0时，总转化为0
-    df_overview['总转化'] = np.where(df_overview['页面浏览量'] == 0, 0, df_overview['总销量'] / df_overview['页面浏览量'])
-    
+    df_overview["总转化"] = np.where(
+        df_overview["页面浏览量"] == 0,
+        0,
+        df_overview["总销量"] / df_overview["页面浏览量"],
+    )
+
     # 自然流量
-    df_overview['自然流量'] = df_overview['页面浏览量'] - df_overview['广告点击量']
-    df_overview['自然流量占比'] = (df_overview['自然流量'] / df_overview['页面浏览量']).round(4)
-    df_overview['自然单'] = df_overview['总销量'] - df_overview['广告订单量']
-    df_overview['自然单转化'] = np.where(df_overview['自然流量'] == 0, 0, df_overview['自然单'] / df_overview['自然流量'])
-    
+    df_overview["自然流量"] = df_overview["页面浏览量"] - df_overview["广告点击量"]
+    df_overview["自然流量占比"] = (
+        df_overview["自然流量"] / df_overview["页面浏览量"]
+    ).round(4)
+    df_overview["自然单"] = df_overview["总销量"] - df_overview["广告订单量"]
+    df_overview["自然单转化"] = np.where(
+        df_overview["自然流量"] == 0, 0, df_overview["自然单"] / df_overview["自然流量"]
+    )
+
     # 广告
-    df_overview['广告花费'] = df_overview['广告花费'].round(2)
-    df_overview['广告销售额'] = df_overview['广告销售额'].round(2)
+    df_overview["广告花费"] = df_overview["广告花费"].round(2)
+    df_overview["广告销售额"] = df_overview["广告销售额"].round(2)
     # 处理广告数据中的NaN值，然后转换为整数
-    df_overview['广告展示量'] = df_overview['广告展示量'].fillna(0).astype(int)
-    df_overview['广告点击量'] = df_overview['广告点击量'].fillna(0).astype(int)
-    df_overview['广告订单量'] = df_overview['广告订单量'].fillna(0).astype(int)
-    df_overview['广告点击率'] = np.where(df_overview['广告展示量'] == 0, 0, df_overview['广告点击量'] / df_overview['广告展示量'])
-    df_overview['广告单占比'] = np.where(df_overview['总销量'] == 0, 0, df_overview['广告订单量'] / df_overview['总销量'])
-    df_overview['广告转化率'] = df_overview['广告订单量'] / df_overview['广告点击量']
-    df_overview['CPC'] = np.where(df_overview['广告点击量'] == 0, 0, df_overview['广告花费'] / df_overview['广告点击量']).round(2)
-    df_overview['ACOS'] = np.where(df_overview['广告销售额'] == 0, 0, df_overview['广告花费'] / df_overview['广告销售额'])
-    df_overview['SP占比'] = np.where(df_overview['总销售额'] == 0, 0, df_overview['广告花费'] / df_overview['总销售额'])
-    
+    df_overview["广告展示量"] = df_overview["广告展示量"].fillna(0).astype(int)
+    df_overview["广告点击量"] = df_overview["广告点击量"].fillna(0).astype(int)
+    df_overview["广告订单量"] = df_overview["广告订单量"].fillna(0).astype(int)
+    df_overview["广告点击率"] = np.where(
+        df_overview["广告展示量"] == 0,
+        0,
+        df_overview["广告点击量"] / df_overview["广告展示量"],
+    )
+    df_overview["广告单占比"] = np.where(
+        df_overview["总销量"] == 0, 0, df_overview["广告订单量"] / df_overview["总销量"]
+    )
+    df_overview["广告转化率"] = df_overview["广告订单量"] / df_overview["广告点击量"]
+    df_overview["CPC"] = np.where(
+        df_overview["广告点击量"] == 0,
+        0,
+        df_overview["广告花费"] / df_overview["广告点击量"],
+    ).round(2)
+    df_overview["ACOS"] = np.where(
+        df_overview["广告销售额"] == 0,
+        0,
+        df_overview["广告花费"] / df_overview["广告销售额"],
+    )
+    df_overview["SP占比"] = np.where(
+        df_overview["总销售额"] == 0,
+        0,
+        df_overview["广告花费"] / df_overview["总销售额"],
+    )
+
     # Payment数据
-    df_overview['实际销售额'] = df_overview['实际销售额'].round(2)
-    df_overview['实际退款额'] = df_overview['实际退款额'].round(2)
-    df_overview['实际退款量'] = pd.to_numeric(df_overview['实际退款量'].fillna(0), errors='coerce').astype(int)
-    
-    df_overview['产品FOB'] = df_overview['产品FOB'].fillna(0)
-    df_overview['成本占比'] = np.where(df_overview['实际销售额'] == 0, 0, df_overview['产品FOB'] / df_overview['实际销售额'])
-    df_overview['销售头程'] = df_overview['销售头程'].fillna(0)
-    df_overview['头程占比'] = np.where(df_overview['实际销售额'] == 0, 0, df_overview['销售头程'] / df_overview['实际销售额'])
-    df_overview['FBA配送费'] = df_overview['FBA配送费'].fillna(0)
-    df_overview['配送费占比'] = np.where(df_overview['实际销售额'] == 0, 0, df_overview['FBA配送费'] / df_overview['实际销售额'])
-    df_overview['平台佣金'] = df_overview['平台佣金'].fillna(0)
-    df_overview['佣金占比'] = np.where(df_overview['实际销售量'] == 0, 0, df_overview['平台佣金'] / df_overview['实际销售额'])
-    df_overview['总成本'] = df_overview['产品FOB'] + df_overview['销售头程'] + df_overview['FBA配送费'] + df_overview['平台佣金']
-    df_overview['总成本占比'] = np.where(df_overview['实际销售额'] == 0, 0, df_overview['总成本'] / df_overview['实际销售额'])
-    df_overview['利润'] = df_overview['实际销售额'] - df_overview['总成本'] - df_overview['广告花费'] - df_overview['实际退款额']
-    df_overview['利润率'] = np.where(df_overview['实际销售额'] == 0, 0, df_overview['利润'] / df_overview['实际销售额'])
-    
-    df_overview['平均售价'] = np.where(df_overview['实际销售量'] == 0, 0, (df_overview['实际销售额'] / df_overview['实际销售量']).round(2))
-    df_overview['退款率'] = np.where(df_overview['实际销售额'] == 0, 0, df_overview['实际退款额'] / df_overview['实际销售额'])
-    
+    df_overview["实际销售额"] = df_overview["实际销售额"].round(2)
+    df_overview["实际退款额"] = df_overview["实际退款额"].round(2)
+    df_overview["实际退款量"] = pd.to_numeric(
+        df_overview["实际退款量"].fillna(0), errors="coerce"
+    ).astype(int)
+
+    df_overview["产品FOB"] = df_overview["产品FOB"].fillna(0)
+    df_overview["成本占比"] = np.where(
+        df_overview["实际销售额"] == 0,
+        0,
+        df_overview["产品FOB"] / df_overview["实际销售额"],
+    )
+    df_overview["销售头程"] = df_overview["销售头程"].fillna(0)
+    df_overview["头程占比"] = np.where(
+        df_overview["实际销售额"] == 0,
+        0,
+        df_overview["销售头程"] / df_overview["实际销售额"],
+    )
+    df_overview["FBA配送费"] = df_overview["FBA配送费"].fillna(0)
+    df_overview["配送费占比"] = np.where(
+        df_overview["实际销售额"] == 0,
+        0,
+        df_overview["FBA配送费"] / df_overview["实际销售额"],
+    )
+    df_overview["平台佣金"] = df_overview["平台佣金"].fillna(0)
+    df_overview["佣金占比"] = np.where(
+        df_overview["实际销售量"] == 0,
+        0,
+        df_overview["平台佣金"] / df_overview["实际销售额"],
+    )
+    df_overview["总成本"] = (
+        df_overview["产品FOB"]
+        + df_overview["销售头程"]
+        + df_overview["FBA配送费"]
+        + df_overview["平台佣金"]
+    )
+    df_overview["总成本占比"] = np.where(
+        df_overview["实际销售额"] == 0,
+        0,
+        df_overview["总成本"] / df_overview["实际销售额"],
+    )
+    df_overview["利润"] = (
+        df_overview["实际销售额"]
+        - df_overview["总成本"]
+        - df_overview["广告花费"]
+        - df_overview["实际退款额"]
+    )
+    df_overview["利润率"] = np.where(
+        df_overview["实际销售额"] == 0,
+        0,
+        df_overview["利润"] / df_overview["实际销售额"],
+    )
+
+    df_overview["平均售价"] = np.where(
+        df_overview["实际销售量"] == 0,
+        0,
+        (df_overview["实际销售额"] / df_overview["实际销售量"]).round(2),
+    )
+    df_overview["退款率"] = np.where(
+        df_overview["实际销售额"] == 0,
+        0,
+        df_overview["实际退款额"] / df_overview["实际销售额"],
+    )
+
     # FBM费用计算 - 仅对包含"宝勒"的项目生效
     if "宝勒" in project_name:
         try:
             # 读取FBM费用CSV文件
-            fbm_file_path = 'apps/model_file/宝勒_FBM.csv'
-            df_fbm = pd.read_csv(fbm_file_path, encoding='utf-8')
-            
+            fbm_file_path = "apps/model_file/宝勒_FBM.csv"
+            df_fbm = pd.read_csv(fbm_file_path, encoding="utf-8")
+
             # 构建SKU到FBM费用的映射
-            fbm_mapping = dict(zip(df_fbm['SKU'], df_fbm['FBM']))
-            
+            fbm_mapping = dict(zip(df_fbm["SKU"], df_fbm["FBM"]))
+
             # 计算每个SKU的FBM费用并加到总销售额中
             for index, row in df_overview.iterrows():
-                sku = row['SKU']
-                actual_sales_quantity = row['实际销售量']
-                
+                sku = row["SKU"]
+                actual_sales_quantity = row["实际销售量"]
+
                 # 获取SKU对应的FBM费用
                 fbm_fee = fbm_mapping.get(sku, 0)  # 如果SKU不存在，返回0
-                
+
                 # 计算FBM费用（实际销售量 * 单个SKU的FBM费用）
                 total_fbm_fee = actual_sales_quantity * fbm_fee
-                
+
                 # 将FBM费用加到总销售额中
-                df_overview.at[index, '总销售额'] = row['总销售额'] + total_fbm_fee
+                df_overview.at[index, "总销售额"] = row["总销售额"] + total_fbm_fee
         except FileNotFoundError:
             # 如果CSV文件不存在，打印警告但不中断程序
             print(f"警告: FBM费用文件 {fbm_file_path} 未找到，跳过FBM费用计算")
         except Exception as e:
             # 处理其他可能的异常
             print(f"警告: 处理FBM费用时发生错误: {e}")
-    
-    overview_drop_cols = ['头程单价', 'FOB单价']
+
+    overview_drop_cols = ["头程单价", "FOB单价"]
     df_overview = df_overview.drop(columns=overview_drop_cols)
 
     # 添加汇总行
     # 计算需要求和的列
-    sum_columns = ['总销量', '总销售额', '页面浏览量', '总访客', '广告展示量', '广告点击量', '广告订单量', '广告花费', '广告销售额', '自然流量', '自然单', '产品FOB',
-                   '实际销售额', '实际销售量', '实际退款额', '实际退款量', '销售头程', 'FBA配送费', '平台佣金', '总成本', '利润']
-    
+    sum_columns = [
+        "总销量",
+        "总销售额",
+        "页面浏览量",
+        "总访客",
+        "广告展示量",
+        "广告点击量",
+        "广告订单量",
+        "广告花费",
+        "广告销售额",
+        "自然流量",
+        "自然单",
+        "产品FOB",
+        "实际销售额",
+        "实际销售量",
+        "实际退款额",
+        "实际退款量",
+        "销售头程",
+        "FBA配送费",
+        "平台佣金",
+        "总成本",
+        "利润",
+    ]
+
     # 创建汇总行数据
     summary_row = {}
     for col in df_overview.columns:
@@ -380,66 +565,138 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
             summary_row[col] = df_overview[col].sum()
         else:
             summary_row[col] = 0  # 其他列初始化为0
-    
+
     # 计算特殊指标
-    summary_row['自然流量'] = summary_row['页面浏览量'] - summary_row['广告点击量']
-    summary_row['自然单'] = summary_row['总销量'] - summary_row['广告订单量']
-    
+    summary_row["自然流量"] = summary_row["页面浏览量"] - summary_row["广告点击量"]
+    summary_row["自然单"] = summary_row["总销量"] - summary_row["广告订单量"]
+
     # 计算比率指标
-    summary_row['总转化'] = summary_row['总销量'] / summary_row['页面浏览量'] if summary_row['页面浏览量'] != 0 else 0
-    summary_row['广告点击率'] = summary_row['广告点击量'] / summary_row['广告展示量'] if summary_row['广告展示量'] != 0 else 0
-    summary_row['广告单占比'] = summary_row['广告订单量'] / summary_row['总销量'] if summary_row['总销量'] != 0 else 0
-    summary_row['广告转化率'] = summary_row['广告订单量'] / summary_row['广告点击量'] if summary_row['广告点击量'] != 0 else 0
-    summary_row['CPC'] = summary_row['广告花费'] / summary_row['广告点击量'] if summary_row['广告点击量'] != 0 else 0
-    summary_row['ACOS'] = summary_row['广告花费'] / summary_row['广告销售额'] if summary_row['广告销售额'] != 0 else 0
-    summary_row['SP占比'] = summary_row['广告花费'] / summary_row['总销售额'] if summary_row['总销售额'] != 0 else 0
-    summary_row['自然流量占比'] = summary_row['自然流量'] / summary_row['页面浏览量'] if summary_row['页面浏览量'] != 0 else 0
-    summary_row['自然单转化'] = summary_row['自然单'] / summary_row['自然流量'] if summary_row['自然流量'] != 0 else 0
-    
+    summary_row["总转化"] = (
+        summary_row["总销量"] / summary_row["页面浏览量"]
+        if summary_row["页面浏览量"] != 0
+        else 0
+    )
+    summary_row["广告点击率"] = (
+        summary_row["广告点击量"] / summary_row["广告展示量"]
+        if summary_row["广告展示量"] != 0
+        else 0
+    )
+    summary_row["广告单占比"] = (
+        summary_row["广告订单量"] / summary_row["总销量"]
+        if summary_row["总销量"] != 0
+        else 0
+    )
+    summary_row["广告转化率"] = (
+        summary_row["广告订单量"] / summary_row["广告点击量"]
+        if summary_row["广告点击量"] != 0
+        else 0
+    )
+    summary_row["CPC"] = (
+        summary_row["广告花费"] / summary_row["广告点击量"]
+        if summary_row["广告点击量"] != 0
+        else 0
+    )
+    summary_row["ACOS"] = (
+        summary_row["广告花费"] / summary_row["广告销售额"]
+        if summary_row["广告销售额"] != 0
+        else 0
+    )
+    summary_row["SP占比"] = (
+        summary_row["广告花费"] / summary_row["总销售额"]
+        if summary_row["总销售额"] != 0
+        else 0
+    )
+    summary_row["自然流量占比"] = (
+        summary_row["自然流量"] / summary_row["页面浏览量"]
+        if summary_row["页面浏览量"] != 0
+        else 0
+    )
+    summary_row["自然单转化"] = (
+        summary_row["自然单"] / summary_row["自然流量"]
+        if summary_row["自然流量"] != 0
+        else 0
+    )
+
     # Payment数据汇总计算指标
-    summary_row['成本占比'] = summary_row['产品FOB'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
-    summary_row['头程占比'] = summary_row['销售头程'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
-    summary_row['配送费占比'] = summary_row['FBA配送费'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
-    summary_row['佣金占比'] = summary_row['平台佣金'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
-    summary_row['总成本占比'] = summary_row['总成本'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
-    summary_row['利润率'] = summary_row['利润'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
-    summary_row['退款率'] = summary_row['实际退款额'] / summary_row['实际销售额'] if summary_row['实际销售额'] != 0 else 0
-    summary_row['平均售价'] = round(summary_row['实际销售额'] / summary_row['实际销售量'], 2) if summary_row['实际销售量'] != 0 else 0
-    
+    summary_row["成本占比"] = (
+        summary_row["产品FOB"] / summary_row["实际销售额"]
+        if summary_row["实际销售额"] != 0
+        else 0
+    )
+    summary_row["头程占比"] = (
+        summary_row["销售头程"] / summary_row["实际销售额"]
+        if summary_row["实际销售额"] != 0
+        else 0
+    )
+    summary_row["配送费占比"] = (
+        summary_row["FBA配送费"] / summary_row["实际销售额"]
+        if summary_row["实际销售额"] != 0
+        else 0
+    )
+    summary_row["佣金占比"] = (
+        summary_row["平台佣金"] / summary_row["实际销售额"]
+        if summary_row["实际销售额"] != 0
+        else 0
+    )
+    summary_row["总成本占比"] = (
+        summary_row["总成本"] / summary_row["实际销售额"]
+        if summary_row["实际销售额"] != 0
+        else 0
+    )
+    summary_row["利润率"] = (
+        summary_row["利润"] / summary_row["实际销售额"]
+        if summary_row["实际销售额"] != 0
+        else 0
+    )
+    summary_row["退款率"] = (
+        summary_row["实际退款额"] / summary_row["实际销售额"]
+        if summary_row["实际销售额"] != 0
+        else 0
+    )
+    summary_row["平均售价"] = (
+        round(summary_row["实际销售额"] / summary_row["实际销售量"], 2)
+        if summary_row["实际销售量"] != 0
+        else 0
+    )
+
     # 将汇总行添加到df_overview
     summary_df = pd.DataFrame([summary_row])
-    
-    summary_df['SKU'] = '汇总'
-    summary_df['日期'] = report_date
-    summary_df['ASIN'] = '汇总'
+
+    summary_df["SKU"] = "汇总"
+    summary_df["日期"] = report_date
+    summary_df["ASIN"] = "汇总"
     df_overview = pd.concat([df_overview, summary_df], ignore_index=True)
 
     # 指定项目概览模板文件的路径，为了加载模板以便填充数据或进行其他操作
-    template_file_path = 'apps/model_file/product_analysis_template.xlsx'
+    template_file_path = "apps/model_file/product_analysis_template.xlsx"
     # 加载Excel工作簿，以便可以编辑或操作数据
     wb = load_workbook(template_file_path)
     # 获取当前活动的工作表，准备对其进行操作
     ws = wb.active
     # 设置第一个sheet的名称为"产品分析"
     ws.title = "产品分析"
-    
+
     # 定义边框样式
-    center_alignment = Alignment(horizontal='center', vertical='center')
-    thin_border = Border(left=Side(border_style='thin', color='FF000000'),
-                         right=Side(border_style='thin', color='FF000000'),
-                         top=Side(border_style='thin', color='FF000000'),
-                         bottom=Side(border_style='thin', color='FF000000'))
+    center_alignment = Alignment(horizontal="center", vertical="center")
+    thin_border = Border(
+        left=Side(border_style="thin", color="FF000000"),
+        right=Side(border_style="thin", color="FF000000"),
+        top=Side(border_style="thin", color="FF000000"),
+        bottom=Side(border_style="thin", color="FF000000"),
+    )
 
     # 遍历数据框架中的每一行每一列，并设置单元格格式
-    for r_idx, row in enumerate(dataframe_to_rows(df_overview, index=False, header=True), 1):
+    for r_idx, row in enumerate(
+        dataframe_to_rows(df_overview, index=False, header=True), 1
+    ):
         for c_idx, value in enumerate(row, 1):
             cell = ws.cell(row=r_idx, column=c_idx, value=value)
             cell.alignment = center_alignment  # 设置单元格内容居中
             cell.border = thin_border  # 设置单元格边框为细边框
             # 如果标题行的单元格格式为百分比，则对该单元格也应用相同的百分比格式
-            if ws.cell(row=1, column=c_idx).number_format == '0.00%':
-                cell.number_format = '0.00%'
-            
+            if ws.cell(row=1, column=c_idx).number_format == "0.00%":
+                cell.number_format = "0.00%"
+
             # 将汇总行（最后一行）的文字加粗
             if r_idx == len(df_overview) + 1:  # +1 因为包含标题行
                 cell.font = Font(bold=True)
@@ -449,50 +706,70 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
     wb.save(product_analysis_file_path)
 
     # 如果有库存文件，添加库存详情sheet
-    if inventory_report_path and os.path.exists(inventory_report_path):
+    if fba_report_path and os.path.exists(fba_report_path):
         wb = load_workbook(product_analysis_file_path)
         ws_inv = wb.create_sheet("库存详情")
 
         # 读取库存CSV
-        inv_df = pd.read_csv(inventory_report_path, sep='\t', encoding='utf-8')
+        inv_df = pd.read_csv(fba_report_path, sep="\t", encoding="utf-8")
 
         # 保留指定列
         keep_cols = [
-            'sku', 'asin', 'available',
-            'inv-age-0-to-90-days', 'inv-age-91-to-180-days', 'inv-age-181-to-270-days',
-            'inv-age-271-to-365-days', 'inv-age-365-plus-days', 'recommended-action'
+            "sku",
+            "asin",
+            "available",
+            "inv-age-0-to-90-days",
+            "inv-age-91-to-180-days",
+            "inv-age-181-to-270-days",
+            "inv-age-271-to-365-days",
+            "inv-age-365-plus-days",
+            "recommended-action",
         ]
         inv_df = inv_df[[col for col in keep_cols if col in inv_df.columns]].copy()
 
         # 重命名列
         rename_dict = {
-            'sku': 'SKU',
-            'asin': 'ASIN',
-            'available': '可售库存',
-            'inv-age-0-to-90-days': '0-90天',
-            'inv-age-91-to-180-days': '91-180天',
-            'inv-age-181-to-270-days': '181-270天',
-            'inv-age-271-to-365-days': '271-365天',
-            'inv-age-365-plus-days': '365+天',
-            'recommended-action': '库存建议'
+            "sku": "SKU",
+            "asin": "ASIN",
+            "available": "可售库存",
+            "inv-age-0-to-90-days": "0-90天",
+            "inv-age-91-to-180-days": "91-180天",
+            "inv-age-181-to-270-days": "181-270天",
+            "inv-age-271-to-365-days": "271-365天",
+            "inv-age-365-plus-days": "365+天",
+            "recommended-action": "库存建议",
         }
         inv_df.rename(columns=rename_dict, inplace=True)
 
         # 从概览sheet合并本周销量（总销量）
         ws_overview = wb.active
-        df_overview_from_excel = pd.read_excel(product_analysis_file_path, sheet_name=0, engine='openpyxl')
-        sales_df = df_overview_from_excel[df_overview_from_excel['SKU'] != '汇总'][['SKU', '总销量']].copy()
-        sales_df.rename(columns={'总销量': '本周销量'}, inplace=True)
-        sales_df['本周销量'] = pd.to_numeric(sales_df['本周销量'], errors='coerce').fillna(0)
+        df_overview_from_excel = pd.read_excel(
+            product_analysis_file_path, sheet_name=0, engine="openpyxl"
+        )
+        sales_df = df_overview_from_excel[df_overview_from_excel["SKU"] != "汇总"][
+            ["SKU", "总销量"]
+        ].copy()
+        sales_df.rename(columns={"总销量": "本周销量"}, inplace=True)
+        sales_df["本周销量"] = pd.to_numeric(
+            sales_df["本周销量"], errors="coerce"
+        ).fillna(0)
 
         # 合并到库存df
-        inv_df = pd.merge(inv_df, sales_df, on='SKU', how='left')
-        inv_df['本周销量'] = inv_df['本周销量'].fillna(0)
+        inv_df = pd.merge(inv_df, sales_df, on="SKU", how="left")
+        inv_df["本周销量"] = inv_df["本周销量"].fillna(0)
 
         # 调整列顺序
         new_column_order = [
-            'SKU', 'ASIN', '本周销量', '可售库存', '0-90天', '91-180天',
-            '181-270天', '271-365天', '365+天', '库存建议'
+            "SKU",
+            "ASIN",
+            "本周销量",
+            "可售库存",
+            "0-90天",
+            "91-180天",
+            "181-270天",
+            "271-365天",
+            "365+天",
+            "库存建议",
         ]
         # 过滤掉不存在于inv_df中的列
         new_column_order = [col for col in new_column_order if col in inv_df.columns]
@@ -500,31 +777,33 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
 
         # 添加汇总行
         summary_data = {
-            'SKU': '汇总行',
-            'ASIN': '',
-            '本周销量': inv_df['本周销量'].sum(),
-            '可售库存': inv_df['可售库存'].sum(),
-            '0-90天': inv_df['0-90天'].sum(),
-            '91-180天': inv_df['91-180天'].sum(),
-            '181-270天': inv_df['181-270天'].sum(),
-            '271-365天': inv_df['271-365天'].sum(),
-            '365+天': inv_df['365+天'].sum(),
-            '库存建议': ''
+            "SKU": "汇总行",
+            "ASIN": "",
+            "本周销量": inv_df["本周销量"].sum(),
+            "可售库存": inv_df["可售库存"].sum(),
+            "0-90天": inv_df["0-90天"].sum(),
+            "91-180天": inv_df["91-180天"].sum(),
+            "181-270天": inv_df["181-270天"].sum(),
+            "271-365天": inv_df["271-365天"].sum(),
+            "365+天": inv_df["365+天"].sum(),
+            "库存建议": "",
         }
         summary_df = pd.DataFrame([summary_data])
         inv_df = pd.concat([inv_df, summary_df], ignore_index=True)
 
         # 写入新sheet，应用样式
-        center_alignment = Alignment(horizontal='center', vertical='center')
+        center_alignment = Alignment(horizontal="center", vertical="center")
         thin_border = Border(
-            left=Side(style='thin'),
-            right=Side(style='thin'),
-            top=Side(style='thin'),
-            bottom=Side(style='thin')
+            left=Side(style="thin"),
+            right=Side(style="thin"),
+            top=Side(style="thin"),
+            bottom=Side(style="thin"),
         )
         bold_font = Font(bold=True)
 
-        for r_idx, row in enumerate(dataframe_to_rows(inv_df, index=False, header=True), 1):
+        for r_idx, row in enumerate(
+            dataframe_to_rows(inv_df, index=False, header=True), 1
+        ):
             for c_idx, value in enumerate(row, 1):
                 cell = ws_inv.cell(row=r_idx, column=c_idx, value=value)
                 cell.alignment = center_alignment
@@ -535,7 +814,7 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
                 # 加粗最后一行（汇总行）
                 if r_idx == len(inv_df) + 1:
                     cell.font = bold_font
-        
+
         # 自动调整列宽
         for col in ws_inv.columns:
             max_length = 0
@@ -546,72 +825,80 @@ def process_product_analysis(project_name, report_start_date, report_end_date, b
                         max_length = len(str(cell.value))
                 except:
                     pass
-            adjusted_width = (max_length + 2)
+            adjusted_width = max_length + 2
             ws_inv.column_dimensions[column].width = adjusted_width
 
         wb.save(product_analysis_file_path)
 
-    with open(product_analysis_file_path, 'rb') as f:
+    with open(product_analysis_file_path, "rb") as f:
         file_content = f.read()
 
-    return file_content, f'{project_name}_product_analysis_{report_date}.xlsx'
+    return file_content, f"{project_name}_product_analysis_{report_date}.xlsx"
 
-@product_analysis_bp.route('/upload-file', methods=['POST'])
+
+@product_analysis_bp.route("/upload-file", methods=["POST"])
 def upload_file():
     """处理单个文件上传的API端点"""
     try:
-        if 'file' not in request.files:
-            return {'success': False, 'error': '没有文件被上传'}, 400
-        
-        file = request.files['file']
-        project_name = request.form.get('project_name')
-        file_type = request.form.get('file_type')
-        
+        if "file" not in request.files:
+            return {"success": False, "error": "没有文件被上传"}, 400
+
+        file = request.files["file"]
+        project_name = request.form.get("project_name")
+        file_type = request.form.get("file_type")
+
         if not project_name:
-            return {'success': False, 'error': '项目名称不能为空'}, 400
-        
-        if not file_type or file_type not in ['business_report', 'payment_report', 'ad_product_report', 'inventory_report']:
-            return {'success': False, 'error': '文件类型无效'}, 400
-        
+            return {"success": False, "error": "项目名称不能为空"}, 400
+
+        if not file_type or file_type not in [
+            "business_report",
+            "payment_report",
+            "ad_product_report",
+            "inventory_report",
+        ]:
+            return {"success": False, "error": "文件类型无效"}, 400
+
         if file and allowed_file(file.filename):
             # 创建项目上传文件夹
-            upload_folder = os.path.join(os.getcwd(), 'project', project_name, 'uploaded_files')
+            upload_folder = os.path.join(
+                os.getcwd(), "project", project_name, "uploaded_files"
+            )
             os.makedirs(upload_folder, exist_ok=True)
-            
+
             # 生成文件名
-            timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             original_filename = file.filename
             file_ext = os.path.splitext(original_filename)[1].lower()
-            
+
             # 根据文件类型命名
-            if file_type == 'business_report':
+            if file_type == "business_report":
                 new_filename = f"{project_name}_Business_Report_{timestamp}{file_ext}"
-            elif file_type == 'payment_report':
+            elif file_type == "payment_report":
                 new_filename = f"{project_name}_Payment_Report_{timestamp}{file_ext}"
-            elif file_type == 'ad_product_report':
+            elif file_type == "ad_report":
                 new_filename = f"{project_name}_AD_Product_{timestamp}{file_ext}"
-            elif file_type == 'inventory_report':
+            elif file_type == "fba_report":
                 new_filename = f"{project_name}_Inventory_Report_{timestamp}{file_ext}"
-            
+
             file_path = os.path.join(upload_folder, new_filename)
             file.save(file_path)
-            
+
             # 记录文件上传成功日志
             LogService.log(
                 action="上传产品分析文件",
                 resource="产品分析功能",
                 details=f"项目: {project_name}, 文件类型: {file_type}, 文件名: {original_filename}",
                 log_type="user",
-                level="info"
+                level="info",
             )
-            
+
             print(f"文件已上传: {original_filename} -> {file_path}")
-            
+
             return {
-                'success': True,
-                'file_path': file_path,
-                'filename': new_filename,
-                'original_filename': original_filename
+                "success": True,
+                "file_path": file_path,
+                "filename": new_filename,
+                "original_filename": original_filename,
             }
         else:
             # 记录文件上传失败日志
@@ -620,10 +907,10 @@ def upload_file():
                 resource="产品分析功能",
                 details=f"项目: {project_name}, 文件类型: {file_type}, 错误: 文件类型不支持",
                 log_type="user",
-                level="warning"
+                level="warning",
             )
-            return {'success': False, 'error': '文件类型不支持'}, 400
-            
+            return {"success": False, "error": "文件类型不支持"}, 400
+
     except Exception as e:
         # 记录文件上传异常日志
         LogService.log(
@@ -631,54 +918,64 @@ def upload_file():
             resource="产品分析功能",
             details=f"项目: {project_name}, 错误: {str(e)}",
             log_type="user",
-            level="error"
+            level="error",
         )
         print(f"文件上传错误: {str(e)}")
         import traceback
-        traceback.print_exc()
-        return {'success': False, 'error': str(e)}, 500
 
-@product_analysis_bp.route('/submit', methods=['POST'])
+        traceback.print_exc()
+        return {"success": False, "error": str(e)}, 500
+
+
+@product_analysis_bp.route("/submit", methods=["POST"])
 def submit_product_analysis():
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            project_name = request.form.get('project_name')
-            report_start_date = request.form.get('report_start_date')
-            report_end_date = request.form.get('report_end_date')
-            
-            print(f"收到请求: project={project_name}, start={report_start_date}, end={report_end_date}")
-            
+            project_name = request.form.get("project_name")
+            report_start_date = request.form.get("report_start_date")
+            report_end_date = request.form.get("report_end_date")
+
+            print(
+                f"收到请求: project={project_name}, start={report_start_date}, end={report_end_date}"
+            )
+
             if not project_name:
-                flash('请选择项目名称')
-                return redirect(url_for('dataset.product_analysis'))
-            
+                flash("请选择项目名称")
+                return redirect(url_for("dataset.product_analysis"))
+
             # 获取已上传的文件路径
-            business_report_path = request.form.get('business_report_path')
-            payment_report_path = request.form.get('payment_report_path')
-            ad_product_report_path = request.form.get('ad_product_report_path')
-            inventory_report_path = request.form.get('inventory_report_path')
-            
+            business_report_path = request.form.get("business_report_path")
+            payment_report_path = request.form.get("payment_report_path")
+            ad_report_path = request.form.get("ad_report_path")
+            fba_report_path = request.form.get("fba_report_path")
+
             # 验证所有必需的文件都已上传
-            if not all([business_report_path, payment_report_path, ad_product_report_path]):
-                flash('请确保所有必需文件都已上传完成')
-                return redirect(url_for('dataset.product_analysis'))
-            
+            if not all([business_report_path, payment_report_path, ad_report_path]):
+                flash("请确保所有必需文件都已上传完成")
+                return redirect(url_for("dataset.product_analysis"))
+
             # 验证必需文件是否存在
-            required_files = [business_report_path, payment_report_path, ad_product_report_path]
+            required_files = [business_report_path, payment_report_path, ad_report_path]
             if not all([os.path.exists(path) for path in required_files]):
-                flash('必需文件不存在，请重新上传')
-                return redirect(url_for('dataset.product_analysis'))
-            
+                flash("必需文件不存在，请重新上传")
+                return redirect(url_for("dataset.product_analysis"))
+
             # 验证可选的库存报告文件是否存在（如果提供了路径）
-            if inventory_report_path and not os.path.exists(inventory_report_path):
-                flash('库存报告文件不存在，将不包含库存分析')
-                inventory_report_path = None
-            
-            print(f"使用已上传的文件: Business={business_report_path}, Payment={payment_report_path}, AD={ad_product_report_path}")
-            
-            print(f"[DEBUG] 调用处理函数，参数: project_name={project_name}, start_date={report_start_date}, end_date={report_end_date}")
-            print(f"[DEBUG] 文件路径: Business={business_report_path}, Payment={payment_report_path}, AD={ad_product_report_path}, Inventory={inventory_report_path}")
-            
+            if fba_report_path and not os.path.exists(fba_report_path):
+                flash("库存报告文件不存在，将不包含库存分析")
+                fba_report_path = None
+
+            print(
+                f"使用已上传的文件: Business={business_report_path}, Payment={payment_report_path}, AD={ad_report_path}"
+            )
+
+            print(
+                f"[DEBUG] 调用处理函数，参数: project_name={project_name}, start_date={report_start_date}, end_date={report_end_date}"
+            )
+            print(
+                f"[DEBUG] 文件路径: Business={business_report_path}, Payment={payment_report_path}, AD={ad_report_path}, Inventory={fba_report_path}"
+            )
+
             # 使用已上传的文件路径进行后续处理
             file_content, filename = process_product_analysis(
                 project_name,
@@ -686,27 +983,27 @@ def submit_product_analysis():
                 report_end_date,
                 business_report_path,
                 payment_report_path,
-                ad_product_report_path,
-                inventory_report_path
+                ad_report_path,
+                fba_report_path,
             )
             print(f"[DEBUG] 处理函数执行完成，生成文件名: {filename}")
-            
+
             # 记录生成产品分析报告成功日志
             LogService.log(
                 action="生成产品分析报告",
                 resource="产品分析功能",
                 details=f"项目: {project_name}, 日期范围: {report_start_date} 至 {report_end_date}, 文件: {filename}",
                 log_type="user",
-                level="info"
+                level="info",
             )
-            
+
             return send_file(
                 io.BytesIO(file_content),
                 as_attachment=True,
                 download_name=filename,
-                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
-            
+
         except Exception as e:
             # 记录生成产品分析报告失败日志
             LogService.log(
@@ -714,12 +1011,13 @@ def submit_product_analysis():
                 resource="产品分析功能",
                 details=f"项目: {project_name}, 日期范围: {report_start_date} 至 {report_end_date}, 错误: {str(e)}",
                 log_type="user",
-                level="error"
+                level="error",
             )
             print(f"处理过程中发生错误: {str(e)}")
             import traceback
-            traceback.print_exc()
-            flash(f'处理过程中发生错误: {str(e)}')
-            return redirect(url_for('dataset.product_analysis'))
 
-    return render_template('data-analysis/product_analysis.html')
+            traceback.print_exc()
+            flash(f"处理过程中发生错误: {str(e)}")
+            return redirect(url_for("dataset.product_analysis"))
+
+    return render_template("data-analysis/product_analysis.html")

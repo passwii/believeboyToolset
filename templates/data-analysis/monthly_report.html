@@ -1,6 +1,7 @@
 <div class="container">
-    <h1>Amazon Monthly Report 
-        <br>月报（财报）</h1>
+    <h1>Amazon Monthly Report
+        <br>月报（财报）
+    </h1>
     <form id="monthly-report-form" action="{{ url_for('dataset.monthly_report.monthly_report') }}" method="POST" enctype="multipart/form-data">
         <label for="project_name">项目名称:</label>
         <select name="project_name" id="project_name" required>
@@ -9,7 +10,6 @@
             <option value="{{ project }}">{{ project }}</option>
             {% endfor %}
         </select>
-        
 
         <label for="report_date">报表日期:</label>
         <select name="report_date" id="report_date" required>
@@ -29,17 +29,32 @@
             <option value="2026-01">2026-01</option>
             <option value="2026-02">2026-02</option>
             <option value="2026-03">2026-03</option>
-            
         </select>
 
-        <label for="payment_range_report">付款报告:
-            <a href="{{ url_for('help.payment_report') }}" target="_blank" class="help-icon">?</a>
-        </label>
-        <input type="file" name="payment_range_report" accept=".csv" required>
+        <!-- 拖拽文件上传区域 -->
+        <div class="drop-area" id="drop-area">
+            <h3>拖拽文件到此处</h3>
+            <p>或点击选择文件</p>
+            <p class="file-types">支持文件类型：.csv</p>
+            <p class="upload-hint">可以分次上传，每次上传1个或多个文件</p>
+            <input type="file" id="file-input" name="files" multiple accept=".csv" style="display: none;">
+        </div>
 
-        <button type="submit">生成月报</button>
+        <!-- 文件列表显示 -->
+        <div class="file-list" id="file-list">
+            <div class="file-item empty" id="file-payment_report">
+                <span>付款报告：等待上传（.csv格式）
+                    <a href="{{ url_for('help.payment_report') }}" target="_blank" class="help-icon">?</a>
+                </span>
+                <span class="upload-progress">未上传</span>
+            </div>
+        </div>
+
+        <!-- 隐藏的文件路径输入框 -->
+        <div class="hidden-inputs">
+            <input type="hidden" name="payment_report_path" id="payment_report_path">
+        </div>
+
+        <button type="submit" id="submit-btn" disabled>生成月报</button>
     </form>
 </div>
-
-<!-- 引入月报表单专用JavaScript模块 -->
-<script src="{{ url_for('static', filename='js/monthly-report.js') }}" defer></script>
