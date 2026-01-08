@@ -25,8 +25,9 @@ yumai_analysis_bp = Blueprint("yumai_analysis", __name__)
 @yumai_analysis_bp.route("/yumai-analysis", methods=["GET"])
 def yumai_analysis_page():
     """渲染优麦云商品分析页面"""
-    current_dir = os.path.dirname(__file__)
-    projects_csv_path = os.path.join(current_dir, "model_file", "projects.csv")
+    projects_csv_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "model_file", "projects.csv"
+    )
 
     projects = []
     try:

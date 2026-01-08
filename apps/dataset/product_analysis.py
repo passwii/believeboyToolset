@@ -102,7 +102,17 @@ def process_product_analysis(
     print(f"[DEBUG] 广告产品报告数据形状: {ad_product_report.shape}")
 
     print(f"[DEBUG] 读取基础信息表文件: apps/model_file/BLF_Basic_Info.csv")
-    basic_report = pd.read_csv("apps/model_file/BLF_Basic_Info.csv", encoding="utf-8")
+    basic_report = pd.read_csv(
+        os.path.join(
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
+            "apps",
+            "model_file",
+            "BLF_Basic_Info.csv",
+        ),
+        encoding="utf-8",
+    )
     print(f"[DEBUG] 基础信息表数据形状: {basic_report.shape}")
 
     # 根据当前项目名称过滤基础信息数据
@@ -503,7 +513,14 @@ def process_product_analysis(
     if "宝勒" in project_name:
         try:
             # 读取FBM费用CSV文件
-            fbm_file_path = "apps/model_file/宝勒_FBM.csv"
+            fbm_file_path = os.path.join(
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                ),
+                "apps",
+                "model_file",
+                "宝勒_FBM.csv",
+            )
             df_fbm = pd.read_csv(fbm_file_path, encoding="utf-8")
 
             # 构建SKU到FBM费用的映射
@@ -668,7 +685,12 @@ def process_product_analysis(
     df_overview = pd.concat([df_overview, summary_df], ignore_index=True)
 
     # 指定项目概览模板文件的路径，为了加载模板以便填充数据或进行其他操作
-    template_file_path = "apps/model_file/product_analysis_template.xlsx"
+    template_file_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "apps",
+        "model_file",
+        "product_analysis_template.xlsx",
+    )
     # 加载Excel工作簿，以便可以编辑或操作数据
     wb = load_workbook(template_file_path)
     # 获取当前活动的工作表，准备对其进行操作

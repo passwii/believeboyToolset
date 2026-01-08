@@ -7,7 +7,7 @@
 我们已经实现了以下组件来处理时区问题：
 
 1. **core/database_config.py** - 数据库时区配置模块
-2. **app/db_init/set_beijing_timezone_default.py** - 时区设置脚本
+2. **scripts/db_init/set_beijing_timezone_default.py** - 时区设置脚本
 3. **修改后的 core/database.py** - 使用新的时区配置
 
 ## 使用方法
@@ -28,7 +28,7 @@ init_db()
 对于现有数据库，运行以下脚本：
 
 ```bash
-python app/db_init/set_beijing_timezone_default.py
+python scripts/db_init/set_beijing_timezone_default.py
 ```
 
 此脚本会：
@@ -43,7 +43,7 @@ python app/db_init/set_beijing_timezone_default.py
 #### 方法1：使用辅助函数
 
 ```python
-from app.db_init.set_beijing_timezone_default import create_new_table_with_beijing_time
+from scripts.db_init.set_beijing_timezone_default import create_new_table_with_beijing_time
 
 # 定义表结构
 columns = [
@@ -83,7 +83,7 @@ conn.close()
 ### 4. 添加时间字段到现有表
 
 ```python
-from app.db_init.set_beijing_timezone_default import add_time_column_with_beijing_default
+from scripts.db_init.set_beijing_timezone_default import add_time_column_with_beijing_default
 
 # 添加时间字段，默认使用北京时间
 add_time_column_with_beijing_default("existing_table", "new_time_column")

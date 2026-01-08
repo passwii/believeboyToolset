@@ -20,9 +20,9 @@
 
 ```bash
 # 在项目根目录下运行
-python app/db_init/add_unique_constraint.py
-python app/db_init/fix_database.py
-python app/db_init/migrate_shop_table.py
+python scripts/db_init/add_unique_constraint.py
+python scripts/db_init/fix_database.py
+python scripts/db_init/migrate_shop_table.py
 ```
 
 ## 注意事项
