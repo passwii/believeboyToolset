@@ -100,6 +100,8 @@ def process_product_analysis(
     print(f"[DEBUG] 读取广告产品报告文件: {ad_report_path}")
     ad_product_report = pd.read_excel(ad_report_path, engine="openpyxl")
     print(f"[DEBUG] 广告产品报告数据形状: {ad_product_report.shape}")
+    print(f"[DEBUG] 广告产品报告列名: {list(ad_product_report.columns)}")
+    print(f"[DEBUG] 广告产品报告前3行数据:\n{ad_product_report.head(3)}")
 
     print(f"[DEBUG] 读取基础信息表文件: apps/model_file/BLF_Basic_Info.csv")
     basic_report = pd.read_csv(
@@ -150,9 +152,21 @@ def process_product_analysis(
     df_project_sku_asin = basic_report.copy()
 
     # 广告数据读取
+    print(f"[DEBUG] 开始处理广告数据...")
+    
+    # 检查必需的列是否存在
+    required_columns = ["广告SKU", "广告ASIN", "展示量", "点击量", "花费", "7天总销售额", "7天总销售量(#)"]
+    missing_columns = [col for col in required_columns if col not in ad_product_report.columns]
+    if missing_columns:
+        print(f"[ERROR] 广告报表缺少必需的列: {missing_columns}")
+        print(f"[ERROR] 实际列名: {list(ad_product_report.columns)}")
+    else:
+        print(f"[DEBUG] 广告报表列名检查通过")
+    
     df_ad_sku_asin = ad_product_report[["广告SKU", "广告ASIN"]].copy()
     df_ad_sku_asin.rename(columns={"广告SKU": "SKU", "广告ASIN": "ASIN"}, inplace=True)
     df_ad_sku_asin = df_ad_sku_asin.drop_duplicates()
+    print(f"[DEBUG] 广告SKU-ASIN数据去重后行数: {len(df_ad_sku_asin)}")
 
     ad_column = ["广告SKU", "展示量", "点击量", "花费", "7天总销售额", "7天总销售量(#)"]
     df_ad_simple = (
@@ -169,10 +183,19 @@ def process_product_analysis(
         },
         inplace=True,
     )
+    print(f"[DEBUG] 广告数据按SKU汇总后行数: {len(df_ad_simple)}")
+    print(f"[DEBUG] 广告数据汇总前3行:\n{df_ad_simple.head(3)}")
+    
     # 将广告数据与项目数据进行合并, 让 SKU-ASIN 表加入到广告数据表中
+    print(f"[DEBUG] 项目基础信息SKU数量: {len(df_project_sku_asin)}")
+    print(f"[DEBUG] 项目基础信息SKU示例: {df_project_sku_asin['SKU'].head(3).tolist()}")
+    print(f"[DEBUG] 广告数据SKU示例: {df_ad_simple['SKU'].head(3).tolist()}")
+    
     df_merge_ad_sku_asin = pd.merge(
         df_project_sku_asin, df_ad_simple, on="SKU", how="left"
     )
+    print(f"[DEBUG] 广告与项目合并后行数: {len(df_merge_ad_sku_asin)}")
+    print(f"[DEBUG] 合并后有广告数据的行数: {df_merge_ad_sku_asin['广告花费'].notna().sum()}")
 
     # 读取Payment数据表，此时数据表中的sku都是小写格式
     df_payment = payment_report.copy()
@@ -875,8 +898,10 @@ def upload_file():
         if not file_type or file_type not in [
             "business_report",
             "payment_report",
-            "ad_product_report",
-            "inventory_report",
+            "ad_report",
+            "ad_product_report",  # 兼容旧版本
+            "fba_report",
+            "inventory_report",  # 兼容旧版本
         ]:
             return {"success": False, "error": "文件类型无效"}, 400
 

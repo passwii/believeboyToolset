@@ -380,11 +380,15 @@ class FileUploadComponent {
   async determineFileType(file) {
     const filename = file.name.toLowerCase();
     const ext = filename.split('.').pop().toLowerCase();
+    
+    console.log(`[DEBUG] 文件识别: filename=${file.name}, ext=${ext}`);
+    console.log(`[DEBUG] 当前页面需要的文件类型: ${Object.keys(this.uploadedFiles)}`);
 
     // 遍历所有已注册的文件类型规则
     for (const [type, rule] of Object.entries(FILE_TYPE_RULES)) {
       // 检查是否为当前页面需要的类型
       if (!this.uploadedFiles.hasOwnProperty(type)) {
+        console.log(`[DEBUG] 跳过类型 ${type}: 不在当前页面需要的类型中`);
         continue;
       }
 
@@ -393,13 +397,21 @@ class FileUploadComponent {
       // 1. 优先使用内容检测
       if (rule.contentTest) {
         try {
-          this.updateFileItemUI(file, type, 'analyzing');
-          const content = await this.readFileContent(file);
-          if (await rule.contentTest(file, content)) {
-            if (!this.uploadedFiles[type] || await this.confirmReplace(file, type)) {
-              return type;
+          // 只有当文件扩展名匹配时才进行内容检测和更新UI
+          const fileExt = file.name.split('.').pop().toLowerCase();
+          const expectedExts = FILE_TYPES[type]?.extensions || [];
+          if (expectedExts.includes(fileExt)) {
+            this.updateFileItemUI(file, type, 'analyzing');
+            const content = await this.readFileContent(file);
+            if (await rule.contentTest(file, content)) {
+              console.log(`[DEBUG] 类型 ${type}: 内容检测通过`);
+              if (!this.uploadedFiles[type] || await this.confirmReplace(file, type)) {
+                return type;
+              }
+              continueToFallback = false;
             }
-            continueToFallback = false;
+          } else {
+            console.log(`[DEBUG] 跳过类型 ${type}: 文件扩展名 ${fileExt} 不匹配期望的 ${expectedExts.join(', ')}`);
           }
         } catch (error) {
           console.warn(`Content test for ${type} failed, will try fallback. Error: ${error}`);
@@ -409,15 +421,21 @@ class FileUploadComponent {
       // 2. 尝试回退测试
       if (continueToFallback) {
         const fallbackTest = rule.fallbackTest || rule.test;
-        if (fallbackTest && fallbackTest(filename, ext)) {
-          if (!this.uploadedFiles[type] || await this.confirmReplace(file, type)) {
-            return type;
+        if (fallbackTest) {
+          const testResult = fallbackTest(filename, ext);
+          console.log(`[DEBUG] 类型 ${type}: fallbackTest(${filename}, ${ext}) = ${testResult}`);
+          if (testResult) {
+            if (!this.uploadedFiles[type] || await this.confirmReplace(file, type)) {
+              console.log(`[DEBUG] 返回类型: ${type}`);
+              return type;
+            }
           }
         }
       }
     }
 
     // 如果没有规则匹配，显示手动选择对话框
+    console.log(`[DEBUG] 没有规则匹配，显示手动选择对话框`);
     return await this.showFileTypeSelectionDialog(file);
   }
 
