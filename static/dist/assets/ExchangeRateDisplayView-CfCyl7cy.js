@@ -1,0 +1,1 @@
+import{_ as s}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as a,a as t,o}from"./index-CWtAw4e7.js";const c={},r={class:"glass-card"};function n(i,e){return o(),a("div",r,[...e[0]||(e[0]=[t("h2",{class:"mb-4 text-xl font-semibold text-white"},"汇率展示",-1),t("p",{class:"text-white/70"},"功能开发中...",-1)])])}const d=s(c,[["render",n]]);export{d as default};

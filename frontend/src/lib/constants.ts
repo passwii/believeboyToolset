@@ -1,0 +1,65 @@
+export const NAVIGATION_ITEMS = [
+  {
+    id: 'operations-nav',
+    label: '运营导航',
+    icon: 'fa-compass',
+    category: 'operations',
+    children: [
+      { id: 'operations-overview', label: '运营总览', icon: 'fa-tachometer-alt' },
+      { id: 'operations-nav', label: '站点导航', icon: 'fa-globe' },
+      { id: 'shop-nav', label: '店铺导航', icon: 'fa-store' },
+    ],
+  },
+  {
+    id: 'data-analysis',
+    label: '数据分析',
+    icon: 'fa-chart-line',
+    category: 'data',
+    children: [
+      { id: 'yumai-analysis', label: '商品分析（优麦云）', icon: 'fa-chart-line' },
+      { id: 'daily-report', label: '销售日报', icon: 'fa-calendar-day' },
+      { id: 'monthly-report', label: '财务月报', icon: 'fa-calendar-alt' },
+      { id: 'product-analysis', label: '产品分析', icon: 'fa-calculator' },
+    ],
+  },
+  {
+    id: 'templates',
+    label: '模板文件',
+    icon: 'fa-file-alt',
+    category: 'templates',
+    children: [
+      { id: 'sku-cost-table', label: 'SKU 成本表', icon: 'fa-table' },
+      { id: 'project-progress-table', label: '项目进度表', icon: 'fa-tasks' },
+      { id: 'profit-calculation-table', label: '利润测算表', icon: 'fa-chart-line' },
+    ],
+  },
+  {
+    id: 'tools',
+    label: '工具',
+    icon: 'fa-tools',
+    category: 'tools',
+    children: [
+      { id: 'exchange-rate-display', label: '汇率展示', icon: 'fa-exchange-alt' },
+      { id: 'amazon-crawler', label: '亚马逊前台采集', icon: 'fa-spider' },
+      { id: 'image-resizer', label: '图片尺寸调整', icon: 'fa-image' },
+      { id: 'research-analysis', label: '调研分析', icon: 'fa-chart-pie' },
+      { id: 'ai-panel', label: 'AI 面板', icon: 'fa-rocket' },
+      { id: 'excel-formula-remover', label: 'Excel去公式', icon: 'fa-file-excel' },
+      { id: 'img-believeboy', label: '图片展示', icon: 'fa-globe' },
+    ],
+  },
+  {
+    id: 'admin',
+    label: '管理',
+    icon: 'fa-cog',
+    category: 'admin',
+    children: [
+      { id: 'operations-info', label: '运营信息', icon: 'fa-chart-line' },
+      { id: 'update-log', label: '更新日志', icon: 'fa-history' },
+      { id: 'shop-management', label: '信息维护', icon: 'fa-store-alt' },
+      { id: 'change-password', label: '更改密码', icon: 'fa-key' },
+      { id: 'user-management', label: '用户管理', icon: 'fa-users-cog', adminOnly: true },
+      { id: 'log-management', label: '日志管理', icon: 'fa-list-alt', adminOnly: true },
+    ],
+  },
+]
