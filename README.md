@@ -24,7 +24,7 @@
 
 ```
 believeboyToolset/
-├── frontend-next/       # Next.js 前端应用
+├── frontend/            # Next.js 前端应用
 │   ├── src/
 │   │   ├── app/         # App Router 页面
 │   │   ├── components/  # React 组件
@@ -33,7 +33,7 @@ believeboyToolset/
 │   │   └── types/       # TypeScript 类型
 │   └── package.json
 │
-├── backend-fastapi/     # FastAPI 后端应用
+├── backend/             # FastAPI 后端应用
 │   ├── app/
 │   │   ├── api/v1/     # API 路由
 │   │   ├── core/        # 核心配置
@@ -57,7 +57,7 @@ believeboyToolset/
 ### 后端启动
 
 ```bash
-cd backend-fastapi
+cd backend
 
 # 安装依赖
 python3 -m venv venv
@@ -76,7 +76,7 @@ uvicorn app.main:app --reload --port 8000
 ### 前端启动
 
 ```bash
-cd frontend-next
+cd frontend
 
 # 安装依赖
 npm install
@@ -153,7 +153,7 @@ npm run dev
 ### 前端部署 (Vercel)
 
 ```bash
-cd frontend-next
+cd frontend
 npm run build
 vercel
 ```
@@ -161,7 +161,7 @@ vercel
 ### 后端部署 (Railway/Render)
 
 ```bash
-cd backend-fastapi
+cd backend
 # 按照平台要求部署
 ```
 
