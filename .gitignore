@@ -9,18 +9,33 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+venv/
 
 # macOS
 .DS_Store
 
-# Local project files
-project/
+# Runtime data - 不要同步到Git
+data/
 pdf/
 
 # Database files - 不要同步到Git
 *.db
 *.sqlite
 *.sqlite3
+
+# Node.js / Next.js
+node_modules/
+.next/
+*.log
+.env.local
+.turbo
+
+# Backend runtime data
+backend-fastapi/data/
+backend-fastapi/*.db
+
+# Archive files
+archive/
 
 # Claude AI
 .claude

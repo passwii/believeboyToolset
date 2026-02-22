@@ -1,6 +1,188 @@
-# 彼励扶工具集
+# BelieveBoy 工具集 - 重构版
 
-这是一个基于Flask的Web应用，提供各种工具和数据分析功能。
+彼励扶工具集的现代化重构版本，采用 Next.js + FastAPI 架构。
+
+## 技术栈
+
+### 前端
+
+- **Next.js 16** (App Router)
+- **TypeScript**
+- **Tailwind CSS** (玻璃态设计风格）
+- **Zustand** (状态管理)
+- **Axios** (HTTP 客户端)
+
+### 后端
+
+- **FastAPI** (Python 异步框架)
+- **SQLAlchemy** (ORM)
+- **SQLite** (数据库)
+- **JWT** (认证)
+- **Pydantic** (数据验证)
+
+## 项目结构
+
+```
+believeboyToolset/
+├── frontend-next/       # Next.js 前端应用
+│   ├── src/
+│   │   ├── app/         # App Router 页面
+│   │   ├── components/  # React 组件
+│   │   ├── lib/         # 工具函数
+│   │   ├── stores/      # Zustand 状态
+│   │   └── types/       # TypeScript 类型
+│   └── package.json
+│
+├── backend-fastapi/     # FastAPI 后端应用
+│   ├── app/
+│   │   ├── api/v1/     # API 路由
+│   │   ├── core/        # 核心配置
+│   │   ├── models/      # SQLAlchemy 模型
+│   │   └── schemas/     # Pydantic 模型
+│   └── requirements.txt
+│
+├── data/               # 数据目录
+│   ├── database.db      # SQLite 数据库
+│   ├── uploads/         # 上传文件
+│   └── outputs/         # 生成文件
+│
+├── archive/            # 归档（旧代码备份）
+├── Refactor.md         # 重构总规划
+├── Refactor-Frontend.md # 前端规划
+└── Refactor-Backend.md  # 后端规划
+```
+
+## 快速开始
+
+### 后端启动
+
+```bash
+cd backend-fastapi
+
+# 安装依赖
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 初始化数据库
+python init_db.py
+
+# 启动服务
+uvicorn app.main:app --reload --port 8000
+```
+
+后端将在 http://localhost:8000 启动
+
+### 前端启动
+
+```bash
+cd frontend-next
+
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+```
+
+前端将在 http://localhost:3000 启动
+
+## 默认用户
+
+| 用户名 | 密码 | 角色 |
+|--------|------|------|
+| damonrock | jrway2012 | admin
+| user | user123 | user |
+
+## 功能模块
+
+### 运营导航
+
+- 运营总览
+- 站点导航
+- 店铺导航
+
+### 数据分析
+
+- 销售日报
+- 财务月报
+- 产品分析
+- 优麦云分析
+
+### 工具集
+
+- 汇率展示
+- Excel 去公式
+- 调研分析
+- 图片处理
+- 亚马逊前台采集
+- AI 面板
+
+### 管理
+
+- 用户管理 (仅管理员)
+- 商店管理 (仅管理员)
+- 日志管理 (仅管理员)
+- 密码修改
+
+## API 文档
+
+启动后端后，访问自动生成的 API 文档：
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+## 开发说明
+
+### 前端开发
+
+- 组件使用 TypeScript 编写
+- 遵循 Vue 3 Composition API 规范
+- 使用 Tailwind CSS 进行样式设计
+- API 调用使用 Axios 配置在 `lib/api.ts`
+
+### 后端开发
+
+- 遵循 FastAPI 最佳实践
+- 使用 Pydantic 进行数据验证
+- 遵循 RESTful API 设计
+- 使用 SQLAlchemy ORM 操作数据库
+
+## 部署
+
+### 前端部署 (Vercel)
+
+```bash
+cd frontend-next
+npm run build
+vercel
+```
+
+### 后端部署 (Railway/Render)
+
+```bash
+cd backend-fastapi
+# 按照平台要求部署
+```
+
+## 许可证
+
+MIT
+
+## 更新日志
+
+### v2.0.0 (2026-02-22)
+
+- 完全重构：Next.js + FastAPI 架构
+- 前后端分离
+- 现代化 UI 设计（玻璃态）
+- JWT 认证系统
+- RESTful API 设计
+
+### v3.1.0 (旧版 - 已归档)
+
+- Flask + Vue.js 单体应用
+- 已归档到 archive/backup-20260222/
 
 ## 版本更新历史
 
@@ -53,14 +235,61 @@
 
 ```
 .
-├── app.py              # 应用入口
-├── config.py           # 配置文件
-├── auth.py             # 认证模块
-├── routes/             # 路由定义
-├── templates/          # HTML模板
-├── statics/            # 静态资源
-├── apps/               # 应用逻辑
-└── requirements.txt    # 依赖列表
+├── app.py                      # Flask应用入口
+├── requirements.txt            # Python依赖
+├── README.md
+│
+├── backend/                    # 后端代码
+│   ├── config.py              # 配置文件
+│   ├── auth.py                # 认证蓝图
+│   ├── manage_users.py        # 用户管理工具
+│   ├── models/                # 数据库模型
+│   │   ├── user_model.py
+│   │   └── shop_model.py
+│   ├── services/              # 业务服务
+│   │   ├── auth_service.py
+│   │   ├── log_service.py
+│   │   └── statistics_service.py
+│   ├── utils/                 # 工具类
+│   │   └── exceptions.py
+│   └── database/              # 数据库相关
+│       ├── database.py
+│       └── database_config.py
+│
+├── routes/                     # API路由
+│   ├── __init__.py
+│   ├── admin.py              # 管理员路由
+│   ├── api_auth.py           # API认证
+│   ├── dataset.py            # 数据集路由
+│   ├── help.py               # 帮助路由
+│   └── toolset.py            # 工具集路由
+│
+├── modules/                    # 业务模块
+│   ├── dataset/               # 数据分析模块
+│   │   ├── daily_report.py
+│   │   ├── monthly_report.py
+│   │   ├── product_analysis.py
+│   │   └── yumai_analysis.py
+│   └── toolset/               # 工具模块
+│       ├── excel_formula_remover.py
+│       ├── monthly_report_code_original.py
+│       └── research_analysis.py
+│
+├── frontend/                   # Vue/TypeScript前端
+│   ├── src/
+│   ├── public/
+│   └── package.json
+│
+├── data/                       # 运行时数据 (gitignored)
+│   ├── database/              # 数据库文件
+│   ├── uploads/               # 上传文件
+│   └── projects/             # 项目数据
+│
+├── tests/                      # 测试文件
+├── docs/                       # 文档
+├── scripts/                    # 脚本工具
+├── migrations/                 # 数据库迁移
+└── archive/                    # 归档文件
 ```
 
 ### 添加新功能
