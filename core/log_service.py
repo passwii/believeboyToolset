@@ -8,6 +8,7 @@ from flask import request, session
 from core.database import add_log, get_user
 import hashlib
 import time
+import json
 
 class LogLevel:
     DEBUG = "debug"
@@ -37,6 +38,10 @@ class LogService:
             username: 用户名 (可选，默认从session获取)
         """
         try:
+            # SQLite 参数绑定不支持 dict/list，统一序列化为 JSON 字符串
+            if isinstance(details, (dict, list, tuple, set)):
+                details = json.dumps(details, ensure_ascii=False)
+
             # 从session获取用户信息，如果没有提供
             if not user_id and not username and 'username' in session:
                 username = session['username']

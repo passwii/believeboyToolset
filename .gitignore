@@ -24,3 +24,7 @@ pdf/
 
 # Claude AI
 .claude
+
+# Folders that should not be tracked
+data/
+frontend/

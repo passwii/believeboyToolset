@@ -18,7 +18,7 @@ const ROUTE_CONFIG = {
   'update-log': '/admin/update-log?embed=true',
   'shop-management': '/admin/shops?embed=true',
   'change-password': '/admin/change-password?embed=true',
-  'sku-cost-table': '/toolset/sku-cost-table?embed=true',
+  'sku-cost-table': '/toolset/sku-cost-manager?embed=true',
   'project-progress-table': '/toolset/project-progress-table?embed=true',
   'profit-calculation-table': '/toolset/profit-calculation-table?embed=true',
   'exchange-rate-display': '/toolset/exchange-rate-display',
@@ -44,7 +44,8 @@ const PAGE_INITIALIZERS = {
   'log-management': 'initializeLogManagement',
   'update-log': 'initializeUpdateLog',
   'shop-management': 'initializeShopManagement',
-  'change-password': 'initializeChangePassword'
+  'change-password': 'initializeChangePassword',
+  'sku-cost-table': 'initializeSkuCostManager'
 };
 
 // 默认页面配置

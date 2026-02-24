@@ -25,7 +25,8 @@ class PageInitializers {
       'log-management': () => this.initializeLogManagement(),
       'update-log': () => this.initializeUpdateLog(),
       'shop-management': () => this.initializeShopManagement(),
-      'change-password': () => this.initializeChangePassword()
+      'change-password': () => this.initializeChangePassword(),
+      'sku-cost-table': () => this.initializeSkuCostManager()
     };
 
     const initializer = initializerMap[contentType];
@@ -707,6 +708,27 @@ class PageInitializers {
       console.log('表单字段已重置');
     } catch (error) {
       console.error('重置表单字段时出错:', error);
+    }
+  }
+
+  /**
+   * 初始化 SKU 成本表管理页面
+   */
+  initializeSkuCostManager() {
+    console.log('初始化 SKU 成本表管理页面');
+
+    try {
+      if (typeof SkuCostManager !== 'undefined') {
+        this.app.components.skuCostManager = new SkuCostManager();
+        console.log('SKU 成本表管理组件已初始化');
+      } else {
+        console.error('SkuCostManager 未定义，请确保已加载 sku-cost-manager.js');
+      }
+    } catch (error) {
+      console.error('初始化 SKU 成本表管理页面失败:', error);
+      if (typeof notify !== 'undefined') {
+        notify.error('初始化 SKU 成本表管理页面失败');
+      }
     }
   }
 }
