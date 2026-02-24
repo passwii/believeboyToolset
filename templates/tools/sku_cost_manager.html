@@ -1,0 +1,439 @@
+<!-- SKU 成本表管理页面 -->
+<div class="tool-container">
+    <div class="tool-header text-center">
+        <h2 style="color: #00ff88; margin-bottom: 10px; font-size: 1.8rem;">
+            <i class="fas fa-table"></i> SKU 成本表管理
+        </h2>
+        <p>管理 SKU 成本信息，支持在线编辑和保存</p>
+    </div>
+
+    <div class="tool-content">
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="搜索 SKU、ASIN 或项目名称..." />
+                </div>
+                <select id="filter-project" class="filter-select">
+                    <option value="">所有项目</option>
+                </select>
+            </div>
+            <div class="toolbar-right">
+                <button type="button" class="btn-primary" id="add-item-btn">
+                    <i class="fas fa-plus"></i> 添加条目
+                </button>
+                <button type="button" class="btn-primary" id="batch-add-btn">
+                    <i class="fas fa-list"></i> 批量添加
+                </button>
+                <button type="button" class="btn-secondary" id="refresh-btn">
+                    <i class="fas fa-refresh"></i> 刷新
+                </button>
+                <button type="button" class="btn-primary" id="save-btn">
+                    <i class="fas fa-save"></i> 保存更改
+                </button>
+            </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="table-container">
+            <table class="data-table" id="sku-table">
+                <thead>
+                    <tr>
+                        <th class="col-project">项目名称</th>
+                        <th class="col-sku">SKU</th>
+                        <th class="col-asin">ASIN</th>
+                        <th class="col-cost">头程单价</th>
+                        <th class="col-fob">FOB单价</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- 数据将通过 JavaScript 动态加载 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination" id="pagination">
+            <button type="button" class="btn-page" id="prev-page" disabled>
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="page-info">第 <span id="current-page">1</span> 页，共 <span id="total-pages">1</span> 页</span>
+            <button type="button" class="btn-page" id="next-page" disabled>
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="stats-bar">
+            <span>总记录数: <strong id="total-records">0</strong></span>
+            <span>已筛选: <strong id="filtered-records">0</strong></span>
+            <span>已修改: <strong id="modified-records">0</strong></span>
+        </div>
+    </div>
+</div>
+
+<!-- 保存确认对话框 -->
+<div class="modal-overlay" id="save-modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-save"></i> 确认保存</h3>
+            <button type="button" class="modal-close" id="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>确定要保存更改吗？此操作将覆盖原 CSV 文件。</p>
+            <p class="modified-count">已修改 <strong id="modal-modified-count">0</strong> 条记录</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="modal-cancel">取消</button>
+            <button type="button" class="btn-primary" id="modal-confirm">确认保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 单个添加条目模态框 -->
+<div class="modal-overlay" id="add-item-modal" style="display: none;">
+    <div class="modal-content modal-content-large">
+        <div class="modal-header">
+            <h3><i class="fas fa-plus-circle"></i> 添加新条目</h3>
+            <button type="button" class="modal-close" id="add-item-modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="add-item-form">
+                <div class="form-group">
+                    <label for="add-project">项目名称</label>
+                    <select id="add-project" class="form-control">
+                        <option value="">请选择项目</option>
+                    </select>
+                    <span class="error-message" id="add-project-error"></span>
+                </div>
+                <div class="form-group">
+                    <label for="add-sku">SKU <span class="required">*</span></label>
+                    <input type="text" id="add-sku" class="form-control" placeholder="请输入SKU" required maxlength="100">
+                    <span class="error-message" id="add-sku-error"></span>
+                </div>
+                <div class="form-group">
+                    <label for="add-asin">ASIN</label>
+                    <input type="text" id="add-asin" class="form-control" placeholder="请输入ASIN" maxlength="50">
+                </div>
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label for="add-head-trip-cost">头程单价</label>
+                        <input type="number" id="add-head-trip-cost" class="form-control" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group form-group-half">
+                        <label for="add-fob-cost">FOB单价</label>
+                        <input type="number" id="add-fob-cost" class="form-control" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="add-item-cancel">取消</button>
+            <button type="button" class="btn-primary" id="add-item-confirm">确认添加</button>
+        </div>
+    </div>
+</div>
+
+<!-- 批量添加条目模态框 -->
+<div class="modal-overlay" id="batch-add-modal" style="display: none;">
+    <div class="modal-content modal-content-xlarge">
+        <div class="modal-header">
+            <h3><i class="fas fa-list-alt"></i> 批量添加条目</h3>
+            <button type="button" class="modal-close" id="batch-add-modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="batch-tabs">
+                <button type="button" class="batch-tab active" data-tab="paste">
+                    <i class="fas fa-paste"></i> 文本粘贴
+                </button>
+                <button type="button" class="batch-tab" data-tab="table">
+                    <i class="fas fa-table"></i> 表格输入
+                </button>
+            </div>
+
+            <div class="batch-content active" id="batch-paste-content">
+                <div class="batch-instructions">
+                    <p><i class="fas fa-info-circle"></i> 从 Excel 复制数据，每行一条记录：</p>
+                    <code>project_name, SKU, ASIN, 头程单价, FOB单价</code>
+                </div>
+                <textarea id="batch-paste-input" class="batch-textarea" placeholder="例如：&#10;项目A, SKU001, ASIN001, 10.50, 5.20&#10;项目B, SKU002, ASIN002, 15.00, 8.50"></textarea>
+                <div class="batch-preview" id="batch-paste-preview">
+                    <span class="preview-text">等待输入...</span>
+                </div>
+            </div>
+
+            <div class="batch-content" id="batch-table-content">
+                <div class="batch-instructions">
+                    <p><i class="fas fa-info-circle"></i> 逐行输入数据，点击“添加一行”继续追加</p>
+                </div>
+                <div class="batch-table-container">
+                    <table class="batch-input-table" id="batch-input-table">
+                        <thead>
+                            <tr>
+                                <th>项目名称</th>
+                                <th>SKU <span class="required">*</span></th>
+                                <th>ASIN</th>
+                                <th>头程单价</th>
+                                <th>FOB单价</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="batch-table-body"></tbody>
+                    </table>
+                </div>
+                <button type="button" class="btn-secondary" id="add-batch-row">
+                    <i class="fas fa-plus"></i> 添加一行
+                </button>
+                <div class="batch-preview" id="batch-table-preview">
+                    <span class="preview-text">等待输入...</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="batch-add-cancel">取消</button>
+            <button type="button" class="btn-primary" id="batch-add-confirm">确认批量添加</button>
+        </div>
+    </div>
+</div>
+
+<!-- 操作结果提示 -->
+<div id="toast-container" class="toast-container"></div>
+
+<style>
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.toolbar-left,
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.search-box input,
+.filter-select,
+.form-control,
+.batch-textarea {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    color: white;
+}
+
+.search-box input {
+    padding-left: 35px;
+    width: 250px;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-page {
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: rgba(0, 255, 136, 0.2);
+    border-color: #00ff88;
+}
+
+.btn-primary:hover {
+    background: rgba(0, 255, 136, 0.3);
+}
+
+.btn-secondary,
+.btn-page {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-secondary:hover,
+.btn-page:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.table-container {
+    max-height: 600px;
+    overflow: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.data-table,
+.batch-input-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td,
+.batch-input-table th,
+.batch-input-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+}
+
+.pagination,
+.stats-bar {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-content {
+    width: min(720px, 100%);
+    max-height: 90vh;
+    overflow: auto;
+    background: #1b2033;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+}
+
+.modal-content-large {
+    width: min(820px, 100%);
+}
+
+.modal-content-xlarge {
+    width: min(1024px, 100%);
+}
+
+.modal-header,
+.modal-footer {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-footer {
+    border-bottom: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-body {
+    padding: 16px 18px;
+}
+
+.modal-close {
+    background: transparent;
+    border: 0;
+    color: white;
+    cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+
+.form-group-half {
+    flex: 1;
+}
+
+.required {
+    color: #ff6b6b;
+}
+
+.error-message {
+    color: #ff8b8b;
+    min-height: 18px;
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+.batch-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.batch-tab {
+    padding: 8px 14px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    cursor: pointer;
+}
+
+.batch-tab.active {
+    border-color: #00ff88;
+    background: rgba(0, 255, 136, 0.2);
+}
+
+.batch-content {
+    display: none;
+}
+
+.batch-content.active {
+    display: block;
+}
+
+.batch-textarea {
+    width: 100%;
+    min-height: 180px;
+    resize: vertical;
+}
+
+.batch-preview {
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.06);
+}
+</style>
